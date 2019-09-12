@@ -1,0 +1,7 @@
+vmd -dispdev text -e Processes/average_area.tcl 
+
+
+python Processes/area.compressibility.py
+
+mv avgarea.txt Data
+mv area.compressibility.txt Data

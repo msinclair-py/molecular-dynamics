@@ -1,0 +1,11 @@
+#This package calculates KA, the area compressibility
+#modulus of a membrane in a simulation
+#
+#First, the area of a membrane at various time points in 
+#a simulation is calculated in a tcl script whose inputs 
+#are a protein structure file, trajectory and the stride 
+#of the trajectory.
+#
+#This data is then averaged and the variance calculated 
+#in a python script which is fed into the area compressibility
+#modulus formula
