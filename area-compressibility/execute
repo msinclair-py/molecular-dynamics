@@ -1,5 +1,3 @@
-vmd -dispdev text -e Processes/average_area.tcl 
+vmd -dispdev text -e processes/average_area.tcl 
 
-
-python Processes/area.compressibility.py
-
+python processes/area.compressibility.py
