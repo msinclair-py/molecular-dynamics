@@ -1,0 +1,7 @@
+vmd -dispdev text -e Processes/gen_rings.tcl
+
+python Processes/thickness.py
+
+mv netavg.pdb Data
+mv ring*.pdb Data
+mv thick.txt Data
