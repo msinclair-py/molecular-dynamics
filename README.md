@@ -14,3 +14,9 @@ The resulting data is then analyzed in python and output as a series of
 average membrane thickness, for the net membrane average and then the
 average of a series of rings surrounded protein of interest of user-defined
 length.
+
+Local Hydration
+
+This script analyzes water packing along a membrane surface to detect any
+abnormalities that may arise due to the inclusion of a membrane bound 
+element.
