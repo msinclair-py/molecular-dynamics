@@ -1,0 +1,5 @@
+vmd -dispdev text -e processes/membrane-hydration.tcl
+
+python processes/average-hydration.py
+
+mv *.txt data
