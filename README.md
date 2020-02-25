@@ -20,3 +20,15 @@ Local Hydration
 This script analyzes water packing along a membrane surface to detect any
 abnormalities that may arise due to the inclusion of a membrane bound 
 element.
+
+Ion Conductance
+
+This script bins ion z coordinates into 3 slabs and then detects any ions
+that pass from the first to last slab via the middle slab or vice versa.
+This ensures that periodicity of the simulation box is accounted for.
+
+Water Profile
+
+This script measures the density of water oxygens along the z coordinate of
+a membrane protein's pore. It outputs a relative abundance histogram of the
+waters.
