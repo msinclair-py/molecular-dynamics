@@ -1,3 +1,0 @@
-vmd -dispdev text -e processes/gen_rings.tcl
-
-python processes/thickness.py

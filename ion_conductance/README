@@ -1,0 +1,7 @@
+The TCL script bins the z position of each ion at each frame
+into the corresponding "slab" (0,1,2). These are then analyzed
+in a pandas dataframe to with a pattern-search rolling window
+algorithm to identify ions that truly cross through the channel.
+This is to ensure that periodicity is accounted for. Currently,
+the systems tested on have not had any ion crossings and as a result,
+there is no graphical output yet.
