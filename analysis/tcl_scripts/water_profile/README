@@ -1,3 +1,0 @@
-The TCL script interacts with VMD to obtain the raw data
-that is then processed in python. The output is a distribution
-histogram/lineplot chart.

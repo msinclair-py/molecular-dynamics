@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from build_amber import ExplicitSolvent
+from .build.build_amber import ExplicitSolvent
 
 path = '/eagle/projects/FoundEpidem/msinclair/ideals/whsc1'
 

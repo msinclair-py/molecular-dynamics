@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 from glob import glob
 from math import ceil
-from omm_funcs import run_md
+from .simulate.omm_funcs import run_md
 import parsl
-from parsl_config import get_config
+from .simulate.parsl_config import get_config
 import os
 
 # Housekeeping stuff

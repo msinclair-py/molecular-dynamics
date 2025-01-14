@@ -1,7 +1,0 @@
-#This execute script will call the tcl subscript to determine both
-#the net average thickness of a membrane (by phosphorous atoms)
-#and a concentric set of rings of user-inputted thickness in angstroms.
-#
-#This data is then analyzed by python and output into a text file for analysis.
-#In an effort to make data analysis easier it may be desired to alter the 
-#output string at the end of the python script.

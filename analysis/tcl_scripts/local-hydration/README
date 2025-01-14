@@ -1,7 +1,0 @@
-###This script does a grid-wise search of the membrane surface
-###(defined by a grid beginning at the z position of phosphorous
-###atoms in the phospholipids). The grid adjusts size if it detects
-###protein in order to not under-report water concentration.
-
-###This data is processed and then output as a contour map using
-###matplotlib
