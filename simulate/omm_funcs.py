@@ -6,11 +6,8 @@ from openmm.unit import *
 import pandas as pd
 from parmed import load_file, unit as u
 from simtk import unit
-from sys import stdout, exit, stderr
 
-def add_backbone_posres(system,
-                        positions,
-                        atoms,
+def add_backbone_posres(system, positions, atoms,
                         restraint_force):
   force = CustomExternalForce("k*periodicdistance(x, y, z, x0, y0, z0)^2")
   
@@ -109,7 +106,7 @@ def sim_implicit(system,
     potential_energy = state.getPotentialEnergy()
     return simulation, potential_energy.value_in_unit(unit.kilocalories_per_mole)
 
-def setup_sim_nomin(system, prmtop, inpcrd):
+def setup_sim_nomin(system, prmtop, inpcrd, log):
     integrator = LangevinMiddleIntegrator(300*kelvin, 1/picosecond, 0.004*picoseconds)
 
     platform = Platform.getPlatformByName('CUDA')
@@ -121,7 +118,7 @@ def setup_sim_nomin(system, prmtop, inpcrd):
                             platform,
                             properties)
 
-    simulation.reporters.append(StateDataReporter(stdout,
+    simulation.reporters.append(StateDataReporter(log,
                                 10000,
                                 step=True,
                                 potentialEnergy=True,
@@ -131,7 +128,7 @@ def setup_sim_nomin(system, prmtop, inpcrd):
     return simulation, integrator
 
 
-def setup_sim(system, prmtop, inpcrd):
+def setup_sim(system, prmtop, inpcrd, log):
     posres_sys = add_backbone_posres(system, inpcrd.positions, prmtop.topology.atoms(), 10)
     integrator = LangevinMiddleIntegrator(5*kelvin, 1/picosecond, 0.004*picoseconds)
 
@@ -147,7 +144,7 @@ def setup_sim(system, prmtop, inpcrd):
     simulation.context.setPositions(inpcrd.positions)
     simulation.minimizeEnergy()
 
-    simulation.reporters.append(StateDataReporter(stdout,
+    simulation.reporters.append(StateDataReporter(log,
                                 1000,
                                 step=True,
                                 potentialEnergy=True,
@@ -180,9 +177,9 @@ def equilib(simulation,
     simulation.context.reinitialize(True)
 
     for i in range(100):
-      simulation.step(int(mdsteps/100))
-      k = float(99.02-(i*0.98))
-      simulation.context.setParameter('k', (k * kilocalories_per_mole/angstroms**2))
+        simulation.step(int(mdsteps/100))
+        k = float(99.02-(i*0.98))
+        simulation.context.setParameter('k', (k * kilocalories_per_mole/angstroms**2))
     
     simulation.context.setParameter('k', 0)
     simulation.saveState(state_out)
@@ -195,14 +192,16 @@ def run_eq(inpcrd_fil,
         prmtop_fil,
         state_out,
         chkpt,
+        log_file,
         mdsteps=500000):
 
     system, prmtop, inpcrd = load_amber_files(inpcrd_fil,
                                             prmtop_fil)
 
     posres_sys, simulation, integrator = setup_sim(system,
-                                                prmtop,
-                                                inpcrd)
+                                                   prmtop,
+                                                   inpcrd,
+                                                   log_file)
 
     simulation, integrator = warming(simulation, integrator)
 
@@ -261,12 +260,14 @@ def run_prod(simulation,
 
 def prod(inpcrd, prmtop, eq_chkpt, traj, rst, chkpt, state, log, num_steps=1000000):
     system, prmtop, inpcrd = load_amber_files(inpcrd, prmtop)
-    eq_simulation, integrator = setup_sim_nomin(system, prmtop, inpcrd)
+    path, _ = os.path.split(eq_chkpt)
+    eq_log = f'{path}/eq.log'
+    eq_simulation, integrator = setup_sim_nomin(system, prmtop, inpcrd, eq_log)
     
     system.addForce(MonteCarloBarostat(1*atmosphere, 300*kelvin))
     eq_simulation.context.reinitialize(True)
 
-    run_prod(eq_simulation, num_steps, eq_chkpt, dcd, rst, chkpt, state, log)
+    run_prod(eq_simulation, num_steps, eq_chkpt, traj, rst, chkpt, state, log)
 
 def run_md(path: str, n_steps=1_000_000):
     inpcrd = f'{path}/system.inpcrd'
@@ -274,7 +275,8 @@ def run_md(path: str, n_steps=1_000_000):
     
     eq_state = f'{path}/eq.state'
     eq_chkpt = f'{path}/eq.chk'
-    run_eq(inpcrd, prmtop, eq_state, eq_chkpt)
+    eq_log = f'{path}/eq.log'
+    run_eq(inpcrd, prmtop, eq_state, eq_chkpt, eq_log)
 
     traj = f'{path}/prod.dcd'
     rst = f'{path}/prod.rst.chk'
