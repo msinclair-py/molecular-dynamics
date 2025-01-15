@@ -1,0 +1,35 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "molecular_simulations"
+version = "0.1.0"
+authors = [
+  { name="Matt Sinclair", email="msinclair@anl.gov" },
+]
+description = """
+A small package for building molecular systems using the AMBER \
+force field and deploying OpenMM simulations on HPC clusters using Parsl.
+"""
+readme = "README.md"
+requires-python = "<= 3.10.16"
+classifiers = [
+    "Programming Language :: Python :: 3",
+]
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
+
+[project.urls]
+Homepage = "https://github.com/msinclair-py/molecular-dynamics"
+Issues = "https://github.com/msinclair-py/molecular-dynamics/issues"
+
+[project.optional-dependencies]
+sim = [
+    "openmm==7.7",
+    "parsl==2024.1.29",
+    "cudatoolkit==11.4.3",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/molecular_simulations"]
