@@ -8,7 +8,7 @@ import os
 # Housekeeping stuff
 run_dir = '/eagle/projects/FoundEpidem/msinclair/ideals/whsc1'
 
-paths = sorted(glob('sims/*'))[:-1]
+paths = sorted([f for f in glob('sims/*') if 'bak' not in f])[:-1]
 n_jobs = len(paths)
 gpus_per_node = 4 # do not change this; 4 per node on Polaris
 n_nodes = n_jobs // gpus_per_node # not worth the risk of `ceil`ing a bad flop (e.g. 1.00001)
@@ -52,8 +52,7 @@ def run_md(path: str, eq_steps=500_000, steps=250_000_000):
     from omm_simulator import Simulator
 
     simulator = Simulator(path, equil_steps=eq_steps, prod_steps=steps)
-    simulator.equilibrate()
-    simulator.production()
+    simulator.run()
 
 parsl_cfg = parsl.load(cfg)
 
