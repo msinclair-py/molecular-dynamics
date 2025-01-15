@@ -58,6 +58,6 @@ parsl_cfg = parsl.load(cfg)
 
 futures = []
 for path in paths:
-    futures.append(run_md(path))
+    futures.append(run_md(path, steps=n_steps))
 
 outputs = [x.result() for x in futures]
