@@ -150,7 +150,7 @@ class ExplicitSolvent(ImplicitSolvent):
         os.remove('leap.log')
         os.makedirs(f'{self.path}/build', exist_ok=True)
         for f in glob(f'{self.path}/*'):
-            if not any([ext in os.path.basename(f) for ext in ['.prmtop', '.inpcrd']]):
+            if not any([ext in os.path.basename(f) for ext in ['.prmtop', '.inpcrd', 'build']]):
                 path, name = os.path.split(f)
                 shutil.move(f, f'{path}/build/{name}')
         
