@@ -1,12 +1,17 @@
 from copy import deepcopy
+import MDAnalysis as mda
 from openmm import *
 from openmm.app import *
 from openmm.unit import *
 import os
 
 class Simulator:
-    def __init__(self, path: str, equil_steps: int=1_250_000, 
-                 prod_steps: int=250_000_000, force_constant: float=10.):
+    def __init__(self, 
+                 path: str, 
+                 equil_steps: int=1_250_000, 
+                 prod_steps: int=250_000_000, 
+                 n_equil_cycles: int=3,
+                 force_constant: float=10.):
         self.path = path
         # input files
         self.prmtop = f'{path}/system.prmtop'
@@ -24,6 +29,8 @@ class Simulator:
         self.prod_log = f'{path}/prod.log'
 
         # simulation details
+        self.indices = self.get_restraint_indices()
+        self.equil_cycles = n_equil_cycles
         self.equil_steps = equil_steps
         self.prod_steps = prod_steps
         self.k = force_constant
@@ -69,6 +76,7 @@ class Simulator:
         system = self.add_backbone_posres(self.load_amber_files(), 
                                           self.inpcrd.positions, 
                                           self.prmtop.topology.atoms(), 
+                                          self.indices,
                                           self.k)
     
         simulation, integrator = self.setup_sim(system, dt=0.002)
@@ -86,6 +94,7 @@ class Simulator:
                                                       potentialEnergy=True,
                                                       speed=True,
                                                       temperature=True))
+        simulation.reporters.append(DCDReporter(f'{self.path}/eq.dcd', 1000))
 
         simulation, integrator = self._heating(simulation, integrator)
         simulation = self._equilibrate(simulation)
@@ -157,10 +166,12 @@ class Simulator:
         T = 5
         
         integrator.setTemperature(T * kelvin)
-        mdsteps = 60000
-        for i in range(60):
+        mdsteps = 100000
+        length = mdsteps // 1000
+        tstep = (300 - T) / length
+        for i in range(length):
           simulation.step(mdsteps//60)
-          temp = T * (1 + i)
+          temp = T + tstep * (1 + i)
           
           if temp > 300:
             temp = 300
@@ -182,6 +193,9 @@ class Simulator:
         
         simulation.context.setParameter('k', 0)
         simulation.step(eq_steps)
+    
+        simulation.system.addForce(MonteCarloBarostat(1*atmosphere, 300*kelvin))
+        simulation.step(self.equil_cycles * eq_steps)
 
         simulation.saveState(self.eq_state)
         simulation.saveCheckpoint(self.eq_chkpt)
@@ -195,8 +209,18 @@ class Simulator:
     
         return simulation
 
+    def get_restraint_indices(self, addtl_selection: str=''):
+        u = mda.Universe(self.prmtop, self.inpcrd)
+        if addtl_selection:
+            sel = u.select_atoms(f'backbone or nucleicbackbone or {addtl_selection}')
+        else:
+            sel = u.select_atoms('backbone or nucleicbackbone')
+            
+        return sel.atoms.ix
+        
+
     @staticmethod
-    def add_backbone_posres(system, positions, atoms,
+    def add_backbone_posres(system, positions, atoms, indices,
                             restraint_force):
         force = CustomExternalForce("k*periodicdistance(x, y, z, x0, y0, z0)^2")
     
@@ -207,7 +231,7 @@ class Simulator:
         force.addPerParticleParameter("z0")
     
         for i, (atom_crd, atom) in enumerate(zip(positions, atoms)):
-            if atom.name in  ('CA', 'C', 'N', 'O'):
+            if atom.index in indices:
                 force.addParticle(i, atom_crd.value_in_unit(nanometers))
       
         posres_sys = deepcopy(system)
