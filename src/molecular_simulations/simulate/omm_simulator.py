@@ -197,6 +197,9 @@ class Simulator:
         simulation.system.addForce(MonteCarloBarostat(1*atmosphere, 300*kelvin))
         simulation.step(self.equil_cycles * eq_steps)
 
+        simulation.system.addForce(MonteCarloBarostat(1*atmosphere, 300*kelvin))
+        simulation.step(3*eq_steps)
+
         simulation.saveState(self.eq_state)
         simulation.saveCheckpoint(self.eq_chkpt)
     

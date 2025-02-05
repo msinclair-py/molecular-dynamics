@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-from .build.build_amber import ExplicitSolvent
+from molecular_simulations.build.build_amber import ExplicitSolvent
 
-path = '/eagle/projects/FoundEpidem/msinclair/ideals/whsc1'
+path = '.'
 
-for m in range(5):
-    mpath = f'{path}/sims/model{m}'
-    pdb = f'{path}/fold_prot_dna_whsc1/pred.model_idx_{m}.pdb'
+for m in range(4):
+    mpath = f'{path}/test_sim/model{m}'
+    pdb = f'{path}/test_build/chai-model.pdb'
 
-    builder = ExplicitSolvent(mpath, pdb, protein=True, dna=True)
+    builder = ExplicitSolvent(mpath, pdb, protein=True)
     builder.build()
