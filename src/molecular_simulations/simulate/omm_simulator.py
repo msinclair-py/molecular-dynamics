@@ -11,6 +11,7 @@ class Simulator:
                  equil_steps: int=1_250_000, 
                  prod_steps: int=250_000_000, 
                  n_equil_cycles: int=3,
+                 device_ids: list[int]: [0],
                  force_constant: float=10.):
         self.path = path
         # input files
@@ -35,7 +36,7 @@ class Simulator:
         self.prod_steps = prod_steps
         self.k = force_constant
         self.platform = Platform.getPlatformByName('CUDA')
-        self.properties = {'Precision': 'mixed'}
+        self.properties = {'DeviceIndex': ','.join(device_ids), 'Precision': 'mixed'}
 
     def load_amber_files(self):
         if isinstance(self.inpcrd, str):

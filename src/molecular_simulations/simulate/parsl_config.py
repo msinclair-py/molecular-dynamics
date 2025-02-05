@@ -7,9 +7,11 @@ from parsl.addresses import address_by_interface
 from parsl.utils import get_all_checkpoints
 
 def get_config(run_dir: str="/eagle/projects/FoundEpidem/msinclair/ideals/whsc1",
-               debug=False):
+               conda_env: str='mdsim',
+               workers_per_node: int=4,
+               debug: bool=False):
     user_opts_prod = {
-        "worker_init":      f"module use /soft/modulefiles/; module load conda; conda activate simulate; cd {run_dir}",
+        "worker_init":      f"module use /soft/modulefiles/; module load conda; conda activate {conda_env}; cd {run_dir}",
         "scheduler_options":"#PBS -l filesystems=home:eagle" , # specify any PBS options here, like filesystems
         "account":          "FoundEpidem",
         "queue":            "preemptable",
@@ -21,7 +23,7 @@ def get_config(run_dir: str="/eagle/projects/FoundEpidem/msinclair/ideals/whsc1"
     }
     
     user_opts_debug = {
-        "worker_init":      f"module use /soft/modulefiles/; module load conda; conda activate simulate; cd {run_dir}",
+        "worker_init":      f"module use /soft/modulefiles/; module load conda; conda activate {conda_env}; cd {run_dir}",
         "scheduler_options":"#PBS -l filesystems=home:eagle" , # specify any PBS options here, like filesystems
         "account":          "FoundEpidem",
         "queue":            "debug",
@@ -43,6 +45,7 @@ def get_config(run_dir: str="/eagle/projects/FoundEpidem/msinclair/ideals/whsc1"
     config = Config(
             executors=[
                 HighThroughputExecutor(
+                    max_workers_per_node=workers_per_node,
                     label="htex",
                     heartbeat_period=15,
                     heartbeat_threshold=120,
