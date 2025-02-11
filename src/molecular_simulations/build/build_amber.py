@@ -163,6 +163,112 @@ class ExplicitSolvent(ImplicitSolvent):
         """
         return round(volume * 10e-6 * 9.03)
         
+class PLINDERBuilder(ImplicitSolvent):
+    """
+    Builds complexes consisting of a biomolecule pdb and small molecule ligand.
+    Runs antechamber workflow to generate gaff2 parameters.
+    """
+    def __init__(self, path: str, pdb: str, lig: str, **kwargs):
+        from rdkit import Chem
+        super().__init__(self, path, pdb, **kwargs)
+        
+        self.lig = lig
+        self.ffs.append('leaprc.gaff2')
+    
+    def build(self):
+        self.parameterize_ligand()
+        self.assemble_system()
+        
+    def parameterize_ligand(self):
+        """
+        Ensures consistent treatment of all ligand sdf files, generating
+        GAFF2 parameters in the form of .frcmod and .lib files. Produces
+        a mol2 file for coordinates and connectivity and ensures that
+        antechamber did not fail. Hydrogens are added in rdkit which 
+        generally does a good job of this.
+        """
+        fix_resname = f'sed -i s/UNL/LIG/ {self.lig}.pdb'
+        cleanse_pdb = f'pdb4amber -i {self.lig}.pdb -o {self.lig}_new.pdb'
+        convert_to_gaff = f'antechamber -i {self.lig}_new.pdb -fi pdb -o \
+                {self.lig}.mol2 -fo mol2 -at gaff2 -c bcc -s 0 -pf y'
+        parmchk2 = f'parmchk2 -i {self.lig}.mol2 -f mol2 -o {self.lig}.frcmod'
+        
+        tleap_ligand = f"""source leaprc.gaff2
+        LIG = loadmol2 {self.lig}.mol2
+        loadamberparams {self.lig}.frcmod
+        saveoff LIG {self.lig}.lib
+        quit
+        """
+        
+        self.add_hydrogens()
+        os.system(fix_resname)
+        os.system(cleanse_pdb)
+        os.system(convert_to_gaff)
+        self.move_antechamber_outputs()
+        if self.check_sqm():
+            os.system(parmchk2)
+            leap_file = self.write_leap(tleap_ligand)
+            os.system(f'tleap -f {leap_file}')
+        else:
+            raise RuntimeError('Antechamber has failed! Please take a look at sqm.out')
+    
+    def add_hydrogens(self) -> None:
+        """
+        Add hydrogens in rdkit. Atom hybridization is taken from the
+        input sdf file and if this is incorrect, hydrogens will be wrong
+        too.
+        """
+        pass
+        #mol = Chem.SDMolSupplier(f'{self.lig}.sdf')[0]
+        #molH = Chem.AddHs(mol, addCoords=True)
+        #Chem.MolToPDBFile(molH, f'{self.lig}.pdb')
+        
+    def move_antechamber_outputs(self) -> None:
+        """
+        Remove unneccessary outputs from antechamber. Keep the
+        sqm.out file as proof that antechamber did not fail.
+        """
+        os.remove('sqm.in')
+        os.remove('sqm.pdb')
+        shutil.move('sqm.out', f'{self.lig}_sqm.out')
+        
+    def check_sqm(self) -> int:
+        """
+        Checks for evidence that antechamber calculations exited
+        successfully. This is always on the second to last line,
+        and if not present, indicates that we failed to produce
+        sane parameters for this molecule. In that case, I wish
+        you good luck.
+        """
+        line = open(f'{self.lig}_sqm.out').readlines()[-2]
+        if 'Calculation Completed' in line:
+            return 1
+        return 0
+    
+    def assemble_system(self, dim, num_ions) -> None:
+        """
+        Slightly modified from the parent class, now we have to add
+        the ligand parameters and assemble a complex rather than just
+        placing a biomolecule in the water box.
+        """
+        tleap_ffs = '\n'.join([f'source {ff}' for ff in self.ffs])
+        tleap_complex = f"""{tleap_ffs}
+        source leaprc.gaff2
+        loadamberparams {self.lig}.frcmod
+        loadoff {self.lig}.lib
+        PROT = loadpdb {self.pdb}
+        LIG = loadmol2 {self.lig}.mol2
+        
+        COMPLEX = combine {{PROT LIG}}
+        
+        savepdb COMPLEX {self.out}.pdb
+        saveamberparm COMPLEX {self.out}.prmtop {self.out}.inpcrd
+        """
+        
+        leap_file = self.write_leap(tleap_complex)
+        tleap = f'tleap -f {leap_file}'
+        os.system(tleap)
+        
 class ComplexBuilder(ExplicitSolvent):
     """
     Builds complexes consisting of a biomolecule pdb and small molecule ligand.
