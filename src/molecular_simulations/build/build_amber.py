@@ -269,7 +269,7 @@ class PLINDERBuilder(ImplicitSolvent):
         tleap_complex += structs
         tleap_complex.append(combine)
         tleap_complex += [
-            'set default PBRadii mbondi3', # needed for GBn2 impl. solvent model
+            'set default PBRadii mbondi3',
             f'savepdb COMPLEX {self.out}/system.pdb',
             f'saveamberparm COMPLEX {self.out}/system.prmtop {self.out}/system.inpcrd',
             'quit'

@@ -278,7 +278,8 @@ class ImplicitSimulator(Simulator):
                  solute_dielectric: float=1.,
                  solvent_dielectric: float=80.):
         super().__init__(path, equil_steps, prod_steps, n_equil_cycles,
-                         reporter_frequency, platform, device_ids, force_constant)
+                         reporter_frequency, platform, device_ids, 
+                         force_constant)
         self.solvent = implicit_solvent
         self.solute_dielectric = solute_dielectric
         self.solvent_dielectric = solvent_dielectric
@@ -292,7 +293,9 @@ class ImplicitSimulator(Simulator):
                                           removeCMMotion=False,
                                           constraints=HBonds,
                                           hydrogenMass=1.5 * amu,
-                                          implicitSolvent=self.solvent)
+                                          implicitSolvent=self.solvent,
+                                          soluteDielectric=self.solute_dielectric,
+                                          solventDielectric=self.solvent_dielectric)
     
         return system
         
@@ -306,7 +309,11 @@ class ImplicitSimulator(Simulator):
         simulation, integrator = self.setup_sim(system, dt=0.002)
         
         simulation.context.setPositions(self.inpcrd.positions)
+        state = simulation.context.getState(getEnergy=True)
+        print(f'Energy before minimization: {state.getPotentialEnergy()}')
         simulation.minimizeEnergy()
+        state = simulation.context.getState(getEnergy=True)
+        print(f'Energy after minimization: {state.getPotentialEnergy()}')
         
         simulation.reporters.append(StateDataReporter(self.eq_log, 
                                                       self.eq_freq, 
