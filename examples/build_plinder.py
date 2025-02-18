@@ -1,9 +1,17 @@
 from glob import glob
 from molecular_simulations.build import ImplicitSolvent, PLINDERBuilder
+from plinder.core import PlinderSystem
+from plinder.core.scores import query_index
+from plinder.core.utils.config import get_config
 
-root_path = ''
+cfg = plinder.core.get_config()
+
+root_path = cfg.data.plinder_dir
+base_out_path = '/lus/eagle/projects/FoundEpidem/msinclair/ideals/plinder/systems'
+
+cols_of_interest = ['system_id', 'entry_pdb_id', ]
+models = query_index(columns=cols_of_interest)
 proteins = []
-base_out_path = ''
 
 for protein in proteins:
     # build apo

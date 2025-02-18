@@ -1,9 +1,12 @@
 from copy import deepcopy
 import MDAnalysis as mda
+import numpy as np
 from openmm import *
 from openmm.app import *
 from openmm.unit import *
+from openmm.app.internal.singleton import Singleton
 import os
+from typing import List, Tuple
 
 class Simulator:
     def __init__(self, 
@@ -11,7 +14,9 @@ class Simulator:
                  equil_steps: int=1_250_000, 
                  prod_steps: int=250_000_000, 
                  n_equil_cycles: int=3,
-                 device_ids: list[int]: [0],
+                 reporter_frequency: int=1_000,
+                 platform: str='CUDA',
+                 device_ids: list[int]=[0],
                  force_constant: float=10.):
         self.path = path
         # input files
@@ -22,6 +27,7 @@ class Simulator:
         self.eq_state = f'{path}/eq.state'
         self.eq_chkpt = f'{path}/eq.chk'
         self.eq_log = f'{path}/eq.log'
+        self.eq_freq = reporter_frequency
         
         self.dcd = f'{path}/prod.dcd'
         self.restart = f'{path}/prod.rst.chk'
@@ -35,10 +41,14 @@ class Simulator:
         self.equil_steps = equil_steps
         self.prod_steps = prod_steps
         self.k = force_constant
-        self.platform = Platform.getPlatformByName('CUDA')
-        self.properties = {'DeviceIndex': ','.join(device_ids), 'Precision': 'mixed'}
+        self.platform = Platform.getPlatformByName(platform)
+        self.properties = {'DeviceIndex': ','.join([str(x) for x in device_ids]), 
+                           'Precision': 'mixed'}
 
-    def load_amber_files(self):
+        if platform == 'CPU':
+            self.properties = {}
+
+    def load_amber_files(self) -> System:
         if isinstance(self.inpcrd, str):
             self.inpcrd = AmberInpcrdFile(self.inpcrd)
             try: # This is how it is done in OpenMM 8.0 and on
@@ -54,14 +64,21 @@ class Simulator:
     
         return system
     
-    def setup_sim(self, system, dt):
-        integrator = LangevinMiddleIntegrator(300*kelvin, 1/picosecond, dt*picoseconds)
-        simulation = Simulation(self.prmtop.topology, system, integrator, self.platform, self.properties)
+    def setup_sim(self, system: System, dt: float) -> Tuple[Simulation, Integrator]:
+        integrator = LangevinMiddleIntegrator(300*kelvin, 
+                                              1/picosecond, 
+                                              dt*picoseconds)
+        simulation = Simulation(self.prmtop.topology, 
+                                system, 
+                                integrator, 
+                                self.platform, 
+                                self.properties)
     
         return simulation, integrator
 
-    def run(self):
-        skip_eq = all([os.path.exists(f) for f in [self.eq_state, self.eq_chkpt, self.eq_log]])
+    def run(self) -> None:
+        skip_eq = all([os.path.exists(f) 
+                       for f in [self.eq_state, self.eq_chkpt, self.eq_log]])
         reload_prod = os.path.exists(self.restart)
         if not skip_eq:
             self.equilibrate()
@@ -73,7 +90,7 @@ class Simulator:
             self.production(chkpt=self.eq_chkpt,
                             restart=False)
 
-    def equilibrate(self):
+    def equilibrate(self) -> Simulation:
         system = self.add_backbone_posres(self.load_amber_files(), 
                                           self.inpcrd.positions, 
                                           self.prmtop.topology.atoms(), 
@@ -90,19 +107,19 @@ class Simulator:
         simulation.minimizeEnergy()
         
         simulation.reporters.append(StateDataReporter(self.eq_log, 
-                                                      1000, 
+                                                      self.eq_freq, 
                                                       step=True,
                                                       potentialEnergy=True,
                                                       speed=True,
                                                       temperature=True))
-        simulation.reporters.append(DCDReporter(f'{self.path}/eq.dcd', 1000))
+        simulation.reporters.append(DCDReporter(f'{self.path}/eq.dcd', self.eq_freq))
 
         simulation, integrator = self._heating(simulation, integrator)
         simulation = self._equilibrate(simulation)
         
         return simulation
 
-    def production(self, chkpt, restart):
+    def production(self, chkpt: str, restart: bool=False) -> None:
         system = self.load_amber_files()
         simulation, integrator = self.setup_sim(system, dt=0.004)
         
@@ -123,7 +140,8 @@ class Simulator:
     
         self._production(simulation)
     
-    def load_checkpoint(self, simulation, checkpoint):
+    def load_checkpoint(self, simulation: Simulation, 
+                        checkpoint: str) -> Simulation:
         simulation.loadCheckpoint(checkpoint)
         state = simulation.context.getState(getVelocities=True, getPositions=True)
         positions = state.getPositions()
@@ -134,16 +152,18 @@ class Simulator:
 
         return simulation
 
-    def attach_reporters(self, simulation, dcd_file, log_file, rst_file, restart=False):
+    def attach_reporters(self, simulation: Simulation, 
+                         dcd_file: str, log_file: str, rst_file: str, 
+                         restart: bool=False) -> Simulation:
         simulation.reporters.extend([
             DCDReporter(
                 dcd_file, 
-                10000,
+                self.eq_freq * 10,
                 append=restart
                 ),
             StateDataReporter(
                 log_file,
-                10000,
+                self.eq_freq * 10,
                 step=True,
                 potentialEnergy=True,
                 temperature=True,
@@ -156,13 +176,14 @@ class Simulator:
                 ),
             CheckpointReporter(
                 rst_file,
-                100000
+                self.eq_freq * 100
                 )
             ])
 
         return simulation
 
-    def _heating(self, simulation, integrator):
+    def _heating(self, simulation: Simulation, 
+                 integrator: Integrator) -> Tuple[Simulation, Integrator]:
         simulation.context.setVelocitiesToTemperature(5*kelvin)
         T = 5
         
@@ -181,7 +202,7 @@ class Simulator:
     
         return simulation, integrator
          
-    def _equilibrate(self, simulation):
+    def _equilibrate(self, simulation: Simulation) -> Simulation:
         simulation.context.reinitialize(True)
         n_levels = 5
         d_k = self.k / n_levels
@@ -206,14 +227,14 @@ class Simulator:
     
         return simulation
     
-    def _production(self, simulation):
+    def _production(self, simulation: Simulation) -> Simulation:
         simulation.step(self.prod_steps)
         simulation.saveState(self.state)
         simulation.saveCheckpoint(self.chkpt)
     
         return simulation
 
-    def get_restraint_indices(self, addtl_selection: str=''):
+    def get_restraint_indices(self, addtl_selection: str='') -> List[int]:
         u = mda.Universe(self.prmtop, self.inpcrd)
         if addtl_selection:
             sel = u.select_atoms(f'backbone or nucleicbackbone or {addtl_selection}')
@@ -224,8 +245,8 @@ class Simulator:
         
 
     @staticmethod
-    def add_backbone_posres(system, positions, atoms, indices,
-                            restraint_force):
+    def add_backbone_posres(system: System, positions: np.ndarray, atoms: List[str], 
+                            indices: List[int], restraint_force: float=10.) -> System:
         force = CustomExternalForce("k*periodicdistance(x, y, z, x0, y0, z0)^2")
     
         force_amount = restraint_force * kilocalories_per_mole/angstroms**2
@@ -243,3 +264,59 @@ class Simulator:
       
         return posres_sys
 
+class ImplicitSimulator(Simulator):
+    def __init__(self, 
+                 path: str, 
+                 equil_steps: int=1_250_000, 
+                 prod_steps: int=250_000_000, 
+                 n_equil_cycles: int=3,
+                 reporter_frequency: int=1_000,
+                 platform: str='CUDA',
+                 device_ids: list[int]=[0],
+                 force_constant: float=10.,
+                 implicit_solvent: Singleton=GBn2,
+                 solute_dielectric: float=1.,
+                 solvent_dielectric: float=80.):
+        super().__init__(path, equil_steps, prod_steps, n_equil_cycles,
+                         reporter_frequency, platform, device_ids, force_constant)
+        self.solvent = implicit_solvent
+        self.solute_dielectric = solute_dielectric
+        self.solvent_dielectric = solvent_dielectric
+    
+    def load_amber_files(self) -> System:
+        if isinstance(self.inpcrd, str):
+            self.inpcrd = AmberInpcrdFile(self.inpcrd)
+            self.prmtop = AmberPrmtopFile(self.prmtop)
+
+        system = self.prmtop.createSystem(nonbondedMethod=NoCutoff,
+                                          removeCMMotion=False,
+                                          constraints=HBonds,
+                                          hydrogenMass=1.5 * amu,
+                                          implicitSolvent=self.solvent)
+    
+        return system
+        
+    def equilibrate(self) -> Simulation:
+        system = self.add_backbone_posres(self.load_amber_files(), 
+                                          self.inpcrd.positions, 
+                                          self.prmtop.topology.atoms(), 
+                                          self.indices,
+                                          self.k)
+    
+        simulation, integrator = self.setup_sim(system, dt=0.002)
+        
+        simulation.context.setPositions(self.inpcrd.positions)
+        simulation.minimizeEnergy()
+        
+        simulation.reporters.append(StateDataReporter(self.eq_log, 
+                                                      self.eq_freq, 
+                                                      step=True,
+                                                      potentialEnergy=True,
+                                                      speed=True,
+                                                      temperature=True))
+        simulation.reporters.append(DCDReporter(f'{self.path}/eq.dcd', self.eq_freq))
+
+        simulation, integrator = self._heating(simulation, integrator)
+        simulation = self._equilibrate(simulation)
+        
+        return simulation

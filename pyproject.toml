@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "molecular_simulations"
-version = "0.1.3"
+version = "0.1.8"
 authors = [
   { name="Matt Sinclair", email="msinclair@anl.gov" },
 ]
@@ -13,7 +13,7 @@ A small package for building molecular systems using the AMBER \
 force field and deploying OpenMM simulations on HPC clusters using Parsl.
 """
 readme = "README.md"
-requires-python = "<= 3.10.16"
+requires-python = ">= 3.9"
 classifiers = [
     "Programming Language :: Python :: 3",
 ]
