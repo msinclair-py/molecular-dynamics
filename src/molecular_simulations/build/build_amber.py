@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 from pdbfixer import PDBFixer
 from pdbfixer.pdbfixer import Sequence
+from rdkit import Chem
 import shutil
 from typing import Dict, List, Union
 
@@ -207,6 +208,7 @@ class PLINDERBuilder(ImplicitSolvent):
         self.system_id = system_id
         self.ffs.append('leaprc.gaff2')
         self.build_dir = self.out / 'build'
+        self.ions = None
     
     def build(self) -> None:
         ligs = self.migrate_files()
@@ -242,12 +244,62 @@ class PLINDERBuilder(ImplicitSolvent):
         lig_files = self.path / 'ligand_files'
         ligs = [Path(lig) for lig in glob(str(lig_files) + '/*.sdf')]
         for lig in ligs:
+            shutil.copy(str(lig), 
+                        str(self.build_dir))
+
             if self.check_ligand(lig):
-                shutil.copy(str(lig), 
-                            str(self.build_dir))
                 ligands.append(lig.name)
 
+
+        # handle any potential ions
+        if self.ions is not None:
+            self.ffs.append('leaprc.water.tip3p')
+            self.place_ions()
+
         return ligands
+
+    def place_ions(self) -> None:
+        """
+        This is horrible and I apologize profusely if you find yourself
+        having to go through the following. Good luck.
+        """
+        pdb_lines = open(self.pdb).readlines()[:-1]
+
+        if 'TER' in pdb_lines[-1]:
+            ln = -2
+        else:
+            ln = -1
+
+        next_atom_num = int(pdb_lines[ln][6:12].strip()) + 1
+        next_resid = int(pdb_lines[ln][22:26].strip()) + 1
+        
+        for ion in self.ions:
+            for atom in ion:
+                # HERE BE DRAGONS
+                ion_line = f'ATOM  {next_atom_num:>5}'
+
+                if atom[0].lower() in ['na', 'k', 'cl']:
+                    ionname = atom[0] + atom[1]
+                    ion_line += f'{ionname:>4}  '
+                else:
+                    ionname = atom[0].upper()
+                    ion_line += f'{ionname:>3}   '
+
+                ion_line += f'{ionname:<3}'
+
+                coords = ''.join([f'{x:>8.3f}' for x in atom[2:]])
+                ion_line += f'{next_resid:>5}    {coords}  0.00  0.00\n'
+
+                pdb_lines.append(ion_line)
+                pdb_lines.append('TER\n')
+
+                next_atom_num += 1
+                next_resid += 1
+
+        pdb_lines.append('END')
+        
+        with open(self.pdb, 'w') as f:
+            f.write(''.join(pdb_lines))
 
     def assemble_system(self) -> None:
         """
@@ -357,31 +409,49 @@ class PLINDERBuilder(ImplicitSolvent):
         
         return sequence
 
-    @staticmethod
-    def check_ligand(ligand: PathLike) -> bool:
+    def check_ligand(self, ligand: PathLike) -> bool:
         """
         Check ligand for ions and other weird stuff.
         """
-        #ion_list = ['na', 'k', 'ca', 'mn', 'mg', 'li', 'rb', 'cs', 'cu',
-        #            'ag', 'au', 'ti', 'be', 'sr', 'ba', 'ra', 'v', 'cr',
-        #            'fe', 'co', 'zn', 'ni', 'pd', 'cd', 'sn', 'pt', 'hg',
-        #            'pb', 'al']
-        #lig_lines = [line for line in open(str(ligand)).readlines()]
-
-        #for line in lig_lines:
-        #    resname = line[12:16].strip()
-        #    if any([ion in resname.lower() for ion in ion_list]):
-        #        return False
-
-        #    segid = line[76:].strip()
-        #    if '-' in segid or '+' in segid:
-        #        return False
-        from rdkit import Chem
+        ion = False
         mol = Chem.SDMolSupplier(str(ligand))[0]
-        if mol.GetNumAtoms() < 5: # covers larger cations/anions
+        
+        ligand = []
+        for atom, position in zip(mol.GetAtoms(), mol.GetConformer().GetPositions()):
+            symbol = atom.GetSymbol()
+            if symbol.lower() in self.cation_list + self.anion_list:
+                ion = True
+
+                charge = atom.GetFormalCharge()
+                sign = '+' if charge > 1 else '-'
+                if abs(charge) > 1:
+                    sign = f'{charge}{sign}'
+
+                ligand.append([symbol, sign] + [x for x in position])
+
+        if ion:
+            try:
+                self.ions.append(ligand)
+            except AttributeError:
+                self.ions = [ligand]
             return False
 
         return True
+
+    @property
+    def cation_list(self) -> List[str]:
+        return [
+            'na', 'k', 'ca', 'mn', 'mg', 'li', 'rb', 'cs', 'cu',
+            'ag', 'au', 'ti', 'be', 'sr', 'ba', 'ra', 'v', 'cr',
+            'fe', 'co', 'zn', 'ni', 'pd', 'cd', 'sn', 'pt', 'hg',
+            'pb', 'al'
+        ]
+
+    @property
+    def anion_list(self) -> List[str]:
+        return [
+            'cl', 'br', 'i', 'f'
+        ]
   
 class LigandBuilder:
     def __init__(self, path: PathLike, lig: str, lig_number: int=0):
@@ -431,7 +501,6 @@ class LigandBuilder:
         input sdf file and if this is incorrect, hydrogens will be wrong
         too.
         """
-        from rdkit import Chem
         mol = Chem.SDMolSupplier(f'{self.lig}.sdf')[0]
         molH = Chem.AddHs(mol, addCoords=True)
         Chem.MolToPDBFile(molH, f'{self.lig}.pdb')
@@ -476,7 +545,6 @@ class ComplexBuilder(ExplicitSolvent):
     Runs antechamber workflow to generate gaff2 parameters.
     """
     def __init__(self, path: str, pdb: str, lig: str, padding: float=10., **kwargs):
-        from rdkit import Chem
         super().__init__(self, path, pdb, padding, **kwargs)
         
         self.lig = lig
