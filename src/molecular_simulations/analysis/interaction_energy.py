@@ -2,12 +2,15 @@ from abc import ABC, abstractmethod
 from openmm import *
 from openmm.app import *
 from openmm.unit import *
+import MDAnalysis as mda
+from MDAnalysis.analysis.distances import contact_matrix
 import mdtraj as md
 import numpy as np
 import parmed as pmd
+import pickle
 import gc
 from tqdm import tqdm
-from typing import Union
+from typing import Dict, List, Tuple, Union
 
 class InteractionEnergy(ABC):
     def __init__(self):
@@ -292,21 +295,204 @@ class DynamicPotentialEnergy:
 
         return state.getPotentialEnergy()
 
-class PairwiseInteractionEnergy(StaticInteractionEnergy):
+class PairwiseInteractionEnergy:
     """
     Computes the pairwise interaction energy between a single residue from one 
     selection and the entirety of another selection.
     """
-    def __init__(self, system: System, top: Topology, 
-                 mda_sel1: str, mda_sel2: str,
-                 chain: str='A', platform: str='CUDA'):
-        super().__init__('', chain, platform, None, None)
-        self.system = system
-        self.top = top
+    def __init__(self, topology: str, trajectory: str, 
+                 sel1_resids: List[int], sel2_resids: List[int],
+                 cmat: Union[float, np.ndarray],
+                 prob_cutoff: float = 0.2,
+                 stride: float=10,
+                 platform: str='CUDA'):
+        self.top = topology
+        self.traj = trajectory
+        self.r1 = sel1_resids
+        self.r2 = sel2_resids
+        self.prob_cutoff = prob_cutoff
+        self.stride = stride
+        self.platform = platform
 
-    def get_system(self):
-        self.get_selection(self.top)
-        return self.system
+        self.u = mda.Universe(topology, trajectory)
 
-    def get_selection(self):
-        self.selection = pass
+        if isinstance(cmat, float):
+            self.compute_contact_matrix(cmat)
+        else:
+            self.cmat = cmat
+        
+        self.full_topology = AmberPrmtopFile(self.top)
+
+        self.kappa = 367.434915 * np.sqrt(.15 / (78.5 * 300)) # debye-huckel screening
+        self.full_system = self.full_topology.createSystem(implicitSolvent=OBC2,
+                                                           soluteDielectric=1.,
+                                                           solventDielectric=78.5,
+                                                           implicitSolventKappa=self.kappa)
+
+    def run(self, chkpt_freq=10):
+        self.compute_contacts()
+        
+        if os.path.exists('energies.pkl'):
+            energies = self.load()
+        else:
+            energies = {}
+
+        self.full_traj = md.load(self.traj, top=self.top)
+        self.n_frames = self.full_traj.n_frames // self.stride
+        
+        sels = np.concatenate((self.sel1, self.sel2))
+        for i, resid in tqdm(enumerate(sels), total=len(sels), position=0,
+                             leave=False, desc='Residues'):
+            if str(resid) not in energies.keys():
+                if resid in self.sel1:
+                    resids = resid + self.sel2
+                else:
+                    resids = resid + self.sel1
+
+                resids = ' '.join([str(x) for x in resids])
+
+                idx = self.u.select_atoms(f'resid {resids}').atoms.ix
+                res = self.u.select_atoms(f'resid {resid}').atoms.ix
+
+                energies.update({str(resid): self.compute(idx, res)})
+
+                if i % chkpt_freq == 0:
+                    self.save(energies)
+        
+        self.save(energies)
+    
+    def compute(self, indices: np.ndarray, resid: int) -> Dict[str, np.ndarray]:
+        """
+        Subsets trajectory based on input indices. Then runs energy analysis per-frame
+        on subset trajectory. Returns a dictionary with structure as follows:
+            {'lennard-jones': np.ndarray, 'coulombic': np.ndarray}
+        """
+        new_sys = self.subset_system(indices.astype(int).tolist())
+        context = self.build_context(new_sys, resid)
+        energies = np.zeros((self.n_frames, 2))
+        for i, fr in tqdm(enumerate(range(self.n_frames)), total=self.n_frames, 
+                          position=1, leave=False, desc='Frame'):
+            frame = fr * self.stride
+            coords = self.full_traj.xyz[frame, indices, :]
+            energies[i] = self.frame_energy(context, coords)
+
+        return {'lennard-jones': energies[:,0], 'coulombic': energies[:,1]}
+
+
+    def subset_system(self, sub_ind: List[int]):
+        """
+        Subsets an OpenMM system by a list of atom indices. Should include the residue of
+        interest and all other components to measure interaction energy between.
+        """
+        structure = pmd.openmm.load_topology(self.full_topology.topology, 
+                                             self.full_system)[sub_ind]
+
+        hbond_type = pmd.topologyobjects.BondType(k=400, req=1.)
+        constrained_bond_type = structure.bond_types.append(hbond_type)
+        structure.bond_types.claim()
+        for bond in structure.bonds:
+            if bond.type is None:
+                bond.type = hbond_type
+
+        new_system = structure.createSystem(implicitSolvent=OBC2,
+                                            soluteDielectric=1.,
+                                            solventDielectric=78.5,
+                                            implicitSolventKappa=self.kappa)
+
+        return new_system
+
+    def build_context(self, system: System, selection: List[int]) -> Context:
+        for force in system.getForces():
+            if isinstance(force, NonbondedForce):
+                force.setForceGroup(0)
+                force.addGlobalParameter("solute_coulomb_scale", 1)
+                force.addGlobalParameter("solute_lj_scale", 1)
+                force.addGlobalParameter("solvent_coulomb_scale", 1)
+                force.addGlobalParameter("solvent_lj_scale", 1)
+
+                for i in range(force.getNumParticles()):
+                    charge, sigma, epsilon = force.getParticleParameters(i)
+                    force.setParticleParameters(i, 0, 0, 0)
+                    if i in selection:
+                        force.addParticleParameterOffset("solute_coulomb_scale", i, charge, 0, 0)
+                        force.addParticleParameterOffset("solute_lj_scale", i, 0, sigma, epsilon)
+                    else:
+                        force.addParticleParameterOffset("solvent_coulomb_scale", i, charge, 0, 0)
+                        force.addParticleParameterOffset("solvent_lj_scale", i, 0, sigma, epsilon)
+
+                for i in range(force.getNumExceptions()):
+                    p1, p2, chargeProd, sigma, epsilon = force.getExceptionParameters(i)
+                    force.setExceptionParameters(i, p1, p2, 0, 0, 0)
+
+            else:
+                force.setForceGroup(2)
+        
+        integrator = VerletIntegrator(0.001*picosecond)
+
+        return Context(system, integrator)
+
+    def frame_energy(self, context, positions) -> Tuple[float]:
+        context.setPositions(positions)
+        
+        total_coulomb = self.energy(context, 1, 0, 1, 0)
+        solute_coulomb = self.energy(context, 1, 0, 0, 0)
+        solvent_coulomb = self.energy(context, 0, 0, 1, 0)
+        total_lj = self.energy(context, 0, 1, 0, 1)
+        solute_lj = self.energy(context, 0, 1, 0, 0)
+        solvent_lj = self.energy(context, 0, 0, 0, 1)
+        
+        coul_final = total_coulomb - solute_coulomb - solvent_coulomb
+        lj_final = total_lj - solute_lj - solvent_lj
+
+        del context
+        gc.collect()
+
+        return coul_final.value_in_unit(kilocalories_per_mole), lj_final.value_in_unit(kilocalories_per_mole)
+    
+    @staticmethod
+    def energy(context, solute_coulomb_scale: int=0, solute_lj_scale: int=0, 
+               solvent_coulomb_scale: int=0, 
+               solvent_lj_scale: int=0) -> float:
+        context.setParameter("solute_coulomb_scale", solute_coulomb_scale)
+        context.setParameter("solute_lj_scale", solute_lj_scale)
+        context.setParameter("solvent_coulomb_scale", solvent_coulomb_scale)
+        context.setParameter("solvent_lj_scale", solvent_lj_scale)
+        return context.getState(getEnergy=True, groups={0}).getPotentialEnergy()
+    
+    def compute_contact_matrix(self, cutoff: float=10.) -> None:
+        """
+        Computes contact probability matrix for two selections over the course
+        of a simulation trajectory. Masks diagonal elements so as not to artificially
+        report self-contacts.
+        """
+        resids = ' '.join([str(x) for x in self.r1 + self.r2])
+        sel = self.u.select_atoms(f'name CA and resid {resids}')
+
+        cmat = np.zeros((len(self.u.trajectory), len(sel), len(sel)))
+        for i, ts in enumerate(self.u.trajectory):
+            cmat[i] = contact_matrix(sel.positions, cutoff=cutoff).astype(int)
+
+        tri_mask = np.ones_like(cmat[0])
+        np.fill_diagonal(tri_mask, 0.)
+        self.cmat = np.mean(cmat, axis=0) * tri_mask
+
+    def compute_contacts(self) -> None:
+        """
+        Refines full residue selection to only those residues which have a contact
+        probability higher than our cutoff (defaults to 0.2).
+        """
+        len_sel1 = len(self.r1)
+        corner = self.cmat[len_sel1:, :len_sel1] # rows are sel2; cols are sel1
+        x, y = np.where(corner > self.prob_cutoff)
+        self.sel1 = np.array(self.r1)[np.unique(y)]
+        self.sel2 = np.array(self.r2)[np.unique(x)]
+
+    def load(self) -> dict:
+        try:
+            return pickle.load(open('energies.pkl', 'rb'))
+        except EOFError: # previous save failed
+            return dict()
+
+    def save(self, energies: dict) -> None:
+        with open('energies.pkl', 'wb') as f:
+            pickle.dump(energies, f)

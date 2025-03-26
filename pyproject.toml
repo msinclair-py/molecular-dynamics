@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "molecular_simulations"
-version = "0.2.0"
+version = "0.2.4"
 authors = [
   { name="Matt Sinclair", email="msinclair@anl.gov" },
 ]
@@ -26,9 +26,9 @@ Issues = "https://github.com/msinclair-py/molecular-dynamics/issues"
 
 [project.optional-dependencies]
 sim = [
-    "openmm==7.7",
+    "openmm==8.2",
     "parsl==2024.1.29",
-    "cudatoolkit==11.4.3",
+    "cudatoolkit==11.8",
 ]
 
 [tool.hatch.build.targets.wheel]

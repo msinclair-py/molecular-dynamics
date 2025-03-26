@@ -1,13 +1,10 @@
-import os
-from molecular_simulations.build.build_amber import PLINDERBuilder, LigandError
+from molecular_simulations import AuroraSettings
+from parsl import get_config, python_app
 from pathlib import Path
-from plinder.core import PlinderSystem
 from plinder.core.scores import query_index
-import plinder.core.utils.config
 
-cfg = plinder.core.get_config()
-cfg.data.plinder_dir = '' # set this to where to place downloads
-root_simulation_dir = Path('') # where to build systems
+input_dir = Path('/lus/flare/projects/FoundEpidem/plinder/2024-06/v2/systems') 
+root_simulation_dir = Path('/lus/flare/projects/FoundEpidem/plinder/simulations')
 
 columns_of_interest = [
     'system_id', 'entry_pdb_id', 'entry_oligomeric_state', 'entry_resolution',
@@ -26,24 +23,30 @@ filters = [
 df = query_index(columns=columns_of_interest, filters=filters)
 df.drop_duplicates(subset='system_id', inplace=True)
 
-for system_id in df['system_id']:
-    path = f'{cfg.data.plinder_dir}/{system_id}'
+@python_app
+def construct(system_id, input_path, output_path):
+    molecular_simulations.build.build_amber import LigandError, PLINDERBuilder
+    import os
+    from pathlib import Path
+    
+    path = path / system_id
     out_path = root_simulation_dir / system_id
     # check if we have already downloaded this system
     if not os.path.exists(path):
-        # spin up system
-        plinder_system = PlinderSystem(system_id=system_id)
-    
-        # download ligand sdf files
-        plinder_system.ligand_sdfs
-
-        # download receptor pdb file
-        plinder_system.receptor_pdb
-        
-        builder = PLINDERBuilder(path, 
+        builder = PLINDERBuilder(input_path, 
                                  system_id=system_id, 
-                                 out=out_path)
+                                 out=output_path)
         try:
             builder.build()
         except LigandError:
-            continue
+            return system_id
+
+future = []
+for system_id in df['system_id']:
+    futures.append(construct(system_id, input_path, output_path))
+
+bad_systems = [x.result() for x in futures]
+
+with open('bad_systems.txt') as out:
+    for system in bad_systems:
+        out.write(f'{system}\n')

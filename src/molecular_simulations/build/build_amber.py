@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 import gc
 from glob import glob
+import json
 from MDAnalysis.lib.util import convert_aa_code
+from openbabel import pybel
+from openmm import *
 from openmm.app import *
 import os
 from pathlib import Path
@@ -18,16 +21,16 @@ Sequences = List[Sequence]
 class LigandError(Exception):
     def __init__(self, message='This system contains ligands which we cannot model!'):
         self.message = message
-        super.__init__(self.message)
+        super().__init__(self.message)
 
 class ImplicitSolvent:
     """
     Class for building a system using ambertools. Produces explicit solvent cubic box
     with user-specified padding which has been neutralized and ionized with 150mM NaCl.
     """
-    def __init__(self, path: PathLike, pdb: str, out: OptPath=None, 
-                 protein: bool=True, rna: bool=False, dna: bool=False,
-                 phos_protein: bool=False, mod_protein: bool=False):
+    def __init__(self, path: PathLike, pdb: str, protein: bool=True,
+                 rna: bool=False, dna: bool=False, phos_protein: bool=False,
+                 mod_protein: bool=False, out: OptPath=None):
         self.path = path
         os.makedirs(str(path), exist_ok=True)
 
@@ -129,6 +132,7 @@ class ExplicitSolvent(ImplicitSolvent):
         
         addIonsRand PROT Na+ {num_ions} Cl- {num_ions}
         
+        savepdb PROT {self.out}.pdb
         saveamberparm PROT {self.out}.prmtop {self.out}.inpcrd
         quit
         """
@@ -214,6 +218,7 @@ class PLINDERBuilder(ImplicitSolvent):
         ligs = self.migrate_files()
 
         if not ligs:
+            print(f'No ligands!\n\n{self.pdb}')
             raise LigandError
 
         self.ligs = self.ligand_handler(ligs)
@@ -230,6 +235,7 @@ class PLINDERBuilder(ImplicitSolvent):
         
     def migrate_files(self) -> List[str]:
         os.makedirs(str(self.build_dir), exist_ok=True)
+        os.chdir(self.build_dir) # necessary for antechamber outputs
 
         # grab the sequence file to complete protein modeling
         shutil.copy(str(self.path / 'sequences.fasta'),
@@ -265,13 +271,22 @@ class PLINDERBuilder(ImplicitSolvent):
         """
         pdb_lines = open(self.pdb).readlines()[:-1]
 
-        if 'TER' in pdb_lines[-1]:
+        if 'END' in pdb_lines[-1]:
+            if 'TER' in pdb_lines[-2]:
+                ln = -3
+            else:
+                ln = -2
+        elif 'TER' in pdb_lines[-1]:
             ln = -2
         else:
             ln = -1
 
-        next_atom_num = int(pdb_lines[ln][6:12].strip()) + 1
-        next_resid = int(pdb_lines[ln][22:26].strip()) + 1
+        try:
+            next_atom_num = int(pdb_lines[ln][6:12].strip()) + 1
+            next_resid = int(pdb_lines[ln][22:26].strip()) + 1
+        except ValueError:
+            print(f'ERROR: {self.pdb}')
+            raise LigandError
         
         for ion in self.ions:
             for atom in ion:
@@ -280,12 +295,10 @@ class PLINDERBuilder(ImplicitSolvent):
 
                 if atom[0].lower() in ['na', 'k', 'cl']:
                     ionname = atom[0] + atom[1]
-                    ion_line += f'{ionname:>4}  '
+                    ion_line += f'{ionname:>4}  {ionname:<3} '
                 else:
                     ionname = atom[0].upper()
-                    ion_line += f'{ionname:>3}   '
-
-                ion_line += f'{ionname:<3}'
+                    ion_line += f'{ionname:>3}   {ionname:<3}'
 
                 coords = ''.join([f'{x:>8.3f}' for x in atom[2:]])
                 ion_line += f'{next_resid:>5}    {coords}  0.00  0.00\n'
@@ -359,6 +372,7 @@ class PLINDERBuilder(ImplicitSolvent):
         chains = [chain for chain in fixer.topology.chains()]
         chain_map = {chain.id: [res for res in chain.residues()] 
                      for chain in chains}
+
         # non-databank models do not have SEQRES and therefore no
         # sequence data to model missing residues
         fixer.sequences = self.inject_fasta(chain_map)
@@ -370,18 +384,25 @@ class PLINDERBuilder(ImplicitSolvent):
             PDBFile.writeFile(fixer.topology, fixer.positions, f)
 
     def inject_fasta(self, 
-                     chain_map: Dict[str, List[topology.Residue]]) -> Sequences:
+                     chain_map: Dict[str, List[str]]) -> Sequences:
         """
         Checks fasta against actual sequence. Modifies sequence so that 
         it correctly matches in the case of non-canonical residues such
         as phosphorylations (i.e. SER -> SEP).
         """
         fasta = open(self.fasta).readlines()
+        remapping = json.load(open(f'{self.path}/chain_mapping.json', 'rb'))
         sequences = []
         for i in range(len(fasta) // 2):
-            chain = fasta[2*i].strip().split('.')[-1]
+            seq_chain = fasta[2*i].strip()[1:] # strip off > and \n
+            chain = remapping[seq_chain]
             one_letter_seq = fasta[2*i+1].strip()
-            three_letter_seq = [convert_aa_code(aa) for aa in one_letter_seq]
+            try:
+                three_letter_seq = [convert_aa_code(aa) for aa in one_letter_seq]
+            except ValueError:
+                print(f'\nUnknown residue in fasta!\n\n{self.pdb}')
+                raise LigandError
+
             try:
                 three_letter_seq = self.check_ptms(three_letter_seq,
                                                    chain_map[chain])
@@ -390,13 +411,14 @@ class PLINDERBuilder(ImplicitSolvent):
                              residues=three_letter_seq)
                 )
             except KeyError: # not sure what to do if this fails
-                break
+                print(f'\nUnknown ligand error!\n\n{self.pdb}')
+                raise LigandError
 
         return sequences
 
     def check_ptms(self, 
                    sequence: List[str],
-                   chain_residues: List[topology.Residue]) -> List[str]:
+                   chain_residues: List[str]) -> List[str]:
         """
         Check the full sequence (from fasta) against the potentially partial
         sequence from the structural model stored in `chain_residues`.
@@ -404,14 +426,21 @@ class PLINDERBuilder(ImplicitSolvent):
         for residue in chain_residues:
             resID = int(residue.id) - 1 # since 0-indexed in list
             
-            if sequence[resID] != residue.name:
-                sequence[resID] = residue.name
+            try:
+                if sequence[resID] != residue.name:
+                    sequence[resID] = residue.name
+            except IndexError:
+                print(f'Sequence length is messed up!\n\n{self.pdb}')
+                raise LigandError
         
         return sequence
 
     def check_ligand(self, ligand: PathLike) -> bool:
         """
-        Check ligand for ions and other weird stuff.
+        Check ligand for ions and other weird stuff. We need to take care not
+        to assume all species containing formal charges are ions, nor that all
+        species containing atoms in the cation/anion lists are ions. Good example
+        is the multitude of small molecule drugs containing bonded halogens.
         """
         ion = False
         mol = Chem.SDMolSupplier(str(ligand))[0]
@@ -420,14 +449,14 @@ class PLINDERBuilder(ImplicitSolvent):
         for atom, position in zip(mol.GetAtoms(), mol.GetConformer().GetPositions()):
             symbol = atom.GetSymbol()
             if symbol.lower() in self.cation_list + self.anion_list:
-                ion = True
-
                 charge = atom.GetFormalCharge()
-                sign = '+' if charge > 1 else '-'
-                if abs(charge) > 1:
-                    sign = f'{charge}{sign}'
+                if charge != 0:
+                    ion = True
+                    sign = '+' if charge > 0 else '-'
+                    if abs(charge) > 1:
+                        sign = f'{charge}{sign}'
 
-                ligand.append([symbol, sign] + [x for x in position])
+                    ligand.append([symbol, sign] + [x for x in position])
 
         if ion:
             try:
@@ -470,10 +499,8 @@ class LigandBuilder:
         if self.lig.name[-4:] == '.sdf':
             self.lig = str(self.lig)[:-4]
 
-        fix_resname = f'sed -i "" "s/UNL/LG{self.ln}/" {self.lig}.pdb'
-        cleanse_pdb = f'pdb4amber -i {self.lig}.pdb -o {self.lig}_new.pdb'
-        convert_to_gaff = f'antechamber -i {self.lig}_new.pdb -fi pdb -o \
-                {self.lig}.mol2 -fo mol2 -at gaff2 -c bcc -s 0 -pf y'
+        convert_to_gaff = f'antechamber -i {self.lig}_prep.mol2 -fi mol2 -o \
+                {self.lig}.mol2 -fo mol2 -at gaff2 -c bcc -s 0 -pf y -rn LG{self.ln}'
         parmchk2 = f'parmchk2 -i {self.lig}.mol2 -f mol2 -o {self.lig}.frcmod'
         
         tleap_ligand = f"""source leaprc.gaff2
@@ -484,16 +511,16 @@ class LigandBuilder:
         """
         
         self.add_hydrogens()
-        os.system(fix_resname)
-        os.system(cleanse_pdb)
+        self.convert_to_mol2()
         os.system(convert_to_gaff)
-        self.move_antechamber_outputs()
-        if self.check_sqm():
+        try:
+            self.move_antechamber_outputs()
+            self.check_sqm()
             os.system(parmchk2)
-            leap_file = self.write_leap(tleap_ligand)
-            os.system(f'tleap -f {leap_file}')
-        else:
-            raise RuntimeError('Antechamber has failed! Please take a look at sqm.out')
+            leap_file, leap_log = self.write_leap(tleap_ligand)
+            os.system(f'tleap -f {leap_file} > {leap_log}')
+        except FileNotFoundError:
+            raise LigandError(f'Antechamber failed! {self.lig}')
     
     def add_hydrogens(self) -> None:
         """
@@ -503,8 +530,13 @@ class LigandBuilder:
         """
         mol = Chem.SDMolSupplier(f'{self.lig}.sdf')[0]
         molH = Chem.AddHs(mol, addCoords=True)
-        Chem.MolToPDBFile(molH, f'{self.lig}.pdb')
+        with Chem.SDWriter(f'{self.lig}_H.sdf') as w:
+            w.write(molH)
         
+    def convert_to_mol2(self) -> None:
+        mol = list(pybel.readfile('sdf', f'{self.lig}_H.sdf'))[0]
+        mol.write('mol2', f'{self.lig}_prep.mol2', True)
+
     def move_antechamber_outputs(self) -> None:
         """
         Remove unneccessary outputs from antechamber. Keep the
@@ -523,9 +555,9 @@ class LigandBuilder:
         you good luck.
         """
         line = open(f'{self.lig}_sqm.out').readlines()[-2]
-        if 'Calculation Completed' in line:
-            return 1
-        return 0
+
+        if 'Calculation Completed' not in line:
+            raise LigandError(f'SQM failed for ligand {self.lig}!')
 
     def write_leap(self, inp: str) -> str:
         """
@@ -533,10 +565,11 @@ class LigandBuilder:
         to the file.
         """
         leap_file = f'{self.path}/tleap.in'
+        leap_log = f'{self.path}/leap.log'
         with open(leap_file, 'w') as outfile:
             outfile.write(inp)
             
-        return leap_file
+        return leap_file, leap_log
     
 
 class ComplexBuilder(ExplicitSolvent):
@@ -558,8 +591,6 @@ class ComplexBuilder(ExplicitSolvent):
         antechamber did not fail. Hydrogens are added in rdkit which 
         generally does a good job of this.
         """
-        fix_resname = f'sed -i s/UNL/LIG/ {self.lig}.pdb'
-        cleanse_pdb = f'pdb4amber -i {self.lig}.pdb -o {self.lig}_new.pdb'
         convert_to_gaff = f'antechamber -i {self.lig}_new.pdb -fi pdb -o \
                 {self.lig}.mol2 -fo mol2 -at gaff2 -c bcc -s 0 -pf y'
         parmchk2 = f'parmchk2 -i {self.lig}.mol2 -f mol2 -o {self.lig}.frcmod'
@@ -602,7 +633,7 @@ class ComplexBuilder(ExplicitSolvent):
         os.remove('sqm.pdb')
         shutil.move('sqm.out', f'{self.lig}_sqm.out')
         
-    def check_sqm(self) -> int:
+    def check_sqm(self) -> None:
         """
         Checks for evidence that antechamber calculations exited
         successfully. This is always on the second to last line,
@@ -611,9 +642,8 @@ class ComplexBuilder(ExplicitSolvent):
         you good luck.
         """
         line = open(f'{self.lig}_sqm.out').readlines()[-2]
-        if 'Calculation Completed' in line:
-            return 1
-        return 0
+        if not 'Calculation Completed' in line:
+            raise LigandError(f'SQM failed for ligand {self.lig}!')
     
     def assemble_system(self, dim, num_ions) -> None:
         """

@@ -276,13 +276,15 @@ class ImplicitSimulator(Simulator):
                  force_constant: float=10.,
                  implicit_solvent: Singleton=GBn2,
                  solute_dielectric: float=1.,
-                 solvent_dielectric: float=80.):
+                 solvent_dielectric: float=78.5):
         super().__init__(path, equil_steps, prod_steps, n_equil_cycles,
                          reporter_frequency, platform, device_ids, 
                          force_constant)
         self.solvent = implicit_solvent
         self.solute_dielectric = solute_dielectric
         self.solvent_dielectric = solvent_dielectric
+        # k = 367.434915 * sqrt(conc. [M] / (solvent_dielectric * T))
+        self.kappa = 367.434915 * np.sqrt(.15 / (solvent_dielectric * 300))
     
     def load_amber_files(self) -> System:
         if isinstance(self.inpcrd, str):
@@ -295,7 +297,8 @@ class ImplicitSimulator(Simulator):
                                           hydrogenMass=1.5 * amu,
                                           implicitSolvent=self.solvent,
                                           soluteDielectric=self.solute_dielectric,
-                                          solventDielectric=self.solvent_dielectric)
+                                          solventDielectric=self.solvent_dielectric,
+                                          implicitSolventKappa=self.kappa/nanometer)
     
         return system
         
