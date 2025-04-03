@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from .analysis.funcs import (CoMDist, ContactFrequency, 
+from .funcs import (CoMDist, ContactFrequency, 
                              DeltaCOM, RadiusofGyration)
 import gc
 import MDAnalysis as mda

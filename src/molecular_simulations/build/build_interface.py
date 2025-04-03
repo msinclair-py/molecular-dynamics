@@ -1,4 +1,4 @@
-from build_amber import ExplicitSolvent
+from .build_amber import ExplicitSolvent
 import MDAnalysis as mda
 import numpy as np
 from pathlib import Path

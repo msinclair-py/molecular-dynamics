@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+import json
 from parsl.config import Config
 from parsl.providers import PBSProProvider
 from parsl.executors import HighThroughputExecutor
 from parsl.launchers import MpiExecLauncher, GnuParallelLauncher
-from parsl.addresses import address_by_interface
+from parsl.addresses import address_by_interface, address_by_hostname
 from parsl.utils import get_all_checkpoints
 from pathlib import Path
 from pydantic import BaseModel

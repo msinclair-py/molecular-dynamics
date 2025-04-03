@@ -14,10 +14,22 @@ PathLike = Union[Path, str]
 Results = Dict[str, Dict[str, float]]
 
 class PPInteractions:
+    """
+    Code herein adapted from: 
+        https://www.biorxiv.org/content/10.1101/2025.03.24.644990v1.full.pdf
+    Takes an input topology file and trajectory file, and highlights relevant
+    interactions between two selections. To this end we first compute the 
+    covariance matrix between the two selections, filter out all interactions
+    which occur too far apart (11Å for positive covariance, 13Å for negative
+    covariance), and examines each based on a variety of distance and angle
+    cutoffs defined in the literature.
+    """
     def __init__(self, 
                  top: PathLike, 
                  traj: PathLike,
                  out: PathLike,
+                 sel1: str='chainID A',
+                 sel2: str='chainID B',
                  cov_cutoff: Tuple[float]=(11., 13.),
                  sb_cutoff: float=6.,
                  hbond_cutoff: float=3.5,
@@ -27,6 +39,8 @@ class PPInteractions:
         self.u = mda.Universe(top, traj)
         self.n_frames = len(self.u.trajectory)
         self.out = out
+        self.sel1 = sel1
+        self.sel2 = sel2
         self.cov_cutoff = cov_cutoff
         self.sb = sb_cutoff
         self.hb_d = hbond_cutoff
@@ -66,14 +80,18 @@ class PPInteractions:
         computes each. Returns a Dict containing the proportion of simulation time
         that each interaction is engaged.
         """
-        grp1 = self.u.select_atoms(f'chainID A and resid {res1}')
-        grp2 = self.u.select_atoms(f'chainID B and resid {res2}')
+        grp1 = self.u.select_atoms(f'{self.sel1} and resid {res1}')
+        grp2 = self.u.select_atoms(f'{self.sel2} and resid {res2}')
         r1 = convert_aa_code(grp1.resnames[0])
         r2 = convert_aa_code(grp2.resnames[0])
         name = f'A_{r1}{res1}-B_{r2}{res2}'
 
         data = {name: {label: 0. for label in ['hydrophobic', 'hbond', 'saltbridge']}}
-        function_calls, labels = self.identify_interaction_type(grp1.resnames[0], grp2.resnames[0])
+        function_calls, labels = self.identify_interaction_type(
+            grp1.resnames[0], 
+            grp2.resnames[0]
+        )
+
         for call, label in zip(function_calls, labels):
             data[name][label] = call(grp1, grp2)
 
