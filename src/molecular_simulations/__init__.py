@@ -8,12 +8,23 @@ from parsl.launchers import MpiExecLauncher, GnuParallelLauncher
 from parsl.addresses import address_by_interface
 from parsl.utils import get_all_checkpoints
 from pathlib import Path
+from pydantic import BaseModel
 from typing import Union
 
 PathLike = Union[str, Path]
 
-@dataclass
-class BaseComputeSettings(ABC):
+class BaseSettings(BaseModel):
+    def dump_yaml(self, filename: PathLike) -> None:
+        with open(filename, mode="w") as fp:
+            yaml.dump(json.loads(self.json()), fp, indent=4, sort_keys=False)
+
+    @classmethod
+    def from_yaml(cls: Type[_T], filename: PathLike) -> _T:
+        with open(filename) as fp:
+            raw_data = yaml.safe_load(fp)
+        return cls(**raw_data)  # type: ignore
+
+class BaseComputeSettings(ABC, BaseSettings):
     """Compute settings (HPC platform, number of GPUs, etc)."""
 
     @abstractmethod
@@ -123,91 +134,3 @@ class AuroraSettings(BaseComputeSettings):
             app_cache=True,
         )
 
-
-def get_config(worker_init, num_nodes, scheduler_options,
-               account, queue, walltime, retries, cpus_per_node,
-               strategy, run_dir, cores_per_worker, accelerators=[]):
-    return Config(
-            executors=[
-                HighThroughputExecutor(
-                    label='Aurora_CPU',
-                    available_accelerators=accelerators,
-                    cpu_affinity="block",  # Assigns cpus in sequential order
-                    prefetch_capacity=0,
-                    max_workers_per_node=208,
-                    cores_per_worker=cores_per_worker,
-                    heartbeat_period=30,
-                    heartbeat_threshold=300,
-                    worker_debug=True,
-                    provider=PBSProProvider(
-                        launcher=MpiExecLauncher(
-                            bind_cmd="--cpu-bind",
-                            overrides=f"--depth=208 --ppn 1"
-                        ),  # Ensures 1 manger per node and allows it to divide work among all 208 threads
-                        worker_init=worker_init,
-                        scheduler_options=scheduler_options,
-                        nodes_per_block=num_nodes,
-                        account=account,
-                        queue=queue,
-                        walltime=walltime,
-                        init_blocks=1,
-                        min_blocks=0,
-                        max_blocks=1
-                    ),
-                ),
-            ],
-            run_dir=str(run_dir),
-            checkpoint_mode='task_exit',
-            retries=retries,
-            app_cache=True,
-        )
-
-@dataclass
-class AuroraCPUSettings:
-    worker_init: str = ""
-    num_nodes: int = 1
-    scheduler_options: str = "#PBS -l filesystems=flare"
-    account: str = ''
-    queue: str = ''
-    walltime: str = ''
-    retries: int = 0
-    cpus_per_node: int = 208
-    strategy: str = "simple"
-    cpus_per_worker: int = 4
-
-    def config_factory(self, run_dir: PathLike) -> Config:
-        """Create a Parsl configuration for running on CPU only on Aurora."""
-        return Config(
-            executors=[
-                HighThroughputExecutor(
-                    label='Aurora_CPU',
-                    available_accelerators=[],
-                    cpu_affinity="block",  # Assigns cpus in sequential order
-                    prefetch_capacity=0,
-                    max_workers_per_node=208,
-                    cores_per_worker=cpus_per_worker,
-                    heartbeat_period=30,
-                    heartbeat_threshold=300,
-                    worker_debug=True,
-                    provider=PBSProProvider(
-                        launcher=MpiExecLauncher(
-                            bind_cmd="--cpu-bind",
-                            overrides=f"--depth=208 --ppn 1"
-                        ),  # Ensures 1 manger per node and allows it to divide work among all 208 threads
-                        worker_init=self.worker_init,
-                        scheduler_options=self.scheduler_options,
-                        nodes_per_block=self.num_nodes,
-                        account=self.account,
-                        queue=self.queue,
-                        walltime=self.walltime,
-                        init_blocks=1,
-                        min_blocks=0,
-                        max_blocks=1
-                    ),
-                ),
-            ],
-            run_dir=str(run_dir),
-            checkpoint_mode='task_exit',
-            retries=self.retries,
-            app_cache=True,
-        )
