@@ -9,9 +9,10 @@ from parsl.addresses import address_by_interface
 from parsl.utils import get_all_checkpoints
 from pathlib import Path
 from pydantic import BaseModel
-from typing import Union
+from typing import Type, TypeVar, Union
 
 PathLike = Union[str, Path]
+_T = TypeVar("_T")
 
 class BaseSettings(BaseModel):
     def dump_yaml(self, filename: PathLike) -> None:
