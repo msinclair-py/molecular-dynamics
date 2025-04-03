@@ -71,11 +71,11 @@ class ExplicitSolvent(ImplicitSolvent):
     Class for building a system using ambertools. Produces explicit solvent cubic box
     with user-specified padding which has been neutralized and ionized with 150mM NaCl.
     """
-    def __init__(self, path: str, pdb: str, padding: float=10., protein: bool=True,
+    def __init__(self, path: PathLike, pdb: PathLike, padding: float=10., protein: bool=True,
                  rna: bool=False, dna: bool=False, polarizable: bool=False):
         super().__init__(path, pdb, protein, rna, dna)
         
-        self.out = f'{path}/system'
+        self.out = Path(path) / 'system'
         self.pad = padding
         self.ffs.extend(['leaprc.water.opc'])
         self.water_box = 'OPCBOX'
