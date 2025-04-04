@@ -409,7 +409,7 @@ class ComplexBuilder(ExplicitSolvent):
     Runs antechamber workflow to generate gaff2 parameters.
     """
     def __init__(self, path: str, pdb: str, lig: str, padding: float=10., **kwargs):
-        super().__init__(self, path, pdb, padding, **kwargs)
+        super().__init__(path, pdb, padding, **kwargs)
         self.lig = lig
         self.ffs.append('leaprc.gaff2')
         self.build_dir = self.out / 'build'
