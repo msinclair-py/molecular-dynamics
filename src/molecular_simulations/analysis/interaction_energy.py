@@ -7,6 +7,7 @@ from MDAnalysis.analysis.distances import contact_matrix
 import mdtraj as md
 import numpy as np
 import parmed as pmd
+from pdbfixer import PDBFixer
 import pickle
 import gc
 from tqdm import tqdm
@@ -54,13 +55,20 @@ class StaticInteractionEnergy:
         
     def get_system(self) -> None:
         pdb = PDBFile(self.pdb)
+        positions, topology = pdb.positions, pdb.topology
         forcefield = ForceField('amber14-all.xml', 'implicit/gbn2.xml')
-        system = forcefield.createSystem(pdb.topology,
-                                         soluteDielectric=1.,
-                                         solventDielectric=80.)
+        try:
+            system = forcefield.createSystem(topology,
+                                             soluteDielectric=1.,
+                                             solventDielectric=80.)
+        except ValueError:
+            positions, topology = self.fix_pdb()
+            system = forcefield.createSystem(topology,
+                                             soluteDielectric=1.,
+                                             solventDielectric=80.)
 
-        self.positions = pdb.positions
-        self.get_selection(pdb.topology)
+        self.positions = positions
+        self.get_selection(topology)
 
         return system
 
@@ -147,6 +155,16 @@ class StaticInteractionEnergy:
                         and self.first <= a.residue.id <= self.last]
 
         self.selection = selection
+
+    def fix_pdb(self):
+        fixer = PDBFixer(filename=self.pdb)
+        fixer.findMissingResidues()
+        fixer.findMissingAtoms()
+        fixer.addMissingAtoms()
+        fixer.addMissingHydrogens(7.0)
+
+        return fixer.positions, fixer.topology
+
 
 class InteractionEnergyFrame(StaticInteractionEnergy):
     def __init__(self, system: System, top: Topology, 

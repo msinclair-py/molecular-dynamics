@@ -330,3 +330,44 @@ class ImplicitSimulator(Simulator):
         simulation = self._equilibrate(simulation)
         
         return simulation
+
+class CustomForcesSimulator(Simulator):
+    def __init__(self
+                 path: str,
+                 custom_force_objects: list,
+                 equil_steps: int=1_250_000, 
+                 prod_steps: int=250_000_000, 
+                 n_equil_cycles: int=3,
+                 reporter_frequency: int=1_000,
+                 platform: str='CUDA',
+                 device_ids: list[int]=[0],
+                 equilibration_force_constant: float=10.):
+        super().__init__(path, equil_steps, prod_steps, n_equil_steps,
+                         reporter_frequency, platform, device_ids, 
+                         equilibrium_force_constant)
+        self.custom_forces = custom_force_objects
+
+    def load_amber_files(self) -> System:
+        if isinstance(self.inpcrd, str):
+            self.inpcrd = AmberInpcrdFile(self.inpcrd)
+            try: # This is how it is done in OpenMM 8.0 and on
+                self.prmtop = AmberPrmtopFile(self.prmtop, periodicBoxVectors=self.inpcrd.boxVectors)
+            except TypeError: # This means we are in OpenMM 7.7 or earlier
+                self.prmtop = AmberPrmtopFile(self.prmtop)
+
+        system = self.prmtop.createSystem(nonbondedMethod=PME,
+                                          removeCMMotion=False,
+                                          nonbondedCutoff=1. * nanometer,
+                                          constraints=HBonds,
+                                          hydrogenMass=1.5 * amu)
+
+        system = self.add_forces(system)
+
+        return system
+
+    def add_forces(self, system: System) -> System:
+        for custom_force in self.custom_forces:
+            system.addForces(custom_force)
+
+        return system
+

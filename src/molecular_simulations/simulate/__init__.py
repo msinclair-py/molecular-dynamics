@@ -10,6 +10,9 @@ from parsl.utils import get_all_checkpoints
 from pathlib import Path
 from pydantic import BaseModel
 from typing import Type, TypeVar, Union
+import yaml
+
+from .omm_simulator import Simulator, ImplicitSimulator
 
 PathLike = Union[str, Path]
 _T = TypeVar("_T")

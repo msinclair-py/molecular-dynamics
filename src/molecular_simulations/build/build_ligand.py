@@ -26,10 +26,11 @@ class LigandError(Exception):
 
 
 class LigandBuilder:
-    def __init__(self, path: PathLike, lig: str, lig_number: int=0):
+    def __init__(self, path: PathLike, lig: str, lig_number: int=0, file_prefix: str=''):
         self.path = path
         self.lig = path / lig 
         self.ln = lig_number
+        self.out_lig = path / f'{file_prefix}{lig.stem}'
 
     def parameterize_ligand(self) -> None:
         """
@@ -39,21 +40,25 @@ class LigandBuilder:
         antechamber did not fail. Hydrogens are added in rdkit which 
         generally does a good job of this.
         """
-        if self.lig.name[-4:] == '.sdf':
-            self.lig = str(self.lig)[:-4]
+        ext = self.lig.suffix
+        self.lig = self.lig.stem
 
         convert_to_gaff = f'antechamber -i {self.lig}_prep.mol2 -fi mol2 -o \
-                {self.lig}.mol2 -fo mol2 -at gaff2 -c bcc -s 0 -pf y -rn LG{self.ln}'
-        parmchk2 = f'parmchk2 -i {self.lig}.mol2 -f mol2 -o {self.lig}.frcmod'
+                {self.out_lig}.mol2 -fo mol2 -at gaff2 -c bcc -s 0 -pf y -rn LG{self.ln}'
+        parmchk2 = f'parmchk2 -i {self.out_lig}.mol2 -f mol2 -o {self.out_lig}.frcmod'
         
         tleap_ligand = f"""source leaprc.gaff2
-        LG{self.ln} = loadmol2 {self.lig}.mol2
-        loadamberparams {self.lig}.frcmod
-        saveoff LG{self.ln} {self.lig}.lib
+        LG{self.ln} = loadmol2 {self.out_lig}.mol2
+        loadamberparams {self.out_lig}.frcmod
+        saveoff LG{self.ln} {self.out_lig}.lib
         quit
         """
         
-        self.add_hydrogens()
+        if ext == '.sdf':
+            self.process_sdf()
+        else:
+            self.process_pdb()
+
         self.convert_to_mol2()
         os.system(convert_to_gaff)
         try:
@@ -65,7 +70,7 @@ class LigandBuilder:
         except FileNotFoundError:
             raise LigandError(f'Antechamber failed! {self.lig}')
     
-    def add_hydrogens(self) -> None:
+    def process_sdf(self) -> None:
         """
         Add hydrogens in rdkit. Atom hybridization is taken from the
         input sdf file and if this is incorrect, hydrogens will be wrong
@@ -76,6 +81,12 @@ class LigandBuilder:
         with Chem.SDWriter(f'{self.lig}_H.sdf') as w:
             w.write(molH)
         
+    def process_pdb(self):
+        mol = Chem.MolFromPDBFile(f'{self.lig}.pdb')
+        molH = Chem.AddHs(mol, addCoords=True)
+        with Chem.SDWriter(f'{self.lig}_H.sdf') as w:
+            w.write(molH)
+
     def convert_to_mol2(self) -> None:
         mol = list(pybel.readfile('sdf', f'{self.lig}_H.sdf'))[0]
         mol.write('mol2', f'{self.lig}_prep.mol2', True)
@@ -100,6 +111,9 @@ class LigandBuilder:
         line = open(f'{self.lig}_sqm.out').readlines()[-2]
 
         if 'Calculation Completed' not in line:
+            # make sqm.in more tolerant
+            # manually run sqm
+            # if it still fails then we raise an error
             raise LigandError(f'SQM failed for ligand {self.lig}!')
 
     def write_leap(self, inp: str) -> str:
@@ -402,36 +416,79 @@ class PLINDERBuilder(ImplicitSolvent):
         ]
   
     
-
 class ComplexBuilder(ExplicitSolvent):
     """
     Builds complexes consisting of a biomolecule pdb and small molecule ligand.
-    Runs antechamber workflow to generate gaff2 parameters.
+    Runs antechamber workflow to generate gaff2 parameters. Can optionally
+    supply precomputed frcmod/lib files by their path + suffix in the 
+    lig_param_prefix argument (e.g. /path/to/lig.mol2 or /path/to/lig)
     """
-    def __init__(self, path: str, pdb: str, lig: str, padding: float=10., **kwargs):
-        super().__init__(path, pdb, padding, **kwargs)
-        self.lig = Path(lig) if isinstance(lig, str) else lig
+    def __init__(self, path: str, pdb: str, lig: str | list[str], padding: float=10., 
+                 lig_param_prefix: str | None = None, **kwargs):
+        super().__init__(path, pdb, padding)
+        self.lig = Path(lig) if isinstance(lig, str) else [Path(l) for l in lig]
         self.ffs.append('leaprc.gaff2')
         self.build_dir = self.out / 'build'
+
+        if lig_param_prefix is None:
+            self.lig_param_prefix = lig_param_prefix
+        else:
+            prefix = Path(lig_param_prefix)
+            self.lig_param_prefix = prefix.parent / prefix.stem
+
+        for key, value in kwargs.items():
+            setattr(self, key, value)
     
     def build(self) -> None:
-        self.build_dir.mkdir(exist_ok=True)
+        self.build_dir.mkdir(exist_ok=True, parents=True)
         os.chdir(self.build_dir) # necessary for antechamber outputs
 
-        if self.lig.parent != self.build_dir: # ligand builder wants it at build_dir
-            shutil.copy(self.lig, self.build_dir)
+        if self.lig_param_prefix is None:
+            if isinstance(self.lig, list):
+                lig_paths = []
+                for i, lig in enumerate(self.lig):
+                    lig_paths += self.process_ligand(lig, i)
 
-        lig_builder = LigandBuilder(self.build_dir, self.lig)
-        lig_builder.parameterize_ligand()
+                self.lig = lig_paths
 
-        self.lig = lig_builder.lig # ensure we have the most up to date path
+            else:
+                self.lig = self.process_ligand(self.lig)
+        else:
+            self.lig = self.lig_param_prefix
+
+        if hasattr(self, ion):
+            self.add_ion_to_pdb()
 
         self.prep_pdb()
         self.assemble_system()
 
-    def ligand_handler(self) -> None:
-        lig_builder = LigandBuilder(self.build_dir, self.lig)
+    def process_ligand(self, lig: PathLike, prefix: int | None = None) -> PathLike:
+        if lig.parent != self.build_dir:
+            shutil.copy(lig, self.build_dir)
+        
+        if prefix is None:
+            prefix = ''
+            
+        lig_builder = LigandBuilder(self.build_dir, lig, file_prefix=prefix)
         lig_builder.parameterize_ligand()
+
+        return lig_builder.lig
+
+    def add_ion_to_pdb(self) -> None:
+        ion = [line for line in open(self.ion).readlines() 
+               if any(['ATOM' in line, 'HETATM' in line])]
+        pdb = [line for line in open(self.pdb).readlines()]
+        
+        out_pdb = []
+        for line in pdb:
+            if 'END' in line:
+                out_pdb.append(ion)
+                out_pdb.append(line)
+            else:
+                out_pdb.append(line)
+
+        with open(self.pdb, 'w') as f:
+            f.write('\n'.join(out_pdb))
         
     def assemble_system(self, dim, num_ions) -> None:
         """
@@ -440,29 +497,41 @@ class ComplexBuilder(ExplicitSolvent):
         placing a biomolecule in the water box.
         """
         tleap_ffs = '\n'.join([f'source {ff}' for ff in self.ffs])
-        tleap_complex = f"""{tleap_ffs}
-        source leaprc.gaff2
-        loadamberparams {self.lig}.frcmod
-        loadoff {self.lig}.lib
-        PROT = loadpdb {self.pdb}
-        LIG = loadmol2 {self.lig}.mol2
+        tleap_complex = [
+            tleap_ffs,
+            'source leaprc.gaff2',
+        ]
         
-        COMPLEX = combine {{PROT LIG}}
+        if not isinstance(self.lig, list):
+            self.lig = [self.lig]
         
-        setbox COMPLEX centers
-        set COMPLEX box {{{dim} {dim} {dim}}}
-        solvatebox COMPLEX {self.water_box} {{0 0 0}}
+        LABELS = []
+        for i, lig in enumerate(self.lig):
+            tleap_complex += [
+                f'loadamberparams {lig}.frcmod',
+                f'loadoff {lig}.lib',
+                f'LG{i} = loadmol2 {lig}.mol2',
+            ]
+
+            LABELS.append(f'LG{i}')
+
+        LABELS.append(f'PROT')
+        LABELS = ' '.join(LABELS)
+
+        tleap_complex = [
+            f'PROT = loadpdb {self.pdb}',
+            f'COMPLEX = combine {{LABELS}}',
+            'setbox COMPLEX centers',
+            f'set COMPLEX box {{{dim} {dim} {dim}}}',
+            f'solvatebox COMPLEX {self.water_box} {{0 0 0}}',
+            'addions COMPLEX Na+ 0',
+            'addions COMPLEX Cl- 0',
+            f'addIonsRand COMPLEX Na+ {num_ions} Cl- {num_ions}',
+            f'savepdb COMPLEX {self.out}.pdb',
+            f'saveamberparm COMPLEX {self.out}.prmtop {self.out}.inpcrd'
+        ]
         
-        addions COMPLEX Na+ 0
-        addions COMPLEX Cl- 0
-        
-        addIonsRand COMPLEX Na+ {num_ions} Cl- {num_ions}
-        
-        savepdb COMPLEX {self.out}.pdb
-        saveamberparm COMPLEX {self.out}.prmtop {self.out}.inpcrd
-        """
-        
-        leap_file = self.write_leap(tleap_complex)
+        leap_file = self.write_leap('\n'.join(tleap_complex))
         tleap = f'tleap -f {leap_file}'
         os.system(tleap)
         
