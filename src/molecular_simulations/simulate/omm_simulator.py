@@ -332,7 +332,7 @@ class ImplicitSimulator(Simulator):
         return simulation
 
 class CustomForcesSimulator(Simulator):
-    def __init__(self
+    def __init__(self,
                  path: str,
                  custom_force_objects: list,
                  equil_steps: int=1_250_000, 
