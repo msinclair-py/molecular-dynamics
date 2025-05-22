@@ -2,14 +2,14 @@
 from abc import ABC, abstractmethod
 import json
 from parsl.config import Config
-from parsl.providers import PBSProProvider
+from parsl.providers import LocalProvider, PBSProProvider
 from parsl.executors import HighThroughputExecutor
 from parsl.launchers import MpiExecLauncher, GnuParallelLauncher
 from parsl.addresses import address_by_interface, address_by_hostname
 from parsl.utils import get_all_checkpoints
 from pathlib import Path
 from pydantic import BaseModel
-from typing import Type, TypeVar, Union
+from typing import List, Sequence, Tuple, Type, TypeVar, Union
 import yaml
 
 from .omm_simulator import Simulator, ImplicitSimulator
@@ -37,7 +37,30 @@ class BaseComputeSettings(ABC, BaseSettings):
         Create new Parsl configuration.
         """
 
+class LocalSettings(BaseComputeSettings):
+    available_accelerators: Union[int, Sequence[str]] = 4
+    retries: int = 1
+    label: str = 'htex'
+    worker_port_range: Tuple[int, int] = (10000, 20000)
+
+    def config_factory(self) -> Config:
+        return Config(
+            run_dir=str(run_dir),
+            retries=self.retries,
+            executors=[
+                HighThroughputExecutor(
+                    address="127.0.0.1",
+                    label=self.label,
+                    cpu_affinity="block",
+                    available_accelerators=self.available_accelerators,
+                    worker_port_range=self.worker_port_range,
+                    provider=LocalProvider(init_blocks=1, max_blocks=1)
+                ),
+            ],
+        )
+
 class PolarisSettings(BaseComputeSettings):
+    label: str = 'htex'
     num_nodes: int = 1
     worker_init: str = ''
     scheduler_options: str = ''
@@ -46,6 +69,7 @@ class PolarisSettings(BaseComputeSettings):
     walltime: str
     cpus_per_node: int = 64
     strategy: str = 'simple'
+    available_accelerators: Union[int, Sequence[str]] = 4
 
     def config_factory(self, run_dir: PathLike) -> Config:
         """Create a configuration suitable for running all tasks on single nodes of Polaris
@@ -63,11 +87,10 @@ class PolarisSettings(BaseComputeSettings):
                     heartbeat_period=15,
                     heartbeat_threshold=120,
                     worker_debug=True,
-                    available_accelerators=4,  # Ensures one worker per accelerator
+                    available_accelerators=self.available_accelerators,  
                     address=address_by_hostname(),
                     cpu_affinity="alternating",
                     prefetch_capacity=0,  # Increase if you have many more tasks than workers
-                    start_method="spawn",
                     provider=PBSProProvider(  # type: ignore[no-untyped-call]
                         launcher=MpiExecLauncher(
                             bind_cmd="--cpu-bind", overrides="--depth=64 --ppn 1"
@@ -93,6 +116,7 @@ class PolarisSettings(BaseComputeSettings):
         )
 
 class AuroraSettings(BaseComputeSettings):
+    label: str = 'htex'
     worker_init: str = ""
     num_nodes: int = 1
     scheduler_options: str = ""
@@ -102,15 +126,15 @@ class AuroraSettings(BaseComputeSettings):
     retries: int = 0
     cpus_per_node: int = 48 # only 4 cpus per OpenMM job
     strategy: str = "simple"
+    available_accelerators: List[str] = [str(i) for i in range(12)]
 
     def config_factory(self, run_dir: PathLike) -> Config:
         """Create a Parsl configuration for running on Aurora."""
-        accel_ids = [str(i) for i in range(12)]
         return Config(
             executors=[
                 HighThroughputExecutor(
                     label=self.label,
-                    available_accelerators=accel_ids,  # Ensures one worker per accelerator
+                    available_accelerators=self.available_accelerators,
                     cpu_affinity="block",  # Assigns cpus in sequential order
                     prefetch_capacity=0,
                     max_workers=12,

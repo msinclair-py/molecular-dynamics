@@ -117,17 +117,27 @@ class MMGBSA:
         path = self.top.parent / 'mmpbsa'
         path.mkdir(exist_ok=True)
 
-        structure = pmd.load_file(str(self.top), xyz=str(self.xyz))
-        
-        selections = self.selections + [','.join(self.selections)]
-        topologies = [path / 'receptor.prmtop', path / 'ligand.prmtop', path / 'complex.prmtop']
+        cpptraj_in = [
+            f'parm {self.top}',
+            'parmstrip :Na+',
+            'parmstrip :Cl-',
+            'parmstrip :Wat',
+            'parmbox nobox',
+            f'parmwrite out {self.complex}',
+            f'parm {self.complex}',
+            f'parmstrip {self.selections[0]}',
+            f'parmwrite out {self.receptor}',
+            f'parm {self.complex}',
+            f'parmstrip {self.selections[1]}',
+            f'parmwrite out {self.ligand}'
+            'run',
+            'quit'
+        ]
 
-        for selection, top in zip(selections, topologies):
-            struc = structure[selection]
-            struc.save(str(top), overwrite=True)
-
-        self.receptor, self.ligand, self.complex = topologies
-
+        script = Path('cpptraj.in')
+        self.write_file(cpptraj_in, script)
+        subprocess.call(f'cpptraj -i {script}', shell=True)
+        script.unlink()
         return path
 
     def calculate(self) -> None:
