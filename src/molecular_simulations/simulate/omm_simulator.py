@@ -332,7 +332,7 @@ class ImplicitSimulator(Simulator):
         return simulation
 
 class CustomForcesSimulator(Simulator):
-    def __init__(self
+    def __init__(self,
                  path: str,
                  custom_force_objects: list,
                  equil_steps: int=1_250_000, 
@@ -342,9 +342,9 @@ class CustomForcesSimulator(Simulator):
                  platform: str='CUDA',
                  device_ids: list[int]=[0],
                  equilibration_force_constant: float=10.):
-        super().__init__(path, equil_steps, prod_steps, n_equil_steps,
+        super().__init__(path, equil_steps, prod_steps, n_equil_cycles,
                          reporter_frequency, platform, device_ids, 
-                         equilibrium_force_constant)
+                         equilibration_force_constant)
         self.custom_forces = custom_force_objects
 
     def load_amber_files(self) -> System:
@@ -367,7 +367,7 @@ class CustomForcesSimulator(Simulator):
 
     def add_forces(self, system: System) -> System:
         for custom_force in self.custom_forces:
-            system.addForces(custom_force)
+            system.addForce(custom_force)
 
         return system
 
