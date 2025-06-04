@@ -84,6 +84,7 @@ class Simulator:
             self.equilibrate()
 
         if reload_prod:
+            self.check_num_steps_left()
             self.production(chkpt=self.restart, 
                             restart=True)
         else:
@@ -243,6 +244,20 @@ class Simulator:
             
         return sel.atoms.ix
         
+    def check_num_steps_left(self) -> None:
+        prod_log = open(self.prod_log).readlines()
+
+        try:
+            last_line = prod_log[-1]
+            last_step = int(last_line.split()[1].strip())
+        except IndexError:
+            try:
+                last_line = prod_log[-2]
+                last_step = int(last_line.split()[1].strip())
+            except IndexError: # something weird happend just run full time
+                return
+        
+        self.prod_steps = max(self.prod_steps - last_step, 0)
 
     @staticmethod
     def add_backbone_posres(system: System, positions: np.ndarray, atoms: List[str], 
