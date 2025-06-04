@@ -14,6 +14,8 @@ class MMPBSA_settings:
     dcd: PathLike
     selections: list[str]
     first_frame: int = 0
+    last_frame: int = -1
+    stride: int = 1
     out: str = 'mmpbsa'
     solvent_probe: float = 1.4
     offset: int = 0
@@ -48,15 +50,18 @@ class MMPBSA(MMPBSA_settings):
                  dcd: PathLike,
                  selections: list[str],
                  first_frame: int=0,
+                 last_frame: int=-1,
+                 stride: int=1,
                  out: str='mmpbsa',
                  solvent_probe: float=1.4,
                  offset: int=0,
                  **kwargs):
-        super().__init__(top, dcd, selections, first_frame, out, solvent_probe, offset)
+        super().__init__(top, dcd, selections, first_frame, last_frame, out, solvent_probe, offset)
         self.top = Path(self.top)
         self.traj = Path(self.dcd)
 
-        self.fh = FileHandler(self.top, self.traj, self.selections)
+        self.fh = FileHandler(self.top, self.traj, self.selections, 
+                              self.first_frame, self.last_frame, self.stride)
         self.analyzer = OutputAnalyzer(self.top.parent)
 
         for key, value in kwargs.items():
@@ -79,7 +84,7 @@ class MMPBSA(MMPBSA_settings):
         """
         Runs the molsurf command in cpptraj to compute the SASA of a given system.
         """
-        sasa = Path('sasa.in')
+        sasa = self.fh.path / 'sasa.in'
         sasa_in = [
             f'parm {prm}',
             f'trajin {trj}',
@@ -111,19 +116,19 @@ class MMPBSA(MMPBSA_settings):
         These are also undocumented and I took the parameters from the location
         in which they are hardcoded in ambertools.
         """
-        gb = Path('gb_mdin')
+        gb = self.fh.path / 'gb_mdin'
         gb_mdin = [
             'GB',
-            'igb = 1',
+            'igb = 2',
             'extdiel = 78.3',
-            'saltcon = 0.15',
+            'saltcon = 0.10',
             'surften = 0.0072',
             'rgbmax = 25.0'
         ]
 
         self.fh.write_file(gb_mdin, gb)
 
-        pb = Path('pb_mdin')
+        pb = self.fh.path / 'pb_mdin'
         pb_mdin = [
             'PB',
             'inp = 2',
@@ -138,7 +143,7 @@ class MMPBSA(MMPBSA_settings):
             'fscale = 8',
             'epsin = 1.0',
             'epsout = 80.0',
-            'istrng = 150.0',
+            'istrng = 0.10',
             'dprob = 1.4',
             'iprob = 2.0',
             'accept = 0.001',
@@ -421,10 +426,16 @@ class FileHandler:
     def __init__(self,
                  top: Path,
                  traj: Path,
-                 sels: list[str]):
+                 sels: list[str],
+                 first: int,
+                 last: int,
+                 stride: int):
         self.top = top
         self.traj = traj
         self.selections = sels
+        self.ff = first
+        self.lf = last
+        self.stride = stride
         
         self.path = self.top.parent / 'mmpbsa'
         self.path.mkdir(exist_ok=True)
@@ -446,9 +457,7 @@ class FileHandler:
         
         cpptraj_in = [
             f'parm {self.top}',
-            'parmstrip :Na+',
-            'parmstrip :Cl-',
-            'parmstrip :WAT',
+            'parmstrip :Na+,Cl-,WAT',
             'parmbox nobox',
             f'parmwrite out {self.topologies[0]}',
             'run',
@@ -465,7 +474,7 @@ class FileHandler:
             'quit'
         ]
         
-        script = Path('cpptraj.in')
+        script = self.path  / 'cpptraj.in'
         self.write_file('\n'.join(cpptraj_in), script)
         subprocess.call(f'cpptraj -i {script}', shell=True)
         script.unlink()
@@ -477,6 +486,8 @@ class FileHandler:
         """
         self.trajectories = [path.with_suffix('.crd') for path in self.topologies]
         self.pdbs = [path.with_suffix('.pdb') for path in self.topologies]
+
+        frame_control = f'start {self.ff} stop {self.lf} offset {self.stride}'
         
         if self.traj.with_suffix('.crd').exists():
             cpptraj_in = []
@@ -484,7 +495,7 @@ class FileHandler:
             cpptraj_in = [
                 f'parm {self.top}', 
                 f'trajin {self.traj}',
-                f'trajout {self.traj.with_suffix(".crd")} crd',
+                f'trajout {self.traj.with_suffix(".crd")} crd {frame_control}',
                 'run',
                 'clear all',
             ]
@@ -517,7 +528,7 @@ class FileHandler:
             'quit'
         ]
 
-        name = Path('mdcrd.in')
+        name = self.path / 'mdcrd.in'
         self.write_file('\n'.join(cpptraj_in), name)
         subprocess.call(f'cpptraj -i {name}', shell=True)
 
@@ -525,7 +536,7 @@ class FileHandler:
 
     @property
     def files(self) -> tuple[list[str]]:
-        _order = ['complex', 'receptor', 'ligand']
+        _order = [self.path / prefix for prefix in ['complex', 'receptor', 'ligand']]
         return zip(_order, self.topologies, self.trajectories, self.pdbs)
 
     @staticmethod
