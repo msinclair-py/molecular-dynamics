@@ -6,11 +6,14 @@ from openmm.app import *
 from openmm.unit import *
 from openmm.app.internal.singleton import Singleton
 import os
-from typing import List, Tuple
+from pathlib import Path
+from typing import List, Tuple, Union
+
+PathLike = Union[Path, str]
 
 class Simulator:
     def __init__(self, 
-                 path: str, 
+                 path: PathLike, 
                  equil_steps: int=1_250_000, 
                  prod_steps: int=250_000_000, 
                  n_equil_cycles: int=3,
@@ -18,22 +21,23 @@ class Simulator:
                  platform: str='CUDA',
                  device_ids: list[int]=[0],
                  force_constant: float=10.):
-        self.path = path
+        self.path = path if isinstance(path, Path) else Path(path)
         # input files
-        self.prmtop = f'{path}/system.prmtop'
-        self.inpcrd = f'{path}/system.inpcrd'
+        self.prmtop = path / 'system.prmtop'
+        self.inpcrd = path / 'system.inpcrd'
 
         # logging/checkpointing stuff
-        self.eq_state = f'{path}/eq.state'
-        self.eq_chkpt = f'{path}/eq.chk'
-        self.eq_log = f'{path}/eq.log'
+        self.eq_state = path / 'eq.state'
+        self.eq_chkpt = path / 'eq.chk'
+        self.eq_log = path / 'eq.log'
         self.eq_freq = reporter_frequency
         
-        self.dcd = f'{path}/prod.dcd'
-        self.restart = f'{path}/prod.rst.chk'
-        self.state = f'{path}/prod.state'
-        self.chkpt = f'{path}/prod.chk'
-        self.prod_log = f'{path}/prod.log'
+        self.dcd = path / 'prod.dcd'
+        self.restart = path / 'prod.rst.chk'
+        self.state = path / 'prod.state'
+        self.chkpt = path / 'prod.chk'
+        self.prod_log = path / 'prod.log'
+        self.prod_freq = self.eq_freq * 10
 
         # simulation details
         self.indices = self.get_restraint_indices()
@@ -49,12 +53,9 @@ class Simulator:
             self.properties = {}
 
     def load_amber_files(self) -> System:
-        if isinstance(self.inpcrd, str):
-            self.inpcrd = AmberInpcrdFile(self.inpcrd)
-            try: # This is how it is done in OpenMM 8.0 and on
-                self.prmtop = AmberPrmtopFile(self.prmtop, periodicBoxVectors=self.inpcrd.boxVectors)
-            except TypeError: # This means we are in OpenMM 7.7 or earlier
-                self.prmtop = AmberPrmtopFile(self.prmtop)
+        if isinstance(self.inpcrd, Path | str):
+            self.inpcrd = AmberInpcrdFile(str(self.inpcrd))
+            self.prmtop = AmberPrmtopFile(str(self.prmtop), periodicBoxVectors=self.inpcrd.boxVectors)
 
         system = self.prmtop.createSystem(nonbondedMethod=PME,
                                           removeCMMotion=False,
@@ -77,13 +78,12 @@ class Simulator:
         return simulation, integrator
 
     def run(self) -> None:
-        skip_eq = all([os.path.exists(f) 
+        skip_eq = all([f.exists() 
                        for f in [self.eq_state, self.eq_chkpt, self.eq_log]])
-        reload_prod = os.path.exists(self.restart)
         if not skip_eq:
             self.equilibrate()
 
-        if reload_prod:
+        if self.restart.exists():
             self.check_num_steps_left()
             self.production(chkpt=self.restart, 
                             restart=True)
@@ -100,20 +100,16 @@ class Simulator:
     
         simulation, integrator = self.setup_sim(system, dt=0.002)
         
-        # OpenMM 7.7 requires us to do this. Redundant but harmless if we are
-        # in version 8.1 or on
-        simulation.context.setPeriodicBoxVectors(*self.inpcrd.boxVectors)
-        
         simulation.context.setPositions(self.inpcrd.positions)
         simulation.minimizeEnergy()
         
-        simulation.reporters.append(StateDataReporter(self.eq_log, 
-                                                      self.eq_freq, 
+        simulation.reporters.append(StateDataReporter(str(self.eq_log), 
+                                                      str(self.eq_freq), 
                                                       step=True,
                                                       potentialEnergy=True,
                                                       speed=True,
                                                       temperature=True))
-        simulation.reporters.append(DCDReporter(f'{self.path}/eq.dcd', self.eq_freq))
+        simulation.reporters.append(DCDReporter(str(self.path / 'eq.dcd'), self.eq_freq))
 
         simulation, integrator = self._heating(simulation, integrator)
         simulation = self._equilibrate(simulation)
@@ -128,9 +124,9 @@ class Simulator:
         simulation.context.reinitialize(True)
 
         if restart:
-            log_file = open(self.prod_log, 'a')
+            log_file = open(str(self.prod_log), 'a')
         else:
-            log_file = self.prod_log
+            log_file = str(self.prod_log)
 
         simulation = self.load_checkpoint(simulation, chkpt)
         simulation = self.attach_reporters(simulation,
@@ -141,7 +137,8 @@ class Simulator:
     
         self._production(simulation)
     
-    def load_checkpoint(self, simulation: Simulation, 
+    def load_checkpoint(self, 
+                        simulation: Simulation, 
                         checkpoint: str) -> Simulation:
         simulation.loadCheckpoint(checkpoint)
         state = simulation.context.getState(getVelocities=True, getPositions=True)
@@ -153,18 +150,21 @@ class Simulator:
 
         return simulation
 
-    def attach_reporters(self, simulation: Simulation, 
-                         dcd_file: str, log_file: str, rst_file: str, 
+    def attach_reporters(self, 
+                         simulation: Simulation, 
+                         dcd_file: str, 
+                         log_file: str, 
+                         rst_file: str, 
                          restart: bool=False) -> Simulation:
         simulation.reporters.extend([
             DCDReporter(
                 dcd_file, 
-                self.eq_freq * 10,
+                self.prod_freq,
                 append=restart
                 ),
             StateDataReporter(
                 log_file,
-                self.eq_freq * 10,
+                self.prod_freq,
                 step=True,
                 potentialEnergy=True,
                 temperature=True,
@@ -177,13 +177,14 @@ class Simulator:
                 ),
             CheckpointReporter(
                 rst_file,
-                self.eq_freq * 100
+                self.prod_freq * 10
                 )
             ])
 
         return simulation
 
-    def _heating(self, simulation: Simulation, 
+    def _heating(self, 
+                 simulation: Simulation, 
                  integrator: Integrator) -> Tuple[Simulation, Integrator]:
         simulation.context.setVelocitiesToTemperature(5*kelvin)
         T = 5
@@ -223,20 +224,20 @@ class Simulator:
         simulation.system.addForce(MonteCarloBarostat(1*atmosphere, 300*kelvin))
         simulation.step(3*eq_steps)
 
-        simulation.saveState(self.eq_state)
-        simulation.saveCheckpoint(self.eq_chkpt)
+        simulation.saveState(str(self.eq_state))
+        simulation.saveCheckpoint(str(self.eq_chkpt))
     
         return simulation
     
     def _production(self, simulation: Simulation) -> Simulation:
         simulation.step(self.prod_steps)
-        simulation.saveState(self.state)
-        simulation.saveCheckpoint(self.chkpt)
+        simulation.saveState(str(self.state))
+        simulation.saveCheckpoint(str(self.chkpt))
     
         return simulation
 
     def get_restraint_indices(self, addtl_selection: str='') -> List[int]:
-        u = mda.Universe(self.prmtop, self.inpcrd)
+        u = mda.Universe(str(self.prmtop), str(self.inpcrd))
         if addtl_selection:
             sel = u.select_atoms(f'backbone or nucleicbackbone or {addtl_selection}')
         else:
@@ -245,7 +246,7 @@ class Simulator:
         return sel.atoms.ix
         
     def check_num_steps_left(self) -> None:
-        prod_log = open(self.prod_log).readlines()
+        prod_log = open(str(self.prod_log)).readlines()
 
         try:
             last_line = prod_log[-1]
@@ -257,7 +258,25 @@ class Simulator:
             except IndexError: # something weird happend just run full time
                 return
         
-        self.prod_steps = max(self.prod_steps - last_step, 0)
+        if time_left := (self.prod_steps - last_step):
+            self.prod_steps -= time_left
+
+            if n_repeat_timesteps := (last_step % (self.prod_freq * 10)):
+                self.prod_steps -= n_repeat_timesteps
+                n_repeat_frames = n_repeat_timesteps / self.prod_freq
+                
+                n_total_frames = last_step / self.prod_freq
+                
+                lines = [f'{n_total_frames - n_repeat_frames},{n_total_frames}']
+                duplicate_log = self.path / 'duplicate_frames.log'
+                if duplicate_log.exists():
+                    mode = 'a'
+                else:
+                    mode = 'w'
+                    lines = ['first_frame,last_frame'] + lines
+                    
+                with open(str(duplicate_log), mode) as fout:
+                    fout.write('\n'.join(lines))
 
     @staticmethod
     def add_backbone_posres(system: System, positions: np.ndarray, atoms: List[str], 
@@ -386,3 +405,81 @@ class CustomForcesSimulator(Simulator):
 
         return system
 
+class Minimizer:
+    def __init__(self,
+                 path: PathLike):
+        self.path = Path(path) if isinstance(path, str) else path
+        self.load_files()
+
+    def minimize(self) -> None:
+        system = self.load_files()
+        integrator = LangevinMiddleIntegrator(300*kelvin, 
+                                              1/picosecond, 
+                                              0.001*picoseconds)
+        simulation = Simulation(self.topology, 
+                                system, 
+                                integrator)
+
+        simulation.context.setPositions(self.coordinates.positions)
+
+        simulation.minimizeEnergy()
+
+        state = simulation.context.getState(getPositions=True)
+        positions = state.getPositions()
+        
+        PDBFile.writeFile(simulation.topology, 
+                          positions, 
+                          file=str(self.path / 'min.pdb'), 
+                          keepIds=True)
+
+    def load_files(self) -> None:
+        amber = list(self.path.glob('*.prmtop')) + list(self.path.glob('*.parm7'))
+        gromacs = list(self.path.glob('*.top'))
+        pdb = list(self.path.glob('*.pdb'))
+
+        if amber:
+            system = self.load_amber()
+        elif gromacs:
+            system = self.load_gromacs()
+        elif pdb:
+            system = self.load_pdb()
+        else:
+            raise FileNotFoundError('No viable simulation input files found'
+                                    f'at path: {self.path}!')
+
+        return system
+        
+    def load_amber(self) -> System:
+        prmtop = list(self.path.glob('*.prmtop')) + list(self.path.glob('*.parm7'))
+        inpcrd = list(self.path.glob('*.inpcrd')) + list(self.path.glob('*.rst7'))
+        self.coordinates = AmberInpcrdFile(str(inpcrd[0]))
+        self.topology = AmberPrmtopFile(str(prmtop[0]))
+
+        system = self.topology.createSystem(nonbondedMethod=NoCutoff,
+                                            constraints=HBonds)
+
+        return system
+
+    def load_gromacs(self) -> System:
+        top = list(self.path.glob('*.top'))[0]
+        gro = list(self.path.glob('*.gro'))[0]
+        self.coordinates = GromacsGroFile(str(gro))
+        self.topology = GromacsTopFile(str(top), 
+                                       includeDir='/usr/local/gromacs/share/gromacs/top')
+
+        system = self.topology.createSystem(nonbondedMethod=NoCutoff, 
+                                            constraints=HBonds)
+
+        return system
+
+    def load_pdb(self) -> System:
+        pdb = list(self.path.glob('*.pdb'))[0]
+        self.coordinates = PDBFile(str(pdb))
+        self.topology = self.coordinates.topology
+        forcefield = ForceField('amber14-all.xml')
+
+        system = forcefield.createSystem(self.topology, 
+                                         nonbondedMethod=NoCutoff,
+                                         constraints=HBonds)
+
+        return system

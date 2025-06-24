@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 import json
 import numpy as np
+import os
 from pathlib import Path
 import polars as pl
 import subprocess
@@ -16,9 +17,12 @@ class MMPBSA_settings:
     first_frame: int = 0
     last_frame: int = -1
     stride: int = 1
+    n_cpus: int = 1
     out: str = 'mmpbsa'
     solvent_probe: float = 1.4
     offset: int = 0
+    gb_surften: float=0.0072
+    gb_surfoff: float=0.
 
 class MMPBSA(MMPBSA_settings):
     """
@@ -35,15 +39,19 @@ class MMPBSA(MMPBSA_settings):
     Arguments:
         top (PathLike): Input topology for a solvated system. Should match the input trajectory.
         dcd (PathLike): Input trajectory. Can be DCD format or MDCRD already.
-        fh (FileHandler): A helper class for performing file operations, including splitting
-            out the various sub-topologies and sub-trajectories needed.
         selections (list[str]): A list of residue ID selections for the receptor and ligand
             in that order. Should be formatted for cpptraj (e.g. `:1-10`).
         first_frame (int): Defaults to 0. The first frame of the input trajectory to begin
             the calculations on.
-        out (str): The prefix name for output files.
+        last_frame (int): Defaults to -1. Optional final frame to cut trajectory at. If -1,
+            acts as a flag to run the whole trajectory.
+        stride (int): Defaults to 1. The number of frames to stride the trajectory by.
+        n_cpus (int): Number of parallel processes
+        out (str): The prefix name or path for output files.
         solvent_probe (float): Defaults to 1.4Å. The probe radius to use for SA calculations.
         offset (int): Defaults to 0Å. I don't know what this does.
+        gb_surften (float): Defaults to 0.0072.
+        gb_suroff (float): Defaults to 0.0.
     """
     def __init__(self,
                  top: PathLike,
@@ -52,22 +60,48 @@ class MMPBSA(MMPBSA_settings):
                  first_frame: int=0,
                  last_frame: int=-1,
                  stride: int=1,
+                 n_cpus: int=1,
                  out: str='mmpbsa',
                  solvent_probe: float=1.4,
                  offset: int=0,
+                 gb_surften: float=0.0072,
+                 gb_surfoff: float=0.,
+                 amberhome: PathLike='',
                  **kwargs):
-        super().__init__(top, dcd, selections, first_frame, last_frame, out, solvent_probe, offset)
-        self.top = Path(self.top)
-        self.traj = Path(self.dcd)
+        super().__init__(top, dcd, selections, first_frame, last_frame, 
+                         out, solvent_probe, offset, gb_surften, gb_surfoff)
+        self.top = Path(self.top).resolve()
+        self.traj = Path(self.dcd).resolve()
+        self.path = self.top.parent
+        if out == 'mmpbsa':
+            self.path = self.path / 'mmpbsa'
+        else:
+            self.path = Path(out).resolve()
 
-        self.fh = FileHandler(self.top, self.traj, self.selections, 
-                              self.first_frame, self.last_frame, self.stride)
-        self.analyzer = OutputAnalyzer(self.top.parent)
+        self.path.mkdir(exist_ok=True, parents=True)
+        os.chdir(str(self.path)) # critical for parallel runs to not overwrite files
+
+        self.cpptraj = 'cpptraj'
+        self.mmpbsa_py_energy = 'mmpbsa_py_energy'
+        if amberhome: # we are overriding AMBERHOME or using another env's install
+            self.cpptraj = Path(amberhome) / self.cpptraj
+            self.mmpbsa_py_energy = Path(amberhome) / self.mmpbsa_py_energy
+
+        self.fh = FileHandler(self.top, self.traj, self.path, self.selections, 
+                              self.first_frame, self.last_frame, self.stride,
+                              self.cpptraj)
+        self.analyzer = OutputAnalyzer(self.path, self.gb_surften, self.gb_surfoff)
 
         for key, value in kwargs.items():
             setattr(self, key, value)
 
     def run(self) -> None:
+        """
+        Main logic of MM-PBSA. Computes the SASA with molsurf in cpptraj, and
+        the various energy terms for GB/PB using mmpbsa_py_energy from ambertools.
+        Finally, parse outputs and collate into a neat form consisting of a json
+        of raw data and a plain text file of the binding free energies.
+        """
         gb_mdin, pb_mdin = self.write_mdins()
 
         for (prefix, top, traj, pdb) in self.fh.files:
@@ -94,7 +128,7 @@ class MMPBSA(MMPBSA_settings):
         ]
         
         self.fh.write_file(sasa_in, sasa)
-        subprocess.call(f'cpptraj -i {sasa}', shell=True)
+        subprocess.call(f'{self.cpptraj} -i {sasa}', shell=True)
         sasa.unlink()
     
     def calculate_energy(self,
@@ -108,7 +142,7 @@ class MMPBSA(MMPBSA_settings):
         Runs mmpbsa_py_energy, an undocumented binary file which somehow computes the
         energy of a system.
         """
-        subprocess.call(f'mmpbsa_py_energy -O -i {mdin} -p {prm} -c {pdb} -y {trj} -o {pre}_{suf}.mdout', shell=True)
+        subprocess.call(f'{self.mmpbsa_py_energy} -O -i {mdin} -p {prm} -c {pdb} -y {trj} -o {pre}_{suf}.mdout', shell=True)
     
     def write_mdins(self) -> tuple[Path, Path]:
         """
@@ -122,7 +156,7 @@ class MMPBSA(MMPBSA_settings):
             'igb = 2',
             'extdiel = 78.3',
             'saltcon = 0.10',
-            'surften = 0.0072',
+            f'surften = {self.gb_surften}',
             'rgbmax = 25.0'
         ]
 
@@ -161,11 +195,19 @@ class MMPBSA(MMPBSA_settings):
 
 
 class OutputAnalyzer:
+    """
+    Analyzes the outputs from an MM-PBSA run. Stores data in a Polars dataframe
+    internally, and writes out data in the form of json/plain text.
+    """
     def __init__(self, 
                  path: PathLike,
-                 tolerance: float = 0.005):
-        self.path = path
-        self.tolerance = tolerance
+                 surface_tension: float=0.0072,
+                 sasa_offset: float=0.,
+                 _tolerance: float = 0.005):
+        self.path = Path(path)
+        self.surften = surface_tension
+        self.offset = sasa_offset
+        self.tolerance = _tolerance
 
         self.systems = ['receptor', 'ligand', 'complex']
         self.levels = ['gb', 'pb']
@@ -205,13 +247,18 @@ class OutputAnalyzer:
         """
         Reads in the results of the cpptraj SASA calculation and returns the
         per-frame SASA scaled by a hardcoded value for surface tension that is
-        not explained by MMPBSA
+        a mostly undocumented heuristic.
+
+        Arguments:
+            _file (PathLike): Path to a file containing the SASA data.
+        Returns:
+            (np.ndarray): A numpy array of the per-frame rescaled SASA energies.
         """
         sasa = []
         for line in open(_file).readlines()[1:]:
             sasa.append(line.split()[-1].strip())
 
-        return pl.Series('ESURF', np.array(sasa, dtype=float) * 0.0072)
+        return pl.Series('ESURF', np.array(sasa, dtype=float) * self.surften + self.offset)
 
     def read_GB(self,
                 _file: PathLike,
@@ -251,7 +298,17 @@ class OutputAnalyzer:
                           data: dict[str, list],
                           system: str) -> pl.DataFrame:
         """
-        Parses 
+        Parses the contents of an energy calculation using a dictionary of
+        energy terms to extract theory-level observables (e.g. EGB vs EPB).
+
+        Arguments:
+            file_contents (list[str]): A list of each line from an energy calculation.
+            data (dict[str, list]): The relevant energy terms to be scraped from input.
+            system (str): The name of the system which will be included as an additional
+                kv pair in the returned dataframe. This ensures we can track which portion
+                of the calculation we are accounting for (e.g. complex, receptor, ligand).
+        Returns:
+            (pl.DataFrame): A Polars dataframe of shape (n_frames, n_calculations + system).
         """
         idx = 0
         n_frames = 0
@@ -361,7 +418,7 @@ class OutputAnalyzer:
                 stds = np.concatenate((stds, [np.std(contribution)]))
                 errs = np.concatenate((errs, [np.std(contribution) / self.square_root_N]))
             
-            diff_cols.append('Total')
+            diff_cols.append('∆G Binding')
             total = np.sum(np.vstack(gas_solv_phase), axis=0)
             
             means = np.concatenate((means, [np.mean(total)]))
@@ -392,10 +449,11 @@ class OutputAnalyzer:
                 if abs(mean) <= self.tolerance:
                     continue
 
+                if col in ['G gas', '∆G Binding']:
+                    print_statement.append('')
+
                 print_statement.append(f'{col:<20}{mean:<16.3f}{std:<16.3f}{err:<16.3f}')
 
-            print_statement += ['']
-        
         print_statement = '\n'.join(print_statement)
         with open('deltaG.txt', 'w') as fout:
             fout.write(print_statement)
@@ -423,22 +481,28 @@ class OutputAnalyzer:
 
 
 class FileHandler:
+    """
+    Performs preprocessing for MM-PBSA runs and manages the pathing to all file
+    inputs. Additionally used to write out various cpptraj input files by the
+    MMPBSA class.
+    """
     def __init__(self,
                  top: Path,
                  traj: Path,
+                 path: Path,
                  sels: list[str],
                  first: int,
                  last: int,
-                 stride: int):
+                 stride: int,
+                 cpptraj_binary: PathLike):
         self.top = top
         self.traj = traj
+        self.path = path
         self.selections = sels
         self.ff = first
         self.lf = last
         self.stride = stride
-        
-        self.path = self.top.parent / 'mmpbsa'
-        self.path.mkdir(exist_ok=True)
+        self.cpptraj = cpptraj_binary
 
         self.prepare_topologies()
         self.prepare_trajectories()
@@ -454,6 +518,8 @@ class FileHandler:
             self.path / 'receptor.prmtop',
             self.path / 'ligand.prmtop'
         ]
+
+        print(self.topologies)
         
         cpptraj_in = [
             f'parm {self.top}',
@@ -476,7 +542,7 @@ class FileHandler:
         
         script = self.path  / 'cpptraj.in'
         self.write_file('\n'.join(cpptraj_in), script)
-        subprocess.call(f'cpptraj -i {script}', shell=True)
+        subprocess.call(f'{self.cpptraj} -i {script}', shell=True)
         script.unlink()
         
     def prepare_trajectories(self) -> None:
@@ -486,19 +552,21 @@ class FileHandler:
         """
         self.trajectories = [path.with_suffix('.crd') for path in self.topologies]
         self.pdbs = [path.with_suffix('.pdb') for path in self.topologies]
-
-        frame_control = f'start {self.ff} stop {self.lf} offset {self.stride}'
         
-        if self.traj.with_suffix('.crd').exists():
-            cpptraj_in = []
-        else:
-            cpptraj_in = [
-                f'parm {self.top}', 
-                f'trajin {self.traj}',
-                f'trajout {self.traj.with_suffix(".crd")} crd {frame_control}',
-                'run',
-                'clear all',
-            ]
+        frame_control = f'start {self.ff}'
+
+        if self.lf > -1:
+            frame_control += f'stop {self.lf}'
+        
+        frame_control += f'offset {self.stride}'
+        
+        cpptraj_in = [
+            f'parm {self.top}', 
+            f'trajin {self.traj}',
+            f'trajout {self.traj.with_suffix(".crd")} crd {frame_control}',
+            'run',
+            'clear all',
+        ]
 
         self.traj = self.traj.with_suffix('.crd')
 
@@ -530,18 +598,31 @@ class FileHandler:
 
         name = self.path / 'mdcrd.in'
         self.write_file('\n'.join(cpptraj_in), name)
-        subprocess.call(f'cpptraj -i {name}', shell=True)
+        subprocess.call(f'{self.cpptraj} -i {name}', shell=True)
 
         name.unlink()
 
     @property
     def files(self) -> tuple[list[str]]:
+        """
+        Returns a zip generator containing the output paths, topologies,
+        trajectories and pdbs for each system. This is done to ensure we
+        have the correct order for housekeeping reasons.
+        """
         _order = [self.path / prefix for prefix in ['complex', 'receptor', 'ligand']]
         return zip(_order, self.topologies, self.trajectories, self.pdbs)
 
     @staticmethod
     def write_file(lines: list[str],
                    filepath: PathLike) -> None:
+        """
+        Given an input of either a list of strings or a single string,
+        write input to file. If a list, join by newline characters.
+
+        Arguments:
+            lines (list[str]): Input to be written to file.
+            filepath (PathLike): Path to the file to be written.
+        """
         if isinstance(lines, list):
             lines = '\n'.join(lines)
         with open(str(filepath), 'w') as f:

@@ -12,7 +12,7 @@ from pydantic import BaseModel
 from typing import List, Sequence, Tuple, Type, TypeVar, Union
 import yaml
 
-from .omm_simulator import Simulator, ImplicitSimulator
+from .omm_simulator import Simulator, ImplicitSimulator, Minimizer
 
 PathLike = Union[str, Path]
 _T = TypeVar("_T")
