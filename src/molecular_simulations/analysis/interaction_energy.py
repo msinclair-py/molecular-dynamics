@@ -123,16 +123,6 @@ class StaticInteractionEnergy:
         self.coulomb = coul_final.value_in_unit(kilocalories_per_mole)
         self.lj = lj_final.value_in_unit(kilocalories_per_mole)
     
-    @staticmethod
-    def energy(context, solute_coulomb_scale: int=0, solute_lj_scale: int=0, 
-               solvent_coulomb_scale: int=0, 
-               solvent_lj_scale: int=0) -> float:
-        context.setParameter("solute_coulomb_scale", solute_coulomb_scale)
-        context.setParameter("solute_lj_scale", solute_lj_scale)
-        context.setParameter("solvent_coulomb_scale", solvent_coulomb_scale)
-        context.setParameter("solvent_lj_scale", solvent_lj_scale)
-        return context.getState(getEnergy=True, groups={0}).getPotentialEnergy()
-    
     def get_selection(self, topology) -> None:
         if self.first is None and self.last is None:
             selection = [a.index 
@@ -142,17 +132,17 @@ class StaticInteractionEnergy:
             selection = [a.index
                         for a in topology.atoms()
                         if a.residue.chain.id == self.chain 
-                        and self.first <= a.residue.id]
+                        and int(self.first) <= int(a.residue.id)]
         elif self.first is None:
             selection = [a.index
                         for a in topology.atoms()
                         if a.residue.chain.id == self.chain 
-                        and self.last >= a.residue.id]
+                        and int(self.last) >= int(a.residue.id)]
         else:
             selection = [a.index
                         for a in topology.atoms()
-                        if a.residue.chain.id == self.sel_chain 
-                        and self.first <= a.residue.id <= self.last]
+                        if a.residue.chain.id == self.chain 
+                        and int(self.first) <= int(a.residue.id) <= int(self.last)]
 
         self.selection = selection
 
@@ -164,7 +154,20 @@ class StaticInteractionEnergy:
         fixer.addMissingHydrogens(7.0)
 
         return fixer.positions, fixer.topology
+    
+    @property
+    def interactions(self) -> np.ndarray:
+        return np.vstack([self.lj, self.coulomb])
 
+    @staticmethod
+    def energy(context, solute_coulomb_scale: int=0, solute_lj_scale: int=0, 
+               solvent_coulomb_scale: int=0, 
+               solvent_lj_scale: int=0) -> float:
+        context.setParameter("solute_coulomb_scale", solute_coulomb_scale)
+        context.setParameter("solute_lj_scale", solute_lj_scale)
+        context.setParameter("solvent_coulomb_scale", solvent_coulomb_scale)
+        context.setParameter("solvent_lj_scale", solvent_lj_scale)
+        return context.getState(getEnergy=True, groups={0}).getPotentialEnergy()
 
 class InteractionEnergyFrame(StaticInteractionEnergy):
     def __init__(self, system: System, top: Topology, 

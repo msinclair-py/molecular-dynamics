@@ -1,10 +1,9 @@
 #!/usr/bin/env python
-import gc
-from glob import glob
+from openmm.app import PDBFile
 import os
 from pathlib import Path
 from pdbfixer import PDBFixer
-import shutil
+import tempfile
 from typing import Dict, List, Union
 
 PathLike = Union[str, Path]
@@ -15,20 +14,30 @@ class ImplicitSolvent:
     Class for building a system using ambertools. Produces explicit solvent cubic box
     with user-specified padding which has been neutralized and ionized with 150mM NaCl.
     """
-    def __init__(self, path: PathLike, pdb: str, protein: bool=True,
+    def __init__(self, path: OptPath, pdb: str, protein: bool=True,
                  rna: bool=False, dna: bool=False, phos_protein: bool=False,
-                 mod_protein: bool=False, out: OptPath=None):
-        self.path = path
-        os.makedirs(str(path), exist_ok=True)
+                 mod_protein: bool=False, out: OptPath=None,
+                 use_amber: bool=False, **kwargs):
+        if path is None:
+            self.path = Path(pdb).parent
+        elif isinstance(path, str):
+            self.path = Path(path)
+        else:
+            self.path = path
+
+        self.path = self.path.resolve()
+        self.path.mkdir(exist_ok=True, parents=True)
 
         self.pdb = pdb
 
         if out is not None:
-            self.out = out
+            self.out = self.path / out
         else:
-            self.out = path
+            self.out = self.path / 'protein.pdb' 
 
-        os.makedirs(str(self.out), exist_ok=True)
+        self.out = self.out.resolve()
+
+        self.use_amber = use_amber
 
         switches = [protein, rna, dna, phos_protein, mod_protein]
         ffs = [
@@ -38,11 +47,17 @@ class ImplicitSolvent:
             'leaprc.phosaa19SB',
             'leaprc.protein.ff14SB_modAA'
         ]
-
+        
         self.ffs = [
             ff for ff, switch in zip(ffs, switches) if switch
         ]
-    
+        
+        for key, val in kwargs.items():
+            setattr(self, key, val)
+        
+        if not hasattr(self, 'tleap'):
+            self.tleap = 'tleap'
+
     def build(self) -> None:
         """
         Orchestrate the various things that need to happen in order
@@ -50,21 +65,70 @@ class ImplicitSolvent:
         `pdb4amber`, computing the periodic box size, number of ions
         needed and running `tleap` to make the final system.
         """
-        self.pdbfixit()
+        if self.use_amber:
+            self.tleap_it()
+        else:
+            self.pdbfix_it()
 
-    def pdbfixit(self, add_hydrogen=True) -> str:
+    def pdbfix_it(self) -> str:
+        """
+        Using PDBFixer, add hydrogens and missing atoms and if a SEQ record
+        exists (i.e. PDB is from RCSB) add missing residues. This is somewhat
+        unstable so take care to make sure the outputs are ok.
+        """
         fixer = PDBFixer(filename=str(self.path / self.pdb))
         fixer.findMissingResidues()
         fixer.findMissingAtoms()
         fixer.addMissingAtoms()
         fixer.addMissingHydrogens()
         
-        out = self.out / 'protein.pdb'
-        with open(str(out), 'w') as f:
+        with open(str(self.out), 'w') as f:
             PDBFile.writeFile(fixer.topology, fixer.positions, f)
 
-        del fixer
-        gc.collect()
+    def tleap_it(self) -> None:
+        """
+        While more painful, tleap is more stable for system building.
+        Runs the input PDB through tleap with the FF19SB protein forcefield
+        and whichever other forcefields were turned on.
+        """
+        ffs = '\n'.join([f'source {ff}' for ff in self.ffs])
+        tleap_in = f"""
+        {ffs}
+        prot = loadpdb {self.pdb}
+        savepdb prot {self.out}
+        quit
+        """
+
+        self.temp_tleap(tleap_in)
+    
+    def write_leap(self, 
+                   inp: str) -> Path:
+        """
+        Writes out a tleap input file and returns the path
+        to the file.
+        """
+        leap_file = f'{self.path}/tleap.in'
+        with open(leap_file, 'w') as outfile:
+            outfile.write(inp)
+            
+        return Path(leap_file)
+
+    def temp_tleap(self,
+                   inp: str) -> None:
+        """
+        Writes a temporary file for tleap and then runs tleap. This
+        makes handling parallel tleap runs much simpler as we are avoiding
+        the different workers overwriting tleap inputs and getting confused.
+
+        Arguments:
+            inp (str): The tleap input file contents as a single string.
+        """
+        with tempfile.NamedTemporaryFile(mode='w+', suffix='.in') as temp_file:
+            temp_file.write(inp)
+            temp_file.flush()
+            tleap_command = f'{self.tleap} -f {temp_file.name}'
+            print(tleap_command)
+            os.system(tleap_command)
     
 class ExplicitSolvent(ImplicitSolvent):
     """
@@ -72,10 +136,12 @@ class ExplicitSolvent(ImplicitSolvent):
     with user-specified padding which has been neutralized and ionized with 150mM NaCl.
     """
     def __init__(self, path: PathLike, pdb: PathLike, padding: float=10., protein: bool=True,
-                 rna: bool=False, dna: bool=False, polarizable: bool=False):
-        super().__init__(path, pdb, protein, rna, dna)
+                 rna: bool=False, dna: bool=False, phos_protein: bool=False,
+                 mod_protein: bool=False, polarizable: bool=False, **kwargs):
+        super().__init__(path, pdb, protein, rna, dna, phos_protein, 
+                         mod_protein, None, False, **kwargs)
         
-        self.out = Path(path) / 'system'
+        self.out = self.path / 'system'
         self.pad = padding
         self.ffs.extend(['leaprc.water.opc'])
         self.water_box = 'OPCBOX'
@@ -99,6 +165,11 @@ class ExplicitSolvent(ImplicitSolvent):
         self.clean_up_directory()
 
     def prep_pdb(self):
+        """
+        Runs input PDB through `pdb4amber` to ensure it is compliant enough
+        that tleap won't freak out on us later. Removes any explicit hydrogens
+        from the input structure to avoid name mismatches.
+        """
         os.system(f'pdb4amber -i {self.pdb} -o {self.path}/protein.pdb -y')
         self.pdb = f'{self.path}/protein.pdb'
         
@@ -126,18 +197,7 @@ class ExplicitSolvent(ImplicitSolvent):
         
         leap_file = self.write_leap(tleap_complex)
         tleap = f'tleap -f {leap_file}'
-        os.system(tleap)
-        
-    def write_leap(self, inp: str) -> str:
-        """
-        Writes out a tleap input file and returns the path
-        to the file.
-        """
-        leap_file = f'{self.path}/tleap.in'
-        with open(leap_file, 'w') as outfile:
-            outfile.write(inp)
-            
-        return leap_file
+        os.system(tleap) 
 
     def get_pdb_extent(self) -> int:
         """
@@ -168,11 +228,10 @@ class ExplicitSolvent(ImplicitSolvent):
         being iteratively built.
         """
         os.remove('leap.log')
-        os.makedirs(f'{self.path}/build', exist_ok=True)
-        for f in glob(f'{self.path}/*'):
-            if not any([ext in os.path.basename(f) for ext in ['.prmtop', '.inpcrd', 'build']]):
-                path, name = os.path.split(f)
-                shutil.move(f, f'{path}/build/{name}')
+        (self.path / 'build').mkdir(exist_ok=True)
+        for f in self.path.glob('*'):
+            if not any([ext in f.name for ext in ['.prmtop', '.inpcrd', 'build']]):
+                f.rename(f.parent / 'build' / f.name)
         
     @staticmethod
     def get_ion_numbers(volume: int) -> float:

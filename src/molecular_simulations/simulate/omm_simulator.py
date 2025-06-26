@@ -407,9 +407,16 @@ class CustomForcesSimulator(Simulator):
 
 class Minimizer:
     def __init__(self,
-                 path: PathLike):
-        self.path = Path(path) if isinstance(path, str) else path
-        self.load_files()
+                 topology: PathLike,
+                 out: PathLike='min.pdb',
+                 platform: str='OpenCL',
+                 device_ids: list[int]=[0]):
+        self.topology = Path(topology) if isinstance(topology, str) else topology
+        self.path = self.topology.parent
+        self.out = self.path / out
+        self.platform = platform
+        self.properties = {'DeviceIndex': ','.join([str(x) for x in device_ids]),
+                           'Precision': 'mixed'}
 
     def minimize(self) -> None:
         system = self.load_files()
@@ -418,7 +425,9 @@ class Minimizer:
                                               0.001*picoseconds)
         simulation = Simulation(self.topology, 
                                 system, 
-                                integrator)
+                                integrator,
+                                self.platform,
+                                self.properties)
 
         simulation.context.setPositions(self.coordinates.positions)
 
@@ -429,19 +438,15 @@ class Minimizer:
         
         PDBFile.writeFile(simulation.topology, 
                           positions, 
-                          file=str(self.path / 'min.pdb'), 
+                          file=str(self.out), 
                           keepIds=True)
 
     def load_files(self) -> None:
-        amber = list(self.path.glob('*.prmtop')) + list(self.path.glob('*.parm7'))
-        gromacs = list(self.path.glob('*.top'))
-        pdb = list(self.path.glob('*.pdb'))
-
-        if amber:
+        if self.topology.suffix in ['.prmtop', '.parm7']:
             system = self.load_amber()
-        elif gromacs:
+        elif self.topology.suffix == '.top':
             system = self.load_gromacs()
-        elif pdb:
+        elif self.topology.suffix == '.pdb':
             system = self.load_pdb()
         else:
             raise FileNotFoundError('No viable simulation input files found'
@@ -450,10 +455,9 @@ class Minimizer:
         return system
         
     def load_amber(self) -> System:
-        prmtop = list(self.path.glob('*.prmtop')) + list(self.path.glob('*.parm7'))
         inpcrd = list(self.path.glob('*.inpcrd')) + list(self.path.glob('*.rst7'))
         self.coordinates = AmberInpcrdFile(str(inpcrd[0]))
-        self.topology = AmberPrmtopFile(str(prmtop[0]))
+        self.topology = AmberPrmtopFile(str(self.topology))
 
         system = self.topology.createSystem(nonbondedMethod=NoCutoff,
                                             constraints=HBonds)
@@ -461,10 +465,9 @@ class Minimizer:
         return system
 
     def load_gromacs(self) -> System:
-        top = list(self.path.glob('*.top'))[0]
         gro = list(self.path.glob('*.gro'))[0]
         self.coordinates = GromacsGroFile(str(gro))
-        self.topology = GromacsTopFile(str(top), 
+        self.topology = GromacsTopFile(str(self.topology), 
                                        includeDir='/usr/local/gromacs/share/gromacs/top')
 
         system = self.topology.createSystem(nonbondedMethod=NoCutoff, 
@@ -473,8 +476,7 @@ class Minimizer:
         return system
 
     def load_pdb(self) -> System:
-        pdb = list(self.path.glob('*.pdb'))[0]
-        self.coordinates = PDBFile(str(pdb))
+        self.coordinates = PDBFile(str(self.topology))
         self.topology = self.coordinates.topology
         forcefield = ForceField('amber14-all.xml')
 
