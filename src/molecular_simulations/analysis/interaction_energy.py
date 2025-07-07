@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from copy import deepcopy
 from openmm import *
 from openmm.app import *
 from openmm.unit import *
@@ -7,11 +8,14 @@ from MDAnalysis.analysis.distances import contact_matrix
 import mdtraj as md
 import numpy as np
 import parmed as pmd
+from pathlib import Path
 from pdbfixer import PDBFixer
 import pickle
 import gc
 from tqdm import tqdm
 from typing import Dict, List, Tuple, Union
+
+PathLike = Union[Path, str]
 
 class InteractionEnergy(ABC):
     def __init__(self):
@@ -29,7 +33,7 @@ class InteractionEnergy(ABC):
     def get_selection(self):
         pass
 
-class StaticInteractionEnergy:
+class StaticInteractionEnergy(InteractionEnergy):
     """
     Computes the linear interaction energy between specified chain and other simulation
     components. Can specify a range of residues in chain to limit calculation to. Works on
@@ -517,3 +521,150 @@ class PairwiseInteractionEnergy:
     def save(self, energies: dict) -> None:
         with open('energies.pkl', 'wb') as f:
             pickle.dump(energies, f)
+
+
+class ResidueFingerprinting:
+    def __init__(self,
+                 topology: PathLike, 
+                 trajectory: PathLike, 
+                 target_sel: str,
+                 binder_sel: str, 
+                 stride: int=1, 
+                 platform: str='OpenCL',
+                 datafile: str='fingerprint.npy'):
+        self.topology = Path(topology) if isinstance(topology, str) else topology
+
+        if self.topology.suffix == '.prmtop':
+            self.top = AmberPrmtopFile(str(self.topology))
+            self.system = self.top.createSystem(nonbondedMethod=CutoffNonPeriodic,
+                                                nonbondedCutoff=2. * nanometers,
+                                                constraints=HBonds)
+            self.top = self.top.topology
+            self.add_hbonds = True
+        elif self.topology.suffix == '.pdb':
+            self.top = PDBFile(str(self.topology)).topology
+            forcefield = ForceField('amber14-all.xml', 'implicit/gbn2.xml')
+            self.system = forcefield.createSystem(self.top,
+                                                  soluteDielectric=1.,
+                                                  solventDielectric=80.)
+            self.add_hbonds = False
+        else:
+            raise ValueError('Need prmtop or pdb for topology!')
+
+        self.trajectory = Path(trajectory) if isinstance(trajectory, str) else trajectory
+        
+        # do indexing in MDA for superior atom selection language and out of memory
+        # operation compared to mdtraj
+        u = mda.Universe(str(self.topology), str(self.trajectory))
+        self.selection = u.select_atoms(target_sel).atoms.ix
+        self.sels = [np.concatenate((self.selection, residue.atoms.ix)) 
+                     for residue in u.select_atoms(binder_sel).residues]
+
+        self.stride = stride
+        self.platform = Platform.getPlatformByName(platform)
+        self.file = datafile
+
+    def run(self):
+        self.initialize_systems()
+        self.compute_energies()
+        self.write_energies()
+    
+    def subset_traj(self, sub_ind: list[str]) -> Tuple[Topology, System]:
+        topology = md.Topology.from_openmm(self.top)
+        sub_top = topology.subset(sub_ind)
+        new_top = sub_top.to_openmm()
+
+        structure = pmd.openmm.load_topology(self.top, self.system)[sub_ind]
+
+        if self.add_hbonds: 
+            hbond_type = pmd.topologyobjects.BondType(k=400, req=1.)
+            constrained_bond_type = structure.bond_types.append(hbond_type)
+            structure.bond_types.claim()
+
+            for bond in structure.bonds:
+                if bond.type is None:
+                    bond.type = hbond_type
+
+        new_system = structure.createSystem(implicitSolvent=GBn2,
+                                            soluteDielectric=1.,
+                                            solventDielectric=80.)
+        
+        return new_system
+
+    def initialize_systems(self) -> None:
+        self.systems = [self.subset_traj(sel) for sel in self.sels]
+
+    def compute_energies(self) -> None:
+        full_traj = md.load(self.trajectory, top=self.topology)
+        n_frames = full_traj.n_frames // self.stride
+        self.energies = np.zeros((n_frames, len(self.systems), 2))
+        for i, system in tqdm(enumerate(self.systems), total=len(self.systems), 
+                           position=0, leave=False, desc='System'):
+            for fr in tqdm(range(n_frames), total=n_frames, position=1,
+                           leave=False, desc='Frame'):
+                frame = fr * self.stride
+                sel = self.sels[i]
+
+                coords = full_traj.xyz[frame, sel, :]
+                self.energies[fr, i, :] = self.compute(deepcopy(system), coords)
+    
+    def compute(self, 
+                system: System, 
+                positions: np.ndarray) -> tuple[float, float]:
+        for force in system.getForces():
+            if isinstance(force, NonbondedForce):
+                force.setForceGroup(0)
+                force.addGlobalParameter("solute_coulomb_scale", 1)
+                force.addGlobalParameter("solute_lj_scale", 1)
+                force.addGlobalParameter("solvent_coulomb_scale", 1)
+                force.addGlobalParameter("solvent_lj_scale", 1)
+
+                for i in range(force.getNumParticles()):
+                    charge, sigma, epsilon = force.getParticleParameters(i)
+                    force.setParticleParameters(i, 0, 0, 0)
+                    if i in self.selection:
+                        force.addParticleParameterOffset("solute_coulomb_scale", i, charge, 0, 0)
+                        force.addParticleParameterOffset("solute_lj_scale", i, 0, sigma, epsilon)
+                    else:
+                        force.addParticleParameterOffset("solvent_coulomb_scale", i, charge, 0, 0)
+                        force.addParticleParameterOffset("solvent_lj_scale", i, 0, sigma, epsilon)
+
+                for i in range(force.getNumExceptions()):
+                    p1, p2, chargeProd, sigma, epsilon = force.getExceptionParameters(i)
+                    force.setExceptionParameters(i, p1, p2, 0, 0, 0)
+
+            else:
+                force.setForceGroup(2)
+        
+        integrator = VerletIntegrator(0.001*picosecond)
+
+        context = Context(system, integrator, self.platform)
+        context.setPositions(positions)
+        
+        total_coulomb = self.energy(context, 1, 0, 1, 0)
+        solute_coulomb = self.energy(context, 1, 0, 0, 0)
+        solvent_coulomb = self.energy(context, 0, 0, 1, 0)
+        total_lj = self.energy(context, 0, 1, 0, 1)
+        solute_lj = self.energy(context, 0, 1, 0, 0)
+        solvent_lj = self.energy(context, 0, 0, 0, 1)
+        
+        coul_final = total_coulomb - solute_coulomb - solvent_coulomb
+        lj_final = total_lj - solute_lj - solvent_lj
+
+        coulomb = coul_final.value_in_unit(kilocalories_per_mole)
+        lj = lj_final.value_in_unit(kilocalories_per_mole)
+
+        return lj, coulomb
+
+    def write_energies(self) -> None:
+        np.save(str(self.file), self.energies)
+    
+    @staticmethod
+    def energy(context, solute_coulomb_scale: int=0, solute_lj_scale: int=0, 
+               solvent_coulomb_scale: int=0, 
+               solvent_lj_scale: int=0) -> float:
+        context.setParameter("solute_coulomb_scale", solute_coulomb_scale)
+        context.setParameter("solute_lj_scale", solute_lj_scale)
+        context.setParameter("solvent_coulomb_scale", solvent_coulomb_scale)
+        context.setParameter("solvent_lj_scale", solvent_lj_scale)
+        return context.getState(getEnergy=True, groups={0}).getPotentialEnergy()
