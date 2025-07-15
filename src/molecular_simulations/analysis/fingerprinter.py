@@ -1,7 +1,7 @@
 import openmm
 import numpy as np
 import mdtraj as md
-from numba import njit, prange
+from numba import njit
 from ..simulate import Minimizer
 from typing import List
 
@@ -143,7 +143,7 @@ def lennard_jones_sum(distances,
                                     epsilon_is[i], sigma_js[j])
     return energy
 
-@njit(parallel=True)
+@njit
 def fingerprints(xyzs, charges, sigmas, epsilons,
                  target_resmap, binder_inds):
     """
@@ -157,7 +157,7 @@ def fingerprints(xyzs, charges, sigmas, epsilons,
     n_target_residues = len(target_resmap)
     es_fingerprint = np.zeros((n_target_residues))
     lj_fingerprint = np.zeros((n_target_residues))
-    for i in prange(n_target_residues):
+    for i in range(n_target_residues):
         dists = dist_mat(xyzs[target_resmap[i]], xyzs[binder_inds])
         es_fingerprint[i] = electrostatic_sum(dists,
                                               charges[target_resmap[i]],
