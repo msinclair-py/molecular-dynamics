@@ -523,7 +523,7 @@ class PairwiseInteractionEnergy:
             pickle.dump(energies, f)
 
 
-class ResidueFingerprinting:
+class BinderFingerprinting:
     def __init__(self,
                  topology: PathLike, 
                  trajectory: PathLike, 
@@ -531,7 +531,7 @@ class ResidueFingerprinting:
                  binder_sel: str, 
                  stride: int=1, 
                  platform: str='OpenCL',
-                 datafile: str='fingerprint.npy'):
+                 datafile: str='binder_fingerprint.npy'):
         self.topology = Path(topology) if isinstance(topology, str) else topology
 
         if self.topology.suffix == '.prmtop':
@@ -552,28 +552,63 @@ class ResidueFingerprinting:
             raise ValueError('Need prmtop or pdb for topology!')
 
         self.trajectory = Path(trajectory) if isinstance(trajectory, str) else trajectory
-        
-        # do indexing in MDA for superior atom selection language and out of memory
-        # operation compared to mdtraj
-        u = mda.Universe(str(self.topology), str(self.trajectory))
-        self.selection = u.select_atoms(target_sel).atoms.ix
-        self.sels = [np.concatenate((self.selection, residue.atoms.ix)) 
-                     for residue in u.select_atoms(binder_sel).residues]
+
+        #self.triage_selections(target_sel, binder_sel)
+        self.target_sel = target_sel
+        self.binder_sel = binder_sel
 
         self.stride = stride
         self.platform = Platform.getPlatformByName(platform)
         self.file = datafile
 
     def run(self):
+        self.make_selections()
         self.initialize_systems()
         self.compute_energies()
         self.write_energies()
+
+    def triage_selections(self,
+                          target_sel: str,
+                          binder_sel: str) -> None:
+        u = mda.Universe(str(self.topology), str(self.trajectory))
+        sel = u.select_atoms('resname DUMMY')
+        target = u.select_atoms(f'name CA and {target_sel}')
+        binder = u.select_atoms(f'name CA and {binder_sel}')
+        sel += target
+        sel += binder
+
+        n = target.n_residues
+        m = binder.n_residues
+        
+        contacts = np.zeros((len(u.trajectory), sel.n_residues))
+        for ts in u.trajectory:
+            cm = contact_matrix(sel.positions)[n:, :n] # bottom left corner
+            assert cm.shape == (m, n) # something horrible has gone wrong
+
+            target_frame = np.max(cm, axis=0)
+            binder_frame = np.max(cm, axis=1)
+
+            contacts[ts.frame, :] = np.concatenate((target_frame, binder_frame))
+
+        contacts = np.max(contacts, axis=0)
+        self.target_sel = 'resid'
+        self.binder_sel = 'resid'
+        for i in range(n):
+            if contacts[i]:
+                self.target_sel += f' {target.residues[i].resid}'
+
+        for j in range(m):
+            if contacts[j + n]:
+                self.binder_sel += f' {binder.residues[j].resid}'
+
+    def make_selections(self) -> None:
+        u = mda.Universe(str(self.topology), str(self.trajectory))
+
+        self.selection = u.select_atoms(self.target_sel).atoms.ix
+        self.sels = [np.concatenate((self.selection, residue.atoms.ix)) 
+                     for residue in u.select_atoms(self.binder_sel).residues]
     
     def subset_traj(self, sub_ind: list[str]) -> Tuple[Topology, System]:
-        topology = md.Topology.from_openmm(self.top)
-        sub_top = topology.subset(sub_ind)
-        new_top = sub_top.to_openmm()
-
         structure = pmd.openmm.load_topology(self.top, self.system)[sub_ind]
 
         if self.add_hbonds: 
@@ -606,11 +641,12 @@ class ResidueFingerprinting:
                 sel = self.sels[i]
 
                 coords = full_traj.xyz[frame, sel, :]
-                self.energies[fr, i, :] = self.compute(deepcopy(system), coords)
+                self.energies[fr, i, :] = self.compute(deepcopy(system), coords, sel)
     
     def compute(self, 
                 system: System, 
-                positions: np.ndarray) -> tuple[float, float]:
+                positions: np.ndarray,
+                selection: None) -> tuple[float, float]:
         for force in system.getForces():
             if isinstance(force, NonbondedForce):
                 force.setForceGroup(0)
@@ -622,7 +658,7 @@ class ResidueFingerprinting:
                 for i in range(force.getNumParticles()):
                     charge, sigma, epsilon = force.getParticleParameters(i)
                     force.setParticleParameters(i, 0, 0, 0)
-                    if i in self.selection:
+                    if i in selection:
                         force.addParticleParameterOffset("solute_coulomb_scale", i, charge, 0, 0)
                         force.addParticleParameterOffset("solute_lj_scale", i, 0, sigma, epsilon)
                     else:
@@ -647,9 +683,13 @@ class ResidueFingerprinting:
         total_lj = self.energy(context, 0, 1, 0, 1)
         solute_lj = self.energy(context, 0, 1, 0, 0)
         solvent_lj = self.energy(context, 0, 0, 0, 1)
+
+        print(total_coulomb, solute_coulomb, solvent_coulomb, total_lj, solute_lj, solvent_lj)
         
         coul_final = total_coulomb - solute_coulomb - solvent_coulomb
         lj_final = total_lj - solute_lj - solvent_lj
+
+        print(coul_final, lj_final)
 
         coulomb = coul_final.value_in_unit(kilocalories_per_mole)
         lj = lj_final.value_in_unit(kilocalories_per_mole)
@@ -668,3 +708,23 @@ class ResidueFingerprinting:
         context.setParameter("solvent_coulomb_scale", solvent_coulomb_scale)
         context.setParameter("solvent_lj_scale", solvent_lj_scale)
         return context.getState(getEnergy=True, groups={0}).getPotentialEnergy()
+
+
+class TargetFingerprinting(BinderFingerprinting):
+    def __init__(self,
+                 topology: PathLike, 
+                 trajectory: PathLike, 
+                 target_sel: str,
+                 binder_sel: str, 
+                 stride: int=1, 
+                 platform: str='OpenCL',
+                 datafile: str='target_fingerprint.npy'):
+        super().__init__(topology, trajectory, target_sel, binder_sel, 
+                         stride, platform, datafile)
+
+    def make_selections(self) -> None:
+        u = mda.Universe(str(self.topology), str(self.trajectory))
+
+        self.selection = u.select_atoms(self.binder_sel).atoms.ix
+        self.sels = [np.concatenate((residue.atoms.ix, self.selection)) 
+                     for residue in u.select_atoms(self.target_sel).residues]

@@ -96,6 +96,7 @@ class ImplicitSolvent:
         {ffs}
         prot = loadpdb {self.pdb}
         savepdb prot {self.out}
+        saveamberparm prot {self.out.with_suffix('.prmtop')} {self.out.with_suffix('.inpcrd')}
         quit
         """
 
