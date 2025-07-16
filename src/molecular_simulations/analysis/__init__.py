@@ -1,9 +1,6 @@
 try:
     from .interaction_energy import (StaticInteractionEnergy,
-                                     DynamicInteractionEnergy,
-                                     PairwiseInteractionEnergy,
-                                     BinderFingerprinting,
-                                     TargetFingerprinting)
+                                     DynamicInteractionEnergy)
 except ImportError:
     pass
 
@@ -14,6 +11,11 @@ except ImportError:
 
 try:
     from .sasa import SASA
+except ImportError:
+    pass
+
+try:
+    from .fingerprinter import Fingerprinter
 except ImportError:
     pass
 

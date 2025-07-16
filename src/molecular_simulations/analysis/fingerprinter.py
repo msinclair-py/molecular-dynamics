@@ -1,9 +1,14 @@
 import openmm
-import numpy as np
-import mdtraj as md
+import MDAnalysis as mda
 from numba import njit
+import numpy as np
+from pathlib import Path
+from typing import Union
+
 from ..simulate import Minimizer
-from typing import List
+
+OptPath = Union[Path, str, None]
+PathLike = Union[Path, str]
 
 @njit
 def unravel_index(n1, n2):
@@ -14,7 +19,7 @@ def unravel_index(n1, n2):
     return a.ravel(),b.ravel()
 
 @njit
-def dist_mat_(xyz1, xyz2):
+def _dist_mat(xyz1, xyz2):
     n1 = xyz1.shape[0]
     n2 = xyz2.shape[0]
     ndim = xyz1.shape[1]
@@ -30,10 +35,45 @@ def dist_mat_(xyz1, xyz2):
 def dist_mat(xyz1, xyz2):
     n1 = xyz1.shape[0]
     n2 = xyz2.shape[0]
-    return dist_mat_(xyz1, xyz2).reshape(n1, n2)
+    return _dist_mat(xyz1, xyz2).reshape(n1, n2)
 
 @njit
 def electrostatic(distance,
+                  charge_i, charge_j):
+    """
+    Calculate electrostatic energy between two particles.
+    Cutoff at 12 Angstrom without switching.
+
+    Parameters:
+        distance (float): distance between particles i and j (nm)
+        charge_i (float): charge of particle i (e-)
+        charge_j (float): charge of particle j (e-)
+
+    Returns:
+        energy (float): Electrostatic energy between particles (kJ/mol)
+    """
+    # conversion factors:
+    #     Avogadro = 1.626e23
+    #     e- to Coloumb = 1.602e-19
+    #     nm to m = 1e-9
+    #     1/(4\pi\epsilon_0) = 8.988e9
+    
+    solvent_dielectric = 78.5
+    # calculate energy
+    if distance > 0.9:
+        energy = 0.
+    else:
+        r = distance * 1e-9
+        r_cutoff = 0.9 * 1e-9
+        k_rf = 1 / (r_cutoff ** 3) * (solvent_dielectric - 1) / (2 * solvent_dielectric + 1)
+        c_rf = 1 / r_cutoff * (3 * solvent_dielectric) / (2 * solvent_dielectric + 1)
+
+        outer_term = 8.988e9 * (charge_i * 1.602e-19) * (charge_j * 1.602e-19)
+        energy = outer_term * (1 / r + k_rf * r ** 2 - c_rf) * 1.626e23
+    return energy
+
+@njit
+def DEPRECATED_electrostatic(distance,
                   charge_i, charge_j):
     """
     Calculate electrostatic energy between two particles.
@@ -167,7 +207,7 @@ def fingerprints(xyzs, charges, sigmas, epsilons,
                                               sigmas[binder_inds],
                                               epsilons[target_resmap[i]],
                                               epsilons[binder_inds])
-    return es_fingerprint, lj_fingerprint
+    return lj_fingerprint, es_fingerprint
 
 class Fingerprinter:
     """
@@ -175,9 +215,9 @@ class Fingerprinter:
     
     Inputs:
         pdb_file (str): path to pdb file
-        target_resid_range (List[int]): inclusive range of residue indices (1-based) 
+        target_resid_range (list[int]): inclusive range of residue indices (1-based) 
             defining target protein
-        binder_resid_range (List[int]): inclusive range of residue indices (1-based) 
+        binder_resid_range (list[int]): inclusive range of residue indices (1-based) 
             defining binder protein
             
     Usage:
@@ -186,17 +226,33 @@ class Fingerprinter:
         m.save()
     """
     def __init__(self,
-                 pdb_file: str,
-                 target_resid_range: List[int],
-                 binder_resid_range: List[int]):
-        self.pdb_file = pdb_file
-        self.target_resid_range = target_resid_range
-        self.binder_resid_range = binder_resid_range
+                 topology: PathLike,
+                 target_selection: str,
+                 binder_selection: str | None = None,
+                 out_path: OptPath = None,
+                 out_name: str | None = None):
+        self.topology = Path(topology)
+        self.target_selection = target_selection
+
+        if binder_selection is not None:
+            self.binder_selection = binder_selection
+        else:
+            self.binder_selection = f'not {target_selection}'
+
+        if out_path is None:
+            path = self.topology.parent
+        else:
+            path = Path(out_path)
+
+        if out_name is None:
+            self.out = path / 'fingerprint.npz'
+        else:
+            self.out = path / out_name
 
     def assign_nonbonded_params(self) -> None:
         # build openmm system
-        builder = Minimizer(topology=self.pdb_file)
-        system = builder.load_pdb()
+        builder = Minimizer(self.topology)
+        system = builder.load_files()
 
         # extract NB params
         nonbonded = [f for f in system.getForces() if isinstance(f, openmm.NonbondedForce)][0]
@@ -210,50 +266,68 @@ class Fingerprinter:
             self.epsilons[ind] = epsilon / epsilon.unit # kJ/mol
 
     def load_pdb(self) -> None:
-        # load with mdtraj
-        self.traj = md.load(self.pdb_file)
+        # load with MDAnalysis
+        if self.topology.suffix == '.pdb':
+            self.u = mda.Universe(self.topology)
+        else:
+            if self.topology.with_suffix('.inpcrd').exists():
+                coordinates = self.topology.with_suffix('.inpcrd')
+            else:
+                coordinates = self.topology.with_suffix('.rst7')
+
+            self.u = mda.Universe(self.topology, coordinates)
 
     def assign_residue_mapping(self) -> None:
         # map each residue index (1-based) to corresponding atom indices
-        target_resmap = []
-        for resid in range(self.target_resid_range[0], 
-                           self.target_resid_range[1] + 1):
-            target_resmap.append(self.traj.top.select(f'residue {resid}'))
-        self.target_resmap = target_resmap
+        target = self.u.select_atoms(self.target_selection)
+        self.target_resmap = [residue.atoms.ix for residue in target.residues]
         self.target_inds = np.concatenate(self.target_resmap)
-        binder_resmap = []
-        for resid in range(self.binder_resid_range[0], 
-                           self.binder_resid_range[1] + 1):
-            binder_resmap.append(self.traj.top.select(f'residue {resid}'))
-        self.binder_resmap = binder_resmap
+
+
+        binder = self.u.select_atoms(self.binder_selection)
+        self.binder_resmap = [residue.atoms.ix for residue in binder.residues]
         self.binder_inds = np.concatenate(self.binder_resmap)
 
-    def calculate_fingerprints(self) -> None:
-        self.target_es_fingerprint, self.target_lj_fingerprint = \
-            fingerprints(
-                self.traj.xyz[0], # assume only one frame
-                self.charges,
-                self.sigmas, self.epsilons,
-                self.target_resmap, self.binder_inds)
+    def iterate_frames(self) -> None:
+        self.target_fingerprint = np.zeros((
+            len(self.u.trajectory), len(self.target_resmap), 2
+        ))
 
-        self.binder_es_fingerprint, self.binder_lj_fingerprint = \
+        self.binder_fingerprint = np.zeros((
+            len(self.u.trajectory), len(self.binder_resmap), 2
+        ))
+
+        for i, ts in enumerate(self.u.trajectory):
+            self.calculate_fingerprints(i)
+
+    def calculate_fingerprints(self,
+                               frame_index: int) -> None:
+        positions = self.u.atoms.positions * .1 # convert to nm
+        self.target_fingerprint[frame_index] = np.vstack(
             fingerprints(
-                self.traj.xyz[0], # assume only one frame
+                positions,
                 self.charges,
                 self.sigmas, self.epsilons,
-                self.binder_resmap, self.target_inds)
+                self.target_resmap, self.binder_inds
+            )
+        ).T
+
+        self.binder_fingerprint[frame_index] = np.vstack(
+            fingerprints(
+                positions,
+                self.charges,
+                self.sigmas, self.epsilons,
+                self.binder_resmap, self.target_inds
+            )
+        ).T
     
     def run(self) -> None:
         self.assign_nonbonded_params()
         self.load_pdb()
         self.assign_residue_mapping()
-        self.calculate_fingerprints()
+        self.iterate_frames()
 
-    def save(self, out_file_prefix: str = '') -> None:
-        sep = '_' if out_file_prefix else ''
-        np.save(out_file_prefix + sep + 'target_energies.npy',
-                np.vstack([self.target_es_fingerprint,
-                           self.target_lj_fingerprint]).T)
-        np.save(out_file_prefix + sep + 'binder_energies.npy',
-                np.vstack([self.binder_es_fingerprint,
-                           self.binder_lj_fingerprint]).T)
+    def save(self) -> None:
+        np.savez(self.out, 
+                 target=self.target_fingerprint, 
+                 binder=self.binder_fingerprint)
