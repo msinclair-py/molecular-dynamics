@@ -96,7 +96,7 @@ def electrostatic_sum(distances,
     energy = 0.
     for i in range(n):
         for j in range(m):
-            energy += electrostatic_OLD(distances[i,j],
+            energy += electrostatic(distances[i,j],
                                     charge_is[i],
                                     charge_js[j])
     return energy
