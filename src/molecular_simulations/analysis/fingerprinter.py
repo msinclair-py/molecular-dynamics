@@ -11,7 +11,8 @@ OptPath = Union[Path, str, None]
 PathLike = Union[Path, str]
 
 @njit
-def unravel_index(n1, n2):
+def unravel_index(n1, 
+                  n2):
     a, b = np.empty((n1, n2), dtype=np.int32), np.empty((n1, n2), dtype=np.int32)
     for i in range(n1):
         for j in range(n2):
@@ -19,7 +20,8 @@ def unravel_index(n1, n2):
     return a.ravel(),b.ravel()
 
 @njit
-def _dist_mat(xyz1, xyz2):
+def _dist_mat(xyz1, 
+              xyz2):
     n1 = xyz1.shape[0]
     n2 = xyz2.shape[0]
     ndim = xyz1.shape[1]
@@ -32,15 +34,18 @@ def _dist_mat(xyz1, xyz2):
     return np.sqrt(dist_mat)
 
 @njit
-def dist_mat(xyz1, xyz2):
+def dist_mat(xyz1, 
+             xyz2):
     n1 = xyz1.shape[0]
     n2 = xyz2.shape[0]
     return _dist_mat(xyz1, xyz2).reshape(n1, n2)
 
 @njit
 def electrostatic(distance,
-                  charge_i, charge_j):
+                  charge_i, 
+                  charge_j):
     """
+    Moeen + screening
     Calculate electrostatic energy between two particles.
     Cutoff at 12 Angstrom without switching.
 
@@ -53,54 +58,24 @@ def electrostatic(distance,
         energy (float): Electrostatic energy between particles (kJ/mol)
     """
     # conversion factors:
-    #     Avogadro = 1.626e23
-    #     e- to Coloumb = 1.602e-19
-    #     nm to m = 1e-9
-    #     1/(4\pi\epsilon_0) = 8.988e9
+    #     Avogadro = 6.022e23 molecules/mol
+    #     e- to Coloumb = 1.602e-19 C/e-
+    #     nm to m = 1e-9 m/nm
+    #     1/(4\pi\epsilon_0) = 8.988e9 J*m/C^2
     
     solvent_dielectric = 78.5
     # calculate energy
-    if distance > 0.9:
+    if distance > 1.:
         energy = 0.
     else:
         r = distance * 1e-9
-        r_cutoff = 0.9 * 1e-9
+        r_cutoff = 1. * 1e-9
         k_rf = 1 / (r_cutoff ** 3) * (solvent_dielectric - 1) / (2 * solvent_dielectric + 1)
         c_rf = 1 / r_cutoff * (3 * solvent_dielectric) / (2 * solvent_dielectric + 1)
 
         outer_term = 8.988e9 * (charge_i * 1.602e-19) * (charge_j * 1.602e-19)
-        energy = outer_term * (1 / r + k_rf * r ** 2 - c_rf) * 1.626e23
-    return energy
-
-@njit
-def DEPRECATED_electrostatic(distance,
-                  charge_i, charge_j):
-    """
-    Calculate electrostatic energy between two particles.
-    Cutoff at 12 Angstrom without switching.
-
-    Parameters:
-        distance (float): distance between particles i and j (nm)
-        charge_i (float): charge of particle i (e-)
-        charge_j (float): charge of particle j (e-)
-
-    Returns:
-        energy (float): Electrostatic energy between particles (kJ/mol)
-    """
-    # conversion factors:
-    #     Avogadro = 1.626e23
-    #     e- to Coloumb = 1.602e-19
-    #     nm to m = 1e-9
-    #     1/(4\pi\epsilon_0) = 8.988e9
-
-    # calculate energy
-    if distance > 1.2:
-        energy = 0.
-    else:
-        numerator = 8.988e9 * (charge_i * 1.602e-19) * (charge_j * 1.602e-19)
-        denominator = distance * 1e-9
-        energy = 1.626e23 * numerator / denominator
-    return energy
+        energy = outer_term * (1 / r + k_rf * r ** 2 - c_rf) * 6.022e23
+    return energy / 1000 # J -> kJ
 
 @njit
 def electrostatic_sum(distances,
@@ -117,10 +92,11 @@ def electrostatic_sum(distances,
     """
     n = distances.shape[0]
     m = distances.shape[1]
+
     energy = 0.
     for i in range(n):
         for j in range(m):
-            energy += electrostatic(distances[i,j],
+            energy += electrostatic_OLD(distances[i,j],
                                     charge_is[i],
                                     charge_js[j])
     return energy
