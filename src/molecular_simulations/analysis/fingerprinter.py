@@ -203,11 +203,13 @@ class Fingerprinter:
     """
     def __init__(self,
                  topology: PathLike,
+                 trajectory: OptPath=None,
                  target_selection: str,
                  binder_selection: str | None = None,
                  out_path: OptPath = None,
                  out_name: str | None = None):
         self.topology = Path(topology)
+        self.trajectory = Path(trajectory) if trajectory is not None else trajectory
         self.target_selection = target_selection
 
         if binder_selection is not None:
@@ -246,7 +248,9 @@ class Fingerprinter:
         if self.topology.suffix == '.pdb':
             self.u = mda.Universe(self.topology)
         else:
-            if self.topology.with_suffix('.inpcrd').exists():
+            if self.trajectory is not None:
+                coordinates = self.trajectory
+            elif self.topology.with_suffix('.inpcrd').exists():
                 coordinates = self.topology.with_suffix('.inpcrd')
             else:
                 coordinates = self.topology.with_suffix('.rst7')
