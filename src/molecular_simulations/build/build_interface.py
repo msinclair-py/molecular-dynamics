@@ -2,11 +2,11 @@ from .build_amber import ExplicitSolvent
 import MDAnalysis as mda
 import numpy as np
 from pathlib import Path
-from typing import Dict, List, Union
+from typing import Any, Union
 import yaml
 
 PathLike = Union[Path, str]
-Config = Dict[str, ...]
+Config = dict[str, Any]
 
 class InterfaceBuilder(ExplicitSolvent):
     def __init__(self, 
@@ -143,7 +143,7 @@ class InterfaceBuilder(ExplicitSolvent):
             yaml.dump(yaml_settings, f)
 
     def write_cvae_yaml(self,
-                        input_shape: List[int]) -> None:
+                        input_shape: list[int]) -> None:
         """
         Writes the CVAE options yaml for a DeepDriveMD
         simulation.

@@ -13,6 +13,14 @@ class EmbedData:
     explicitly provided. Embedding data should be provided as a dictionary where
     the keys are MDAnalysis selection strings and the values are numpy arrays
     of shape (n_frames, n_residues, n_datapoints) or (n_residues, n_datapoints).
+
+    Arguments:
+        pdb (Path): Path to PDB file to load. Also will be the output if one is
+            not provided.
+        embedding_dict (dict[str, np.ndarray]): A dictionary containing MDAnalysis
+            selections as keys and data as the values.
+        out (OptPath): Defaults to None. If not None this will be the path to the
+            output PDB.
     """
     def __init__(self,
                  pdb: Path,
@@ -24,7 +32,13 @@ class EmbedData:
         
         self.u = mda.Universe(str(self.pdb))
 
-    def embed(self):
+    def embed(self) -> None:
+        """
+        Unpacks embedding dictionary, embeds data and writes out new PDB.
+
+        Returns:
+            None
+        """
         for sel, data in self.embeddings.items():
             self.embed_selection(sel, data)
 
@@ -33,12 +47,32 @@ class EmbedData:
     def embed_selection(self,
                         selection: str,
                         data: np.ndarray) -> None:
+        """
+        Embeds data into given selection in the beta column for each residue.
+
+        Arguments:
+            selection (str): MDAnalysis selection string.
+            data (np.ndarray): Array of data to place in beta column. Shape should
+                be (n_residues_in_selection, 1).
+
+        Returns:
+            None
+        """
         sel = self.u.select_atoms(selection)
 
         for residue, datum in zip(sel.residues, data):
             residue.atoms.tempfactors = np.full(residue.atoms.tempfactors.shape, datum)
     
     def write_new_pdb(self) -> None:
+        """
+        Writes out PDB file. If an output was not designated, backs up original
+        PDB with the extension .orig.pdb. If this backup already exists, do not
+        back up the PDB as that may occur if you run this twice and to do so would
+        mean losing the actual original PDB.
+
+        Returns:
+            None
+        """
         if self.out.exists():
             if not self.pdb.with_suffix('.orig.pdb').exists():
                 shutil.copyfile(str(self.pdb), str(self.pdb.with_suffix('.orig.pdb')))
@@ -49,7 +83,18 @@ class EmbedData:
 
 class EmbedEnergyData(EmbedData):
     """
+    Special instance of EmbedData in which the data stored in embedding_dict is
+    non-bonded energy data with both LJ and coulombic terms. In this case we need
+    to obtain the total energy by summing these and rescale it as many softwares
+    do not understand a negative beta factor.
 
+    Arguments:
+        pdb (Path): Path to PDB file to load. Also will be the output if one is
+            not provided.
+        embedding_dict (dict[str, np.ndarray]): A dictionary containing MDAnalysis
+            selections as keys and data as the values.
+        out (OptPath): Defaults to None. If not None this will be the path to the
+            output PDB.
     """
     def __init__(self,
                  pdb: Path,
@@ -59,6 +104,15 @@ class EmbedEnergyData(EmbedData):
         self.embeddings = self.preprocess()
 
     def preprocess(self) -> dict[str, np.ndarray]:
+        """
+        Processes embeddings data so that it can be fed through parent methods.
+        This requires the embeddings data contain values of one-dimensional arrays,
+        and that the data be rescaled such that there are no negative values while
+        preserving the distance between values.
+
+        Returns:
+            (dict[str, np.ndarray]): Processed data array.
+        """
         new_embeddings = dict()
         all_data = []
         for sel, data in self.embeddings.items():
@@ -76,6 +130,18 @@ class EmbedEnergyData(EmbedData):
 
     @staticmethod
     def sanitize_data(data: np.ndarray,) -> np.ndarray:
+        """
+        Takes in data of shape (n_frames, n_residues, n_terms) and 
+        returns one-dimensional array of shape (n_residues,) by
+        first averaging in the first dimension and then summing in
+        the new second dimension - originally the third dimension.
+
+        Arguments:
+            data (np.ndarray): Unprocessed input data.
+
+        Returns:
+            (np.ndarray): One-dimensional processed data.
+        """
         if len(data.shape) > 2:
             data = np.mean(data, axis=0)
 

@@ -101,6 +101,9 @@ class MMPBSA(MMPBSA_settings):
         the various energy terms for GB/PB using mmpbsa_py_energy from ambertools.
         Finally, parse outputs and collate into a neat form consisting of a json
         of raw data and a plain text file of the binding free energies.
+
+        Returns:
+            None
         """
         gb_mdin, pb_mdin = self.write_mdins()
 
@@ -117,6 +120,14 @@ class MMPBSA(MMPBSA_settings):
                        trj: PathLike) -> None:
         """
         Runs the molsurf command in cpptraj to compute the SASA of a given system.
+
+        Arguments:
+            pre (str): Prefix for output SASA file.
+            prm (PathLike): Path to prmtop file.
+            trj (PathLike): Path to CRD trajectory file.
+
+        Returns:
+            None
         """
         sasa = self.fh.path / 'sasa.in'
         sasa_in = [
@@ -139,8 +150,20 @@ class MMPBSA(MMPBSA_settings):
                          mdin: PathLike,
                          suf: str) -> None:
         """
-        Runs mmpbsa_py_energy, an undocumented binary file which somehow computes the
-        energy of a system.
+        Runs mmpbsa_py_energy, an undocumented binary file which somehow mysteriously 
+        computes the energy of a system. This software is not only undocumented but is
+        a binary which we cannot inspect ourselves.
+        
+        Arguments:
+            pre (str): Prefix for output file.
+            prm (PathLike): Path to prmtop file.
+            trj (PathLike): Path to CRD trajectory file.
+            pdb (PathLike): Path to PDB file.
+            mdin (PathLike): Configuration file for the program.
+            suf (str): Suffix for output file.
+
+        Returns:
+            None
         """
         subprocess.call(f'{self.mmpbsa_py_energy} -O -i {mdin} -p {prm} -c {pdb} -y {trj} -o {pre}_{suf}.mdout', shell=True)
     
@@ -149,6 +172,9 @@ class MMPBSA(MMPBSA_settings):
         Writes out the configuration files that are to be fed to mmpbsa_py_energy.
         These are also undocumented and I took the parameters from the location
         in which they are hardcoded in ambertools.
+
+        Returns:
+            (tuple[Path, Path]): Tuple of paths to the GB mdin and the PB mdin.
         """
         gb = self.fh.path / 'gb_mdin'
         gb_mdin = [
@@ -217,6 +243,9 @@ class OutputAnalyzer:
     def parse_outputs(self) -> None:
         """
         Parse all the output files.
+
+        Returns:
+            None
         """        
         self.gb = pl.DataFrame()
         self.pb = pl.DataFrame()
@@ -251,6 +280,7 @@ class OutputAnalyzer:
 
         Arguments:
             _file (PathLike): Path to a file containing the SASA data.
+
         Returns:
             (np.ndarray): A numpy array of the per-frame rescaled SASA energies.
         """
@@ -267,6 +297,13 @@ class OutputAnalyzer:
         Read in the GB mdout files and returns a Polars dataframe of the values
         for each term for every frame. Also adds a `system` label to more easily
         compute summary statistics later.
+
+        Arguments:
+            _file (PathLike): Energy data file path.
+            system (str): String label for which system we are processing (e.g. complex).
+
+        Returns:
+            (pl.DataFrame): Polars dataframe containing the parsed energy data.
         """
         gb_terms = ['BOND', 'ANGLE', 'DIHED', 'VDWAALS', 'EEL',
                     'EGB', '1-4 VDW', '1-4 EEL', 'RESTRAINT', 'ESURF']
@@ -283,6 +320,13 @@ class OutputAnalyzer:
         Read in the PB mdout files and returns a Polars dataframe of the values
         for each term for every frame. Also adds a `system` label to more easily
         compute summary statistics later.
+
+        Arguments:
+            _file (PathLike): Energy data file path.
+            system (str): String label for which system we are processing (e.g. complex).
+
+        Returns:
+            (pl.DataFrame): Polars dataframe containing the parsed energy data.
         """
         pb_terms = ['BOND', 'ANGLE', 'DIHED', 'VDWAALS', 'EEL',
                     'EPB', '1-4 VDW', '1-4 EEL', 'RESTRAINT',
@@ -334,6 +378,16 @@ class OutputAnalyzer:
         )
 
     def check_bonded_terms(self) -> None:
+        """
+        Performs a sanity check on the bonded terms which should perfectly cancel out
+        (e.g. complex = receptor + ligand). If this is not the case something horrible
+        has happened and we can't trust the non-bonded energies either. Additionally
+        sets a few terms we will need later such as the number of frames as given by
+        the dataframe height and sqrt(n_frames).
+
+        Returns:
+            None
+        """
         bonded = ['BOND', 'ANGLE', 'DIHED', '1-4 VDW', '1-4 EEL']
         
         for theory_level in (self.gb, self.pb):
@@ -361,6 +415,13 @@ class OutputAnalyzer:
         self.square_root_N = np.sqrt(self.n_frames)
 
     def generate_summary(self) -> None:
+        """
+        Summarizes all processed energy data into a single polars dataframe
+        and dumps it to a json file.
+
+        Returns:
+            None
+        """
         full_statistics = {sys: {} for sys in self.systems}
         for theory, level in zip([self.gb, self.pb], self.levels):
             for system in self.systems:
@@ -395,6 +456,14 @@ class OutputAnalyzer:
             json.dump(full_statistics, fout, indent=4)
 
     def compute_dG(self) -> None:
+        """
+        For each energy dataframe (GB/PB) compute the ∆G of binding by subtracting out
+        relevant contributions in accordance with how this is done under the hood of the
+        MMPBSA code.
+
+        Returns:
+            None
+        """
         differences = []
         for theory, level in zip([self.gb, self.pb], self.levels):
             diff_cols = [col for col in theory.columns if col != 'system']
@@ -435,6 +504,17 @@ class OutputAnalyzer:
 
     def pretty_print(self,
                      dfs: list[pl.DataFrame]) -> None:
+        """
+        Ingests a list of Polars dataframes for GB and PB and prints their contents
+        in a human-readable form to STDIN. Also saves out the energies to a plain
+        text file called `deltaG.txt`.
+
+        Arguments:
+            dfs (list[pl.DataFrame]): List of dataframes for GB and PB.
+
+        Returns:
+            None
+        """
         print_statement = []
         for df, level in zip(dfs, ['Generalized Born ', 'Poisson Boltzmann']):
             print_statement += [
@@ -462,6 +542,13 @@ class OutputAnalyzer:
 
     @staticmethod
     def parse_line(line) -> tuple[list[str], list[float]]:
+        """
+        Parses a line from mmpbsa_energy to get the various energy terms and values.
+
+        Returns:
+            (tuple[list[str], list[float]]): A tuple containing the list of energy
+                term names and corresponding energy values.
+        """
         eq_split = line.split('=')
         
         if len(eq_split) == 2:
@@ -512,6 +599,9 @@ class FileHandler:
         Slices out each sub-topology for the desolvated complex, receptor and
         ligand using cpptraj due to the difficulty of working with AMBER FF
         files otherwise (including PARMED).
+
+        Returns:
+            None
         """
         self.topologies = [
             self.path / 'complex.prmtop',
@@ -549,6 +639,9 @@ class FileHandler:
         """
         Converts DCD trajectory to AMBER CRD format which is explicitly
         required by MM-G(P)BSA.
+
+        Returns:
+            None
         """
         self.trajectories = [path.with_suffix('.crd') for path in self.topologies]
         self.pdbs = [path.with_suffix('.pdb') for path in self.topologies]
@@ -608,6 +701,9 @@ class FileHandler:
         Returns a zip generator containing the output paths, topologies,
         trajectories and pdbs for each system. This is done to ensure we
         have the correct order for housekeeping reasons.
+
+        Returns:
+            (tuple[list[str]]): System order, topologies, trajectories and pdbs.
         """
         _order = [self.path / prefix for prefix in ['complex', 'receptor', 'ligand']]
         return zip(_order, self.topologies, self.trajectories, self.pdbs)
@@ -622,6 +718,9 @@ class FileHandler:
         Arguments:
             lines (list[str]): Input to be written to file.
             filepath (PathLike): Path to the file to be written.
+
+        Returns:
+            None
         """
         if isinstance(lines, list):
             lines = '\n'.join(lines)

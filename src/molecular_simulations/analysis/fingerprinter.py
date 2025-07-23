@@ -11,8 +11,11 @@ OptPath = Union[Path, str, None]
 PathLike = Union[Path, str]
 
 @njit
-def unravel_index(n1, 
-                  n2):
+def unravel_index(n1: int, 
+                  n2: int) -> tuple[np.ndarray, np.ndarray]:
+    """
+    
+    """
     a, b = np.empty((n1, n2), dtype=np.int32), np.empty((n1, n2), dtype=np.int32)
     for i in range(n1):
         for j in range(n2):
@@ -20,8 +23,11 @@ def unravel_index(n1,
     return a.ravel(),b.ravel()
 
 @njit
-def _dist_mat(xyz1, 
-              xyz2):
+def _dist_mat(xyz1: np.ndarray, 
+              xyz2: np.ndarray) -> np.ndarray:
+    """
+
+    """
     n1 = xyz1.shape[0]
     n2 = xyz2.shape[0]
     ndim = xyz1.shape[1]
@@ -34,8 +40,8 @@ def _dist_mat(xyz1,
     return np.sqrt(dist_mat)
 
 @njit
-def dist_mat(xyz1, 
-             xyz2):
+def dist_mat(xyz1: np.ndarray, 
+             xyz2: np.ndarray) -> np.ndarray:
     n1 = xyz1.shape[0]
     n2 = xyz2.shape[0]
     return _dist_mat(xyz1, xyz2).reshape(n1, n2)
@@ -45,7 +51,6 @@ def electrostatic(distance,
                   charge_i, 
                   charge_j):
     """
-    Moeen + screening
     Calculate electrostatic energy between two particles.
     Cutoff at 12 Angstrom without switching.
 
@@ -79,7 +84,8 @@ def electrostatic(distance,
 
 @njit
 def electrostatic_sum(distances,
-                      charge_is, charge_js):
+                      charge_is, 
+                      charge_js):
     """
     Calculate sum of all electrostatic interactions between two
     sets of particles.
@@ -103,8 +109,10 @@ def electrostatic_sum(distances,
 
 @njit
 def lennard_jones(distance, 
-                  sigma_i, sigma_j,
-                  epsilon_i, epsilon_j):
+                  sigma_i, 
+                  sigma_j,
+                  epsilon_i, 
+                  epsilon_j):
     """
     Calculate LJ energy between two particles.
     Cutoff at 12 Angstrom without switching.
@@ -135,8 +143,10 @@ def lennard_jones(distance,
 
 @njit
 def lennard_jones_sum(distances,
-                      sigma_is, sigma_js,
-                      epsilon_is, epsilon_js):
+                      sigma_is, 
+                      sigma_js,
+                      epsilon_is, 
+                      epsilon_js):
     """
     Calculate sum of all LJ interactions between two sets of
     particles.                                       
@@ -160,8 +170,12 @@ def lennard_jones_sum(distances,
     return energy
 
 @njit
-def fingerprints(xyzs, charges, sigmas, epsilons,
-                 target_resmap, binder_inds):
+def fingerprints(xyzs, 
+                 charges, 
+                 sigmas, 
+                 epsilons,
+                 target_resmap, 
+                 binder_inds):
     """
     Calculates electrostatic fingerprint.
     ES energy between each target residue and all binder residues.
@@ -189,12 +203,19 @@ class Fingerprinter:
     """
     Calculates interaction energy fingerprint between target and binder chains. 
     
-    Inputs:
-        pdb_file (str): path to pdb file
-        target_resid_range (list[int]): inclusive range of residue indices (1-based) 
-            defining target protein
-        binder_resid_range (list[int]): inclusive range of residue indices (1-based) 
-            defining binder protein
+    Arguments:
+        topology (PathLike): Path to topology file.
+        trajectory (OptPath): Defaults to None. If not None, should be a path to a
+            trajectory file or coordinates file.
+        target_selection (str): Defaults to 'segid A'. Any MDAnalysis selection
+            string that encompasses target.
+        binder_selection (str | None): Defaults to None. If None, binder is defined
+            as anything that is not the target. Otherwise should be an MDAnalysis
+            selection string that encompasses the binder.
+        out_path (OptPath): Defaults to None. If provided will be where outputs are
+            saved to, otherwise the topology parent path is used.
+        out_name (str | None): Defaults to None. If None, output file will be called
+            'fingerprint.npz'.
             
     Usage:
         m = Fingerprinter(*args)
@@ -204,7 +225,7 @@ class Fingerprinter:
     def __init__(self,
                  topology: PathLike,
                  trajectory: OptPath=None,
-                 target_selection: str,
+                 target_selection: str = 'segid A',
                  binder_selection: str | None = None,
                  out_path: OptPath = None,
                  out_name: str | None = None):
@@ -244,7 +265,14 @@ class Fingerprinter:
             self.epsilons[ind] = epsilon / epsilon.unit # kJ/mol
 
     def load_pdb(self) -> None:
-        # load with MDAnalysis
+        """
+        Loads topology into MDAnalysis universe object. Can take either a PDB
+        or an AMBER prmtop. If trajectory was not specified, will look for either
+        inpcrd or rst7 with the same path and stem as the topology file.
+
+        Returns:
+            None
+        """
         if self.topology.suffix == '.pdb':
             self.u = mda.Universe(self.topology)
         else:
@@ -258,7 +286,12 @@ class Fingerprinter:
             self.u = mda.Universe(self.topology, coordinates)
 
     def assign_residue_mapping(self) -> None:
-        # map each residue index (1-based) to corresponding atom indices
+        """
+        Map each residue index (1-based) to corresponding atom indices.
+
+        Returns:
+            None
+        """
         target = self.u.select_atoms(self.target_selection)
         self.target_resmap = [residue.atoms.ix for residue in target.residues]
         self.target_inds = np.concatenate(self.target_resmap)
@@ -269,6 +302,12 @@ class Fingerprinter:
         self.binder_inds = np.concatenate(self.binder_resmap)
 
     def iterate_frames(self) -> None:
+        """
+        Runs calculations over each frame.
+
+        Returns:
+            None
+        """
         self.target_fingerprint = np.zeros((
             len(self.u.trajectory), len(self.target_resmap), 2
         ))
@@ -282,6 +321,15 @@ class Fingerprinter:
 
     def calculate_fingerprints(self,
                                frame_index: int) -> None:
+        """
+        Calculates fingerprints for a given frame of the trajectory.
+
+        Arguments:
+            frame_index (int): Frame index, since frame number and index might be
+                discontinuous.
+        Returns:
+            None
+        """
         positions = self.u.atoms.positions * .1 # convert to nm
         self.target_fingerprint[frame_index] = np.vstack(
             fingerprints(
@@ -302,12 +350,25 @@ class Fingerprinter:
         ).T
     
     def run(self) -> None:
+        """
+        Main logic. Obtains parameters, loads PDB and then
+        iterates through trajectory to obtain fingerprints.
+
+        Returns:
+            None
+        """
         self.assign_nonbonded_params()
         self.load_pdb()
         self.assign_residue_mapping()
         self.iterate_frames()
 
     def save(self) -> None:
+        """
+        Saves data to an npz stack.
+
+        Returns:
+            None
+        """
         np.savez(self.out, 
                  target=self.target_fingerprint, 
                  binder=self.binder_fingerprint)

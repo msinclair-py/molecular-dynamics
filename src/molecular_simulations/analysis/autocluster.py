@@ -16,15 +16,21 @@ class GenericDataloader:
     Loads any generic data stored in numpy arrays and stores the full
     dataset. Capable of loading data with variable row lengths but must
     be consistent in the columnar dimension.
+
+    Arguments:
+        data_files (list[PathLike]): List of paths to input data files.
     """
     def __init__(self,
                  data_files: list[PathLike]):
         self.files = data_files
         self.load_data()
 
-    def load_data(self):
+    def load_data(self) -> None:
         """
-        Loads data into one large array.
+        Lumps data into one large array.
+
+        Returns:
+            None
         """
         self.data_array = []
         self.shapes = []
@@ -43,11 +49,21 @@ class GenericDataloader:
             self.data_array = self.data_array.reshape(x, shape2)
 
     @property
-    def data(self):
+    def data(self) -> np.ndarray:
+        """
+        Returns:
+            (np.ndarray): Internal data array.
+        """
         return self.data_array
 
     @property
-    def shape(self):
+    def shape(self) -> tuple[int]:
+        """
+        Returns:
+            (tuple[int]): Shape of each individual data file, or if they have 
+                different shapes, the shape of each based on the order they were
+                provided to this class.
+        """
         if len(set(self.shapes)) == 1:
             return self.shapes[0]
         
@@ -62,9 +78,12 @@ class PeriodicDataloader(GenericDataloader):
                  data_files: list[PathLike]):
         super().__init__(data_files)
         
-    def load_data(self):
+    def load_data(self) -> None:
         """
         Loads file of input periodic data.
+
+        Returns:
+            None
         """
         self.data_array = []
         self.shapes = []
@@ -77,7 +96,15 @@ class PeriodicDataloader(GenericDataloader):
     def remove_periodicity(self,
                            arr: np.ndarray) -> np.ndarray:
         """
-        Removes periodicity from each feature using sin and cos.
+        Removes periodicity from each feature using sin and cos. Each
+        column is expanded into two such that the indices become
+        i -> 2*i, 2*i + 1.
+
+        Arguments:
+            arr (np.ndarray): Data to perform decomposition on.
+
+        Returns:
+            (np.ndarray): New array which should be shape (arr.shape[0], arr.shape[1] * 2).
         """
         n_features = arr.shape[1]
         return_arr = np.zeros((arr.shape[0], n_features * 2))
@@ -93,6 +120,21 @@ class AutoKMeans:
     """
     Performs automatic clustering using KMeans++ including dimensionality reduction
     of the feature space.
+
+    Arguments:
+        data_directory (PathLike): Directory where data files can be found.
+        pattern (str): Optional filename pattern to select out subset of npy files
+            using glob. 
+        dataloader (Type[_T]): Defaults to GenericDataLoader. Which dataloader to use.
+        max_clusters (int): Defaults to 10. The maximum number of clusters to test
+            during parameter sweep.
+        stride (int): Defaults to 1. Linear stride of number of clusters during 
+            parameter sweep. Aids on not testing too many values if number of clusters
+            is high.
+        reduction_algorithm (str): Defaults to PCA. Which dimensionality reduction
+            algorithm to use. Currently only PCA is supported.
+        reduction_kws (dict[str, Any]): Defaults to {'n_components': 2} for PCA. kwargs
+            for supplied reduction_algorithm.
     """
     def __init__(self,
                  data_directory: PathLike,
@@ -102,7 +144,7 @@ class AutoKMeans:
                  stride: int=1,
                  reduction_algorithm: str='PCA',
                  reduction_kws: dict[str, Any]={'n_components': 2}):
-        self.data_dir = Path(data_directory) if isinstance(data_directory, str) else data_directory
+        self.data_dir = Path(data_directory) 
         self.dataloader = dataloader(list(self.data_dir.glob(f'{pattern}*.npy')))
         self.data = self.dataloader.data
         self.shape = self.dataloader.shape
@@ -115,6 +157,9 @@ class AutoKMeans:
     def run(self) -> None:
         """
         Runs the automated clustering workflow.
+
+        Returns:
+            None
         """
         self.reduce_dimensionality()
         self.sweep_n_clusters([n for n in range(2, self.n_clusters, self.stride)])
@@ -125,6 +170,9 @@ class AutoKMeans:
     def reduce_dimensionality(self) -> None:
         """
         Performs dimensionality reduction using decomposer of choice.
+
+        Returns:
+            None
         """
         self.reduced = self.decomposition.fit_transform(self.data)
 
@@ -133,6 +181,12 @@ class AutoKMeans:
         """
         Uses silhouette score to perform a parameter sweep over number of clusters.
         Stores the cluster centers for the best performing parameterization.
+
+        Arguments:
+            n_clusters (list[int]): List of number of clusters to test.
+
+        Returns:
+            None
         """
         best_centers = None
         best_labels = None
@@ -155,6 +209,9 @@ class AutoKMeans:
         """
         Finds and stores the data point which lies closest to the cluster center 
         for each cluster.
+
+        Returns:
+            None
         """
         cluster_centers = {i: None for i in range(len(self.centers))}
         for i, center in enumerate(self.centers):
@@ -171,6 +228,9 @@ class AutoKMeans:
     def save_centers(self) -> None:
         """
         Saves out cluster centers as a json file.
+
+        Returns:
+            None
         """
         with open(str(self.data_dir / 'cluster_centers.json'), 'w') as fout:
             json.dump(self.cluster_centers, fout, indent=4)
@@ -179,6 +239,9 @@ class AutoKMeans:
         """
         Generates a polars dataframe containing system, frame and cluster label 
         assignments and saves to a parquet file.
+
+        Returns:
+            None
         """
         files = self.dataloader.files
         if isinstance(self.dataloader.shape, tuple):
@@ -200,6 +263,11 @@ class Decomposition:
     """
     Thin wrapper for various dimensionality reduction algorithms. Uses scikit-learn style
     methods like `fit` and `fit_transform`.
+
+    Arguments:
+        algorithm (str): Which algorithm to use from PCA, TICA and UMAP. Currently only
+            PCA is supported.
+        kwargs: algorithm-specific kwargs to inject into the decomposer.
     """
     def __init__(self,
                  algorithm: str,
@@ -214,12 +282,41 @@ class Decomposition:
     
     def fit(self,
             X: np.ndarray) -> None:
+        """
+        Fits the decomposer with data.
+
+        Arguments:
+            X (np.ndarray): Array of input data.
+
+        Returns:
+            None
+        """
         self.decomposer.fit(X)
 
     def transform(self,
                   X: np.ndarray) -> np.ndarray:
+        """
+        Returns the reduced dimension data from a decomposer which has already been
+        fit.
+
+        Arguments:
+            X (np.ndarray): Array of input data.
+
+        Returns:
+            (np.ndarray): Reduced dimension data.
+        """
         return self.decomposer.transform(X)
 
     def fit_transform(self,
                       X: np.ndarray) -> np.ndarray:
+        """
+        Fits the decomposer with data and returns the reduced dimension
+        data.
+
+        Arguments:
+            X (np.ndarray): Array of input data.
+
+        Returns:
+            (np.ndarray): Reduced dimension data.
+        """
         return self.decomposer.fit_transform(X)
