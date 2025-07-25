@@ -20,12 +20,19 @@ OptPath = Union[str, Path, None]
 Sequences = List[Sequence]
 
 class LigandError(Exception):
+    """
+    Custom Ligand exception to catch parameterization errors.
+    """
     def __init__(self, message='This system contains ligands which we cannot model!'):
         self.message = message
         super().__init__(self.message)
 
 
 class LigandBuilder:
+    """
+    Parameterizes a ligand molecule and generates all relevant force field files for
+    running tleap.
+    """
     def __init__(self, path: PathLike, lig: str, lig_number: int=0, file_prefix: str=''):
         self.path = path
         self.lig = path / lig 
@@ -39,6 +46,9 @@ class LigandBuilder:
         a mol2 file for coordinates and connectivity and ensures that
         antechamber did not fail. Hydrogens are added in rdkit which 
         generally does a good job of this.
+
+        Returns:
+            None
         """
         ext = self.lig.suffix
         self.lig = self.lig.stem
@@ -75,19 +85,35 @@ class LigandBuilder:
         Add hydrogens in rdkit. Atom hybridization is taken from the
         input sdf file and if this is incorrect, hydrogens will be wrong
         too.
+
+        Returns:
+            None
         """
         mol = Chem.SDMolSupplier(f'{self.lig}.sdf')[0]
         molH = Chem.AddHs(mol, addCoords=True)
         with Chem.SDWriter(f'{self.lig}_H.sdf') as w:
             w.write(molH)
         
-    def process_pdb(self):
+    def process_pdb(self) -> None:
+        """
+        Ingests a PDB file of a small molecule, adds hydrogens and writes out to
+        an SDF file.
+
+        Returns:
+            None
+        """
         mol = Chem.MolFromPDBFile(f'{self.lig}.pdb')
         molH = Chem.AddHs(mol, addCoords=True)
         with Chem.SDWriter(f'{self.lig}_H.sdf') as w:
             w.write(molH)
 
     def convert_to_mol2(self) -> None:
+        """
+        Converts an sdf file to mol2 format using obabel.
+
+        Returns:
+            None
+        """
         mol = list(pybel.readfile('sdf', f'{self.lig}_H.sdf'))[0]
         mol.write('mol2', f'{self.lig}_prep.mol2', True)
 
@@ -95,18 +121,24 @@ class LigandBuilder:
         """
         Remove unneccessary outputs from antechamber. Keep the
         sqm.out file as proof that antechamber did not fail.
+
+        Returns:
+            None
         """
         os.remove('sqm.in')
         os.remove('sqm.pdb')
         shutil.move('sqm.out', f'{self.lig}_sqm.out')
         
-    def check_sqm(self) -> int:
+    def check_sqm(self) -> None:
         """
         Checks for evidence that antechamber calculations exited
         successfully. This is always on the second to last line,
         and if not present, indicates that we failed to produce
         sane parameters for this molecule. In that case, I wish
         you good luck.
+
+        Returns:
+            None
         """
         line = open(f'{self.lig}_sqm.out').readlines()[-2]
 
@@ -116,7 +148,8 @@ class LigandBuilder:
             # if it still fails then we raise an error
             raise LigandError(f'SQM failed for ligand {self.lig}!')
 
-    def write_leap(self, inp: str) -> str:
+    def write_leap(self, 
+                   inp: str) -> str:
         """
         Writes out a tleap input file and returns the path
         to the file.

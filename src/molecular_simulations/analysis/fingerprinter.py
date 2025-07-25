@@ -166,7 +166,7 @@ def lennard_jones_sum(distances,
         for j in range(m):
             energy += lennard_jones(distances[i,j], 
                                     sigma_is[i], sigma_js[j],
-                                    epsilon_is[i], sigma_js[j])
+                                    epsilon_is[i], epsilon_js[j])
     return energy
 
 @njit

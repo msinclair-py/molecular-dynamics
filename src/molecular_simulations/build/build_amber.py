@@ -64,17 +64,23 @@ class ImplicitSolvent:
         to produce an explicit solvent system. This includes running
         `pdb4amber`, computing the periodic box size, number of ions
         needed and running `tleap` to make the final system.
+
+        Returns:
+            None
         """
         if self.use_amber:
             self.tleap_it()
         else:
             self.pdbfix_it()
 
-    def pdbfix_it(self) -> str:
+    def pdbfix_it(self) -> None:
         """
         Using PDBFixer, add hydrogens and missing atoms and if a SEQ record
         exists (i.e. PDB is from RCSB) add missing residues. This is somewhat
         unstable so take care to make sure the outputs are ok.
+
+        Returns:
+            None
         """
         fixer = PDBFixer(filename=str(self.path / self.pdb))
         fixer.findMissingResidues()
@@ -90,6 +96,9 @@ class ImplicitSolvent:
         While more painful, tleap is more stable for system building.
         Runs the input PDB through tleap with the FF19SB protein forcefield
         and whichever other forcefields were turned on.
+
+        Returns:
+            None
         """
         ffs = '\n'.join([f'source {ff}' for ff in self.ffs])
         tleap_in = f"""
@@ -107,6 +116,9 @@ class ImplicitSolvent:
         """
         Writes out a tleap input file and returns the path
         to the file.
+
+        Returns:
+            (Path): Path to tleap input file.
         """
         leap_file = f'{self.path}/tleap.in'
         with open(leap_file, 'w') as outfile:
@@ -123,6 +135,9 @@ class ImplicitSolvent:
 
         Arguments:
             inp (str): The tleap input file contents as a single string.
+
+        Returns:
+            None
         """
         with tempfile.NamedTemporaryFile(mode='w+', suffix='.in') as temp_file:
             temp_file.write(inp)
@@ -158,6 +173,9 @@ class ExplicitSolvent(ImplicitSolvent):
         to produce an explicit solvent system. This includes running
         `pdb4amber`, computing the periodic box size, number of ions
         needed and running `tleap` to make the final system.
+
+        Returns:
+            None
         """
         self.prep_pdb()
         dim = self.get_pdb_extent()
@@ -165,11 +183,14 @@ class ExplicitSolvent(ImplicitSolvent):
         self.assemble_system(dim, num_ions)
         self.clean_up_directory()
 
-    def prep_pdb(self):
+    def prep_pdb(self) -> None:
         """
         Runs input PDB through `pdb4amber` to ensure it is compliant enough
         that tleap won't freak out on us later. Removes any explicit hydrogens
         from the input structure to avoid name mismatches.
+
+        Returns:
+            None
         """
         os.system(f'pdb4amber -i {self.pdb} -o {self.path}/protein.pdb -y')
         self.pdb = f'{self.path}/protein.pdb'
@@ -177,6 +198,13 @@ class ExplicitSolvent(ImplicitSolvent):
     def assemble_system(self, dim: float, num_ions: int) -> None:
         """
         Build system in tleap.
+
+        Arguments:
+            dim (float): Longest dimension in Angstrom.
+            num_ions (int): Explicit number of ions to achieve 150mM.
+
+        Returns:
+            None
         """
         tleap_ffs = '\n'.join([f'source {ff}' for ff in self.ffs])
         tleap_complex = f"""{tleap_ffs}
@@ -206,6 +234,9 @@ class ExplicitSolvent(ImplicitSolvent):
         projection. Not super accurate but likely good enough for determining
         PBC box size. Returns longest axis length + 2 times the padding
         to account for +/- padding.
+
+        Returns:
+            (int): Longest dimension with 2 times padding in Angstrom.
         """
         lines = [line for line in open(self.pdb).readlines() if 'ATOM' in line]
         xs, ys, zs = [], [], []
@@ -227,6 +258,9 @@ class ExplicitSolvent(ImplicitSolvent):
         Remove leap log. This is placed wherever the script calling it
         runs and likely will throw errors if multiple systems are
         being iteratively built.
+
+        Returns:
+            None
         """
         os.remove('leap.log')
         (self.path / 'build').mkdir(exist_ok=True)
@@ -235,10 +269,16 @@ class ExplicitSolvent(ImplicitSolvent):
                 f.rename(f.parent / 'build' / f.name)
         
     @staticmethod
-    def get_ion_numbers(volume: int) -> float:
+    def get_ion_numbers(volume: float) -> int:
         """
         Returns the number of Chloride? ions required to achieve 150mM
         concentration for a given volume. The number of Sodium counter
         ions should be equivalent.
+
+        Arguments:
+            volume (float): Volume of box in cubic Angstrom.
+
+        Returns:
+            (int): Number of ions for 150mM NaCl.
         """
         return round(volume * 10e-6 * 9.03)

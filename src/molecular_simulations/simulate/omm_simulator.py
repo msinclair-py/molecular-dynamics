@@ -703,7 +703,7 @@ class Minimizer:
 
         self.path = self.topology.parent
         self.out = self.path / out
-        self.platform = platform
+        self.platform = Platform.getPlatformByName(platform)
         self.properties = {'DeviceIndex': ','.join([str(x) for x in device_ids]),
                            'Precision': 'mixed'}
 
