@@ -1,4 +1,5 @@
 import openmm
+from openmm.app import AmberPrmtopFile
 import MDAnalysis as mda
 from numba import njit
 import numpy as np
@@ -250,8 +251,7 @@ class Fingerprinter:
 
     def assign_nonbonded_params(self) -> None:
         # build openmm system
-        builder = Minimizer(self.topology)
-        system = builder.load_files()
+        system = AmberPrmtopFile(self.topology).createSystem()
 
         # extract NB params
         nonbonded = [f for f in system.getForces() if isinstance(f, openmm.NonbondedForce)][0]

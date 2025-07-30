@@ -693,19 +693,20 @@ class Minimizer:
     """
     def __init__(self,
                  topology: PathLike,
-                 coordinates: OptPath = None,
+                 coordinates: PathLike,
                  out: PathLike='min.pdb',
                  platform: str='OpenCL',
-                 device_ids: list[int]=[0]):
+                 device_ids: list[int] | None =[0]):
         self.topology = Path(topology) 
-        if coordinates is not None:
-            self.coordinates = Path(coordinates)
+        self.coordinates = Path(coordinates)
 
         self.path = self.topology.parent
         self.out = self.path / out
         self.platform = Platform.getPlatformByName(platform)
-        self.properties = {'DeviceIndex': ','.join([str(x) for x in device_ids]),
-                           'Precision': 'mixed'}
+        self.properties = {'Precision': 'mixed'}
+
+        if device_ids is not None:
+            self.properties.update({'DeviceIndex': ','.join([str(x) for x in device_ids])})
 
     def minimize(self) -> None:
         """
@@ -732,7 +733,7 @@ class Minimizer:
         state = simulation.context.getState(getPositions=True)
         positions = state.getPositions()
         
-        PDBFile.writeFile(simulation.topology, 
+        PDBFile.writeFile(self.topology.topology, 
                           positions, 
                           file=str(self.out), 
                           keepIds=True)
@@ -764,12 +765,9 @@ class Minimizer:
         Returns:
             (System): OpenMM system object.
         """
-        inpcrd = list(self.path.glob('*.inpcrd')) + list(self.path.glob('*.rst7'))
-        if hasattr(self, 'coordinates'):
-            self.coordinates = AmberInpcrdFile(str(self.coordinates))
-        else:
-            self.coordinates = AmberInpcrdFile(str(inpcrd[0]))
-        self.topology = AmberPrmtopFile(str(self.topology))
+        self.coordinates = AmberInpcrdFile(str(self.coordinates))
+        self.topology = AmberPrmtopFile(str(self.topology), 
+                                        periodicBoxVectors=self.coordinates.boxVectors)
 
         system = self.topology.createSystem(nonbondedMethod=NoCutoff,
                                             constraints=HBonds)
