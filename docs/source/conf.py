@@ -21,6 +21,7 @@ release = '2025'
 
 # make sure sphinx always uses the current branch
 import sys
+import os
 
 sys.path.insert(0, os.path.abspath("../.."))
 
