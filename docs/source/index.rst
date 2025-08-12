@@ -6,12 +6,11 @@
 molecular-simulations documentation
 ===================================
 
-Add your content using ``reStructuredText`` syntax. See the
-`reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html>`_
-documentation for details.
-
+**molecular simulations** is a library of helper functions and classes for building and deploying molecular dynamics simulations in OpenMM. Additionally a number of analysis frameworks are included for processing both MD data as well as ML-folded proteins.
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
+    usage
+    api
