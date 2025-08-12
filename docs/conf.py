@@ -26,7 +26,6 @@ import sphinx_rtd_theme
 
 sys.path.insert(0, os.path.abspath("../src/molecular_simulations"))
 
-
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
@@ -40,6 +39,8 @@ autodoc_default_options = {
     'undoc-members': True,
     'show-inheritance': True,
 }
+
+autodoc_mock_imports = ['MDAnalysis', 'openmm', 'pdbfixer', 'rdkit']
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
