@@ -17,7 +17,7 @@ build:
 conda:
   environment: environment.yaml
 
-  python:
-    install:
-      - method: pip
-        path: .
+python:
+  install:
+    - method: pip
+      path: .
