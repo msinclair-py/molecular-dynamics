@@ -9,8 +9,8 @@ Installation
 
 To use molecular-simulations, first install it using pip:
 
-.. code-block:: console
-   (.venv) $ pip install molecular-simulations -U
+.. code-block:: python
+   pip install molecular-simulations -U
 
 Examples
 --------

@@ -22,22 +22,27 @@ release = '2025'
 # make sure sphinx always uses the current branch
 import sys
 import os
+import sphinx_rtd_theme
 
-sys.path.insert(0, os.path.abspath("../.."))
+sys.path.insert(0, os.path.abspath("../src/molecular_simulations"))
+
 
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
     'sphinx.ext.napoleon',
-    'sphinx.ext.autosummary'
+    'sphinx_autodoc_typehints',
 ]
 
-templates_path = ['_templates']
-exclude_patterns = []
-
-
+autosummary_generate = True
+autodoc_default_options = {
+    'members': True,
+    'undoc-members': True,
+    'show-inheritance': True,
+}
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = 'alabaster'
+html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']

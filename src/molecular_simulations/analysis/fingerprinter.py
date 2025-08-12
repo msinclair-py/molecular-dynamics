@@ -6,8 +6,6 @@ import numpy as np
 from pathlib import Path
 from typing import Union
 
-from ..simulate import Minimizer
-
 OptPath = Union[Path, str, None]
 PathLike = Union[Path, str]
 

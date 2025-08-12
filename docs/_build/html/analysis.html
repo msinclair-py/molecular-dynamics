@@ -1,0 +1,2018 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>analysis package &mdash; molecular-simulations 2025 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=cb975c41"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="build package" href="build.html" />
+    <link rel="prev" title="molecular_simulations" href="modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            molecular-simulations
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">molecular_simulations</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">analysis package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-analysis.autocluster">analysis.autocluster module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#analysis.autocluster.AutoKMeans"><code class="docutils literal notranslate"><span class="pre">AutoKMeans</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#analysis.autocluster.Decomposition"><code class="docutils literal notranslate"><span class="pre">Decomposition</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#analysis.autocluster.GenericDataloader"><code class="docutils literal notranslate"><span class="pre">GenericDataloader</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#analysis.autocluster.PeriodicDataloader"><code class="docutils literal notranslate"><span class="pre">PeriodicDataloader</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-analysis.cov_ppi">analysis.cov_ppi module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#analysis.cov_ppi.PPInteractions"><code class="docutils literal notranslate"><span class="pre">PPInteractions</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-analysis.fingerprinter">analysis.fingerprinter module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#analysis.fingerprinter.Fingerprinter"><code class="docutils literal notranslate"><span class="pre">Fingerprinter</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#analysis.fingerprinter.dist_mat"><code class="docutils literal notranslate"><span class="pre">dist_mat()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#analysis.fingerprinter.electrostatic"><code class="docutils literal notranslate"><span class="pre">electrostatic()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#analysis.fingerprinter.electrostatic_sum"><code class="docutils literal notranslate"><span class="pre">electrostatic_sum()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#analysis.fingerprinter.fingerprints"><code class="docutils literal notranslate"><span class="pre">fingerprints()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#analysis.fingerprinter.lennard_jones"><code class="docutils literal notranslate"><span class="pre">lennard_jones()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#analysis.fingerprinter.lennard_jones_sum"><code class="docutils literal notranslate"><span class="pre">lennard_jones_sum()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#analysis.fingerprinter.unravel_index"><code class="docutils literal notranslate"><span class="pre">unravel_index()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-analysis.interaction_energy">analysis.interaction_energy module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#analysis.interaction_energy.DynamicInteractionEnergy"><code class="docutils literal notranslate"><span class="pre">DynamicInteractionEnergy</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#analysis.interaction_energy.InteractionEnergy"><code class="docutils literal notranslate"><span class="pre">InteractionEnergy</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#analysis.interaction_energy.InteractionEnergyFrame"><code class="docutils literal notranslate"><span class="pre">InteractionEnergyFrame</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#analysis.interaction_energy.StaticInteractionEnergy"><code class="docutils literal notranslate"><span class="pre">StaticInteractionEnergy</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-analysis.ipSAE">analysis.ipSAE module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#analysis.ipSAE.ModelParser"><code class="docutils literal notranslate"><span class="pre">ModelParser</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#analysis.ipSAE.ScoreCalculator"><code class="docutils literal notranslate"><span class="pre">ScoreCalculator</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#analysis.ipSAE.ipSAE"><code class="docutils literal notranslate"><span class="pre">ipSAE</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-analysis.sasa">analysis.sasa module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#analysis.sasa.RelativeSASA"><code class="docutils literal notranslate"><span class="pre">RelativeSASA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#analysis.sasa.SASA"><code class="docutils literal notranslate"><span class="pre">SASA</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-analysis.utils">analysis.utils module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#analysis.utils.EmbedData"><code class="docutils literal notranslate"><span class="pre">EmbedData</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#analysis.utils.EmbedEnergyData"><code class="docutils literal notranslate"><span class="pre">EmbedEnergyData</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-analysis">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="build.html">build package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="simulate.html">simulate package</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">molecular-simulations</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">molecular_simulations</a></li>
+      <li class="breadcrumb-item active">analysis package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/analysis.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="analysis-package">
+<h1>analysis package<a class="headerlink" href="#analysis-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-analysis.autocluster">
+<span id="analysis-autocluster-module"></span><h2>analysis.autocluster module<a class="headerlink" href="#module-analysis.autocluster" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="analysis.autocluster.AutoKMeans">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">analysis.autocluster.</span></span><span class="sig-name descname"><span class="pre">AutoKMeans</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern=''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataloader=&lt;class</span> <span class="pre">'analysis.autocluster.GenericDataloader'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_clusters=10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction_algorithm='PCA'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction_kws={'n_components':</span> <span class="pre">2}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.autocluster.AutoKMeans" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Performs automatic clustering using KMeans++ including dimensionality reduction
+of the feature space.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_directory</strong> (<em>PathLike</em>) – Directory where data files can be found.</p></li>
+<li><p><strong>pattern</strong> (<em>str</em>) – Optional filename pattern to select out subset of npy files
+using glob.</p></li>
+<li><p><strong>dataloader</strong> (<em>Type</em><em>[</em><em>_T</em><em>]</em>) – Defaults to GenericDataLoader. Which dataloader to use.</p></li>
+<li><p><strong>max_clusters</strong> (<em>int</em>) – Defaults to 10. The maximum number of clusters to test
+during parameter sweep.</p></li>
+<li><p><strong>stride</strong> (<em>int</em>) – Defaults to 1. Linear stride of number of clusters during
+parameter sweep. Aids on not testing too many values if number of clusters
+is high.</p></li>
+<li><p><strong>reduction_algorithm</strong> (<em>str</em>) – Defaults to PCA. Which dimensionality reduction
+algorithm to use. Currently only PCA is supported.</p></li>
+<li><p><strong>reduction_kws</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Defaults to {‘n_components’: 2} for PCA. kwargs
+for supplied reduction_algorithm.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.autocluster.AutoKMeans.map_centers_to_frames">
+<span class="sig-name descname"><span class="pre">map_centers_to_frames</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.autocluster.AutoKMeans.map_centers_to_frames" title="Link to this definition"></a></dt>
+<dd><p>Finds and stores the data point which lies closest to the cluster center
+for each cluster.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.autocluster.AutoKMeans.reduce_dimensionality">
+<span class="sig-name descname"><span class="pre">reduce_dimensionality</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.autocluster.AutoKMeans.reduce_dimensionality" title="Link to this definition"></a></dt>
+<dd><p>Performs dimensionality reduction using decomposer of choice.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.autocluster.AutoKMeans.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.autocluster.AutoKMeans.run" title="Link to this definition"></a></dt>
+<dd><p>Runs the automated clustering workflow.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.autocluster.AutoKMeans.save_centers">
+<span class="sig-name descname"><span class="pre">save_centers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.autocluster.AutoKMeans.save_centers" title="Link to this definition"></a></dt>
+<dd><p>Saves out cluster centers as a json file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.autocluster.AutoKMeans.save_labels">
+<span class="sig-name descname"><span class="pre">save_labels</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.autocluster.AutoKMeans.save_labels" title="Link to this definition"></a></dt>
+<dd><p>Generates a polars dataframe containing system, frame and cluster label
+assignments and saves to a parquet file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.autocluster.AutoKMeans.sweep_n_clusters">
+<span class="sig-name descname"><span class="pre">sweep_n_clusters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_clusters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.autocluster.AutoKMeans.sweep_n_clusters" title="Link to this definition"></a></dt>
+<dd><p>Uses silhouette score to perform a parameter sweep over number of clusters.
+Stores the cluster centers for the best performing parameterization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n_clusters</strong> (<em>list</em><em>[</em><em>int</em><em>]</em>) – List of number of clusters to test.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="analysis.autocluster.Decomposition">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">analysis.autocluster.</span></span><span class="sig-name descname"><span class="pre">Decomposition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">algorithm</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.autocluster.Decomposition" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Thin wrapper for various dimensionality reduction algorithms. Uses scikit-learn style
+methods like <cite>fit</cite> and <cite>fit_transform</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>algorithm</strong> (<em>str</em>) – Which algorithm to use from PCA, TICA and UMAP. Currently only
+PCA is supported.</p></li>
+<li><p><strong>kwargs</strong> – algorithm-specific kwargs to inject into the decomposer.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.autocluster.Decomposition.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.autocluster.Decomposition.fit" title="Link to this definition"></a></dt>
+<dd><p>Fits the decomposer with data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>X</strong> (<em>np.ndarray</em>) – Array of input data.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.autocluster.Decomposition.fit_transform">
+<span class="sig-name descname"><span class="pre">fit_transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.autocluster.Decomposition.fit_transform" title="Link to this definition"></a></dt>
+<dd><p>Fits the decomposer with data and returns the reduced dimension
+data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>X</strong> (<em>np.ndarray</em>) – Array of input data.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Reduced dimension data.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(np.ndarray)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.autocluster.Decomposition.transform">
+<span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.autocluster.Decomposition.transform" title="Link to this definition"></a></dt>
+<dd><p>Returns the reduced dimension data from a decomposer which has already been
+fit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>X</strong> (<em>np.ndarray</em>) – Array of input data.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Reduced dimension data.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(np.ndarray)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="analysis.autocluster.GenericDataloader">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">analysis.autocluster.</span></span><span class="sig-name descname"><span class="pre">GenericDataloader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_files</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.autocluster.GenericDataloader" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Loads any generic data stored in numpy arrays and stores the full
+dataset. Capable of loading data with variable row lengths but must
+be consistent in the columnar dimension.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data_files</strong> (<em>list</em><em>[</em><em>PathLike</em><em>]</em>) – List of paths to input data files.</p>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="analysis.autocluster.GenericDataloader.data">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#analysis.autocluster.GenericDataloader.data" title="Link to this definition"></a></dt>
+<dd><p>Returns:
+(np.ndarray): Internal data array.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.autocluster.GenericDataloader.load_data">
+<span class="sig-name descname"><span class="pre">load_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.autocluster.GenericDataloader.load_data" title="Link to this definition"></a></dt>
+<dd><p>Lumps data into one large array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="analysis.autocluster.GenericDataloader.shape">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">shape</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#analysis.autocluster.GenericDataloader.shape" title="Link to this definition"></a></dt>
+<dd><p>Returns:
+(tuple[int]): Shape of each individual data file, or if they have</p>
+<blockquote>
+<div><p>different shapes, the shape of each based on the order they were
+provided to this class.</p>
+</div></blockquote>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="analysis.autocluster.PeriodicDataloader">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">analysis.autocluster.</span></span><span class="sig-name descname"><span class="pre">PeriodicDataloader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_files</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.autocluster.PeriodicDataloader" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#analysis.autocluster.GenericDataloader" title="analysis.autocluster.GenericDataloader"><code class="xref py py-class docutils literal notranslate"><span class="pre">GenericDataloader</span></code></a></p>
+<p>Decomposes periodic data using sin and cos, returning double the features.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.autocluster.PeriodicDataloader.load_data">
+<span class="sig-name descname"><span class="pre">load_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.autocluster.PeriodicDataloader.load_data" title="Link to this definition"></a></dt>
+<dd><p>Loads file of input periodic data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.autocluster.PeriodicDataloader.remove_periodicity">
+<span class="sig-name descname"><span class="pre">remove_periodicity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.autocluster.PeriodicDataloader.remove_periodicity" title="Link to this definition"></a></dt>
+<dd><p>Removes periodicity from each feature using sin and cos. Each
+column is expanded into two such that the indices become
+i -&gt; 2*i, 2*i + 1.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>arr</strong> (<em>np.ndarray</em>) – Data to perform decomposition on.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>New array which should be shape (arr.shape[0], arr.shape[1] * 2).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(np.ndarray)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-analysis.cov_ppi">
+<span id="analysis-cov-ppi-module"></span><h2>analysis.cov_ppi module<a class="headerlink" href="#module-analysis.cov_ppi" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="analysis.cov_ppi.PPInteractions">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">analysis.cov_ppi.</span></span><span class="sig-name descname"><span class="pre">PPInteractions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">top</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">traj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sel1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'chainID</span> <span class="pre">A'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sel2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'chainID</span> <span class="pre">B'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cov_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(11.0,</span> <span class="pre">13.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sb_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hbond_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hbond_angle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hydrophobic_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.cov_ppi.PPInteractions" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="simple">
+<dt>Code herein adapted from:</dt><dd><p><a class="reference external" href="https://www.biorxiv.org/content/10.1101/2025.03.24.644990v1.full.pdf">https://www.biorxiv.org/content/10.1101/2025.03.24.644990v1.full.pdf</a></p>
+</dd>
+</dl>
+<p>Takes an input topology file and trajectory file, and highlights relevant
+interactions between two selections. To this end we first compute the
+covariance matrix between the two selections, filter out all interactions
+which occur too far apart (11Å for positive covariance, 13Å for negative
+covariance), and examines each based on a variety of distance and angle
+cutoffs defined in the literature.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>top</strong> (<em>PathLike</em>) – Path to topology file.</p></li>
+<li><p><strong>traj</strong> (<em>PathLike</em>) – Path to trajectory file.</p></li>
+<li><p><strong>out</strong> (<em>PathLike</em>) – Path to outputs.</p></li>
+<li><p><strong>sel1</strong> (<em>str</em>) – Defaults to ‘chainID A’. MDAnalysis selection string for the
+first selection.</p></li>
+<li><p><strong>sel2</strong> (<em>str</em>) – Defaults to ‘chainID B’. MDAnalysis selection string for the
+second selection.</p></li>
+<li><p><strong>cov_cutoff</strong> (<em>tuple</em><em>[</em><em>float</em><em>]</em>) – Defaults to (11., 13.). Tuple of the distance
+cutoffs to use for positive and negative covariance respectively.</p></li>
+<li><p><strong>sb_cutoff</strong> (<em>float</em>) – Defaults to 6.0Å. Distance cutoff for salt bridges.</p></li>
+<li><p><strong>hbond_cutoff</strong> (<em>float</em>) – Defaults to 3.5Å. Distance cutoff for hydrogen bonds.</p></li>
+<li><p><strong>hbond_angle</strong> (<em>float</em>) – Defaults to 30.0 degrees. Angle cutoff for hydrogen bonds.</p></li>
+<li><p><strong>hydrophobic_cutoff</strong> (<em>float</em>) – Defaults to 8.0Å. Distance cutoff for hydrophobic
+interactions.</p></li>
+<li><p><strong>plot</strong> (<em>bool</em>) – Defaults to True. Whether or not to plot results. Saves plots
+at the output directory.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.cov_ppi.PPInteractions.analyze_hbond">
+<span class="sig-name descname"><span class="pre">analyze_hbond</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.cov_ppi.PPInteractions.analyze_hbond" title="Link to this definition"></a></dt>
+<dd><p>Identifies all potential donor/acceptor atoms between two
+residues. Culls this list based on distance array across simulation
+and then evaluates each pair over the trajectory utilizing a
+distance and angle cutoff.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>res1</strong> (<em>mda.AtomGroup</em>) – AtomGroup for a residue from selection 1.</p></li>
+<li><p><strong>res2</strong> (<em>mda.AtomGroup</em>) – AtomGroup for a residue from selection 2.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Proportion of simulation time spent in hydrogen bond.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.cov_ppi.PPInteractions.analyze_hydrophobic">
+<span class="sig-name descname"><span class="pre">analyze_hydrophobic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.cov_ppi.PPInteractions.analyze_hydrophobic" title="Link to this definition"></a></dt>
+<dd><p>Uses a simple distance cutoff to highlight the occupancy of
+hydrophobic interaction between two residues. Returns the fraction of
+simulation time spent engaged in interaction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>res1</strong> (<em>mda.AtomGroup</em>) – AtomGroup for a residue from selection 1.</p></li>
+<li><p><strong>res2</strong> (<em>mda.AtomGroup</em>) – AtomGroup for a residue from selection 2.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Proportion of simulation time spent in interaction.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.cov_ppi.PPInteractions.analyze_saltbridge">
+<span class="sig-name descname"><span class="pre">analyze_saltbridge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.cov_ppi.PPInteractions.analyze_saltbridge" title="Link to this definition"></a></dt>
+<dd><p>Uses a simple distance cutoff to highlight the occupancy of
+saltbridge between two residues. Returns the fraction of
+simulation time spent engaged in saltbridge.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>res1</strong> (<em>mda.AtomGroup</em>) – AtomGroup for a residue from selection 1.</p></li>
+<li><p><strong>res2</strong> (<em>mda.AtomGroup</em>) – AtomGroup for a residue from selection 2.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Proportion of simulation time spent in salt bridge.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.cov_ppi.PPInteractions.compute_interactions">
+<span class="sig-name descname"><span class="pre">compute_interactions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.cov_ppi.PPInteractions.compute_interactions" title="Link to this definition"></a></dt>
+<dd><p>Ingests two resIDs, generates MDAnalysis AtomGroups for each, identifies
+relevant non-bonded interactions (HBonds, saltbridge, hydrophobic) and
+computes each. Returns a dict containing the proportion of simulation time
+that each interaction is engaged.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>res1</strong> (<em>int</em>) – ResID for a residue in sel1.</p></li>
+<li><p><strong>res2</strong> (<em>int</em>) – ResID for a residue in sel2.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A nested dictionary containing the results of each interaction</dt><dd><p>type.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(Results)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.cov_ppi.PPInteractions.evaluate_hbond">
+<span class="sig-name descname"><span class="pre">evaluate_hbond</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">donor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">acceptor</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.cov_ppi.PPInteractions.evaluate_hbond" title="Link to this definition"></a></dt>
+<dd><p>Evaluates whether there is a defined hydrogen bond between any
+donor and acceptor atoms in a given frame. Must pass a distance
+cutoff as well as an angle cutoff. Returns early when a legal
+HBond is detected.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>donor</strong> (<em>mda.AtomGroup</em>) – AtomGroup of HBond donor.</p></li>
+<li><p><strong>acceptor</strong> (<em>mda.AtomGroup</em>) – AtomGroup of HBond acceptor.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>1 if legal hbond found, else 0</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(int)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.cov_ppi.PPInteractions.get_covariance">
+<span class="sig-name descname"><span class="pre">get_covariance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.cov_ppi.PPInteractions.get_covariance" title="Link to this definition"></a></dt>
+<dd><p>Loop over all C-alpha atoms and compute the positional
+covariance using the functional form:</p>
+<blockquote>
+<div><p>C = &lt;(R1 - &lt;R1&gt;)(R2 - &lt;R2&gt;)T&gt;</p>
+</div></blockquote>
+<dl class="simple">
+<dt>where each element corresponds to the ensemble average movement</dt><dd><p>C_ij = &lt;deltaR_i * deltaR_j&gt;</p>
+</dd>
+</dl>
+<p>with the magnitude being the strength of correlation and the sign
+corresponding to positive and negative correlation respectively.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Covariance matrix.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(np.ndarray)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.cov_ppi.PPInteractions.identify_interaction_type">
+<span class="sig-name descname"><span class="pre">identify_interaction_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.cov_ppi.PPInteractions.identify_interaction_type" title="Link to this definition"></a></dt>
+<dd><p>Identifies what analyses to compute for a given pair of protein
+residues (i.e. hydrophobic interactions, hydrogen bonds, saltbridges).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>res1</strong> (<em>str</em>) – 3-letter code resname for a residue from selection 1.</p></li>
+<li><p><strong>res2</strong> (<em>str</em>) – 3-letter code resname for a residue from selection 2.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple containing list of function calls and list of labels.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(TaskTree)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.cov_ppi.PPInteractions.interpret_covariance">
+<span class="sig-name descname"><span class="pre">interpret_covariance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cov_mat</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.cov_ppi.PPInteractions.interpret_covariance" title="Link to this definition"></a></dt>
+<dd><p>Identify pairs of residues with positive or negative correlations.
+Returns a tuple comprised of pairs for each.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cov_mat</strong> (<em>np.ndarray</em>) – Covariance matrix.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Tuple of positively and negatively correlated</dt><dd><p>pairs of residues coming from each selection.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(tuple[tuple[int, int]])</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.cov_ppi.PPInteractions.make_plot">
+<span class="sig-name descname"><span class="pre">make_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.cov_ppi.PPInteractions.make_plot" title="Link to this definition"></a></dt>
+<dd><p>Generates a seaborn barplot from a dataframe for a specified column.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>pl.DataFrame</em>) – Polars dataframe of data.</p></li>
+<li><p><strong>column</strong> (<em>str</em>) – Label for desired column.</p></li>
+<li><p><strong>name</strong> (<em>PathLike</em>) – Path to file to save plot to.</p></li>
+<li><p><strong>fs</strong> (<em>int</em>) – Defaults to 15. Size of font for plot.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.cov_ppi.PPInteractions.parse_results">
+<span class="sig-name descname"><span class="pre">parse_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.cov_ppi.PPInteractions.parse_results" title="Link to this definition"></a></dt>
+<dd><p>Prepares results for plotting. Removes any entries which are
+all 0. and returns as a pandas DataFrame for easier plotting.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>results</strong> (<em>Results</em>) – Dictionary of results to be prepped.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Polars dataframe of results.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(pl.DataFrame)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.cov_ppi.PPInteractions.plot_results">
+<span class="sig-name descname"><span class="pre">plot_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.cov_ppi.PPInteractions.plot_results" title="Link to this definition"></a></dt>
+<dd><p>Plot results.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>results</strong> (<em>Results</em>) – Dictionary of results to be plotted.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.cov_ppi.PPInteractions.res_map">
+<span class="sig-name descname"><span class="pre">res_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ag1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ag2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.cov_ppi.PPInteractions.res_map" title="Link to this definition"></a></dt>
+<dd><p>Map covariance matrix indices to AtomGroup resIDs so that we are
+examining the correct pairs of residues.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ag1</strong> (<em>mda.AtomGroup</em>) – AtomGroup of the first selection.</p></li>
+<li><p><strong>ag2</strong> (<em>mda.AtomGroup</em>) – AtomGroup of the second selection.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.cov_ppi.PPInteractions.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.cov_ppi.PPInteractions.run" title="Link to this definition"></a></dt>
+<dd><p>Main function that runs the workflow. Obtains a covariance matrix,
+screens for close interactions, evaluates each pairwise interaction
+for each amino acid and report the contact probability of each.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.cov_ppi.PPInteractions.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.cov_ppi.PPInteractions.save" title="Link to this definition"></a></dt>
+<dd><p>Save results as a json file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>results</strong> (<em>Results</em>) – Dictionary of results to be saved.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.cov_ppi.PPInteractions.survey_donors_acceptors">
+<span class="sig-name descname"><span class="pre">survey_donors_acceptors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.cov_ppi.PPInteractions.survey_donors_acceptors" title="Link to this definition"></a></dt>
+<dd><p>First pass distance threshhold to identify potential Hydrogen bonds.
+Should be followed by querying HBond angles but this serves to reduce
+our search space and time complexity. Only returns donors/acceptors which
+are within the distance cutoff in at least a single frame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>res1</strong> (<em>mda.AtomGroup</em>) – AtomGroup for a residue from selection 1.</p></li>
+<li><p><strong>res2</strong> (<em>mda.AtomGroup</em>) – AtomGroup for a residue from selection 2.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Tuple of AtomGroups for residues which pass</dt><dd><p>crude distance cutoff for hydrogen bond donors/acceptors.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(tuple[mda.AtomGroup])</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-analysis.fingerprinter">
+<span id="analysis-fingerprinter-module"></span><h2>analysis.fingerprinter module<a class="headerlink" href="#module-analysis.fingerprinter" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="analysis.fingerprinter.Fingerprinter">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">analysis.fingerprinter.</span></span><span class="sig-name descname"><span class="pre">Fingerprinter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">topology</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trajectory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_selection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'segid</span> <span class="pre">A'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binder_selection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.fingerprinter.Fingerprinter" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Calculates interaction energy fingerprint between target and binder chains.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>topology</strong> (<em>PathLike</em>) – Path to topology file.</p></li>
+<li><p><strong>trajectory</strong> (<em>OptPath</em>) – Defaults to None. If not None, should be a path to a
+trajectory file or coordinates file.</p></li>
+<li><p><strong>target_selection</strong> (<em>str</em>) – Defaults to ‘segid A’. Any MDAnalysis selection
+string that encompasses target.</p></li>
+<li><p><strong>binder_selection</strong> (<em>str</em><em> | </em><em>None</em>) – Defaults to None. If None, binder is defined
+as anything that is not the target. Otherwise should be an MDAnalysis
+selection string that encompasses the binder.</p></li>
+<li><p><strong>out_path</strong> (<em>OptPath</em>) – Defaults to None. If provided will be where outputs are
+saved to, otherwise the topology parent path is used.</p></li>
+<li><p><strong>out_name</strong> (<em>str</em><em> | </em><em>None</em>) – Defaults to None. If None, output file will be called
+‘fingerprint.npz’.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Usage:</dt><dd><p>m = Fingerprinter(<a href="#id1"><span class="problematic" id="id2">*</span></a>args)
+m.run()
+m.save()</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.fingerprinter.Fingerprinter.assign_nonbonded_params">
+<span class="sig-name descname"><span class="pre">assign_nonbonded_params</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.fingerprinter.Fingerprinter.assign_nonbonded_params" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.fingerprinter.Fingerprinter.assign_residue_mapping">
+<span class="sig-name descname"><span class="pre">assign_residue_mapping</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.fingerprinter.Fingerprinter.assign_residue_mapping" title="Link to this definition"></a></dt>
+<dd><p>Map each residue index (1-based) to corresponding atom indices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.fingerprinter.Fingerprinter.calculate_fingerprints">
+<span class="sig-name descname"><span class="pre">calculate_fingerprints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame_index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.fingerprinter.Fingerprinter.calculate_fingerprints" title="Link to this definition"></a></dt>
+<dd><p>Calculates fingerprints for a given frame of the trajectory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>frame_index</strong> (<em>int</em>) – Frame index, since frame number and index might be
+discontinuous.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.fingerprinter.Fingerprinter.iterate_frames">
+<span class="sig-name descname"><span class="pre">iterate_frames</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.fingerprinter.Fingerprinter.iterate_frames" title="Link to this definition"></a></dt>
+<dd><p>Runs calculations over each frame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.fingerprinter.Fingerprinter.load_pdb">
+<span class="sig-name descname"><span class="pre">load_pdb</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.fingerprinter.Fingerprinter.load_pdb" title="Link to this definition"></a></dt>
+<dd><p>Loads topology into MDAnalysis universe object. Can take either a PDB
+or an AMBER prmtop. If trajectory was not specified, will look for either
+inpcrd or rst7 with the same path and stem as the topology file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.fingerprinter.Fingerprinter.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.fingerprinter.Fingerprinter.run" title="Link to this definition"></a></dt>
+<dd><p>Main logic. Obtains parameters, loads PDB and then
+iterates through trajectory to obtain fingerprints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.fingerprinter.Fingerprinter.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.fingerprinter.Fingerprinter.save" title="Link to this definition"></a></dt>
+<dd><p>Saves data to an npz stack.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="analysis.fingerprinter.dist_mat">
+<span class="sig-prename descclassname"><span class="pre">analysis.fingerprinter.</span></span><span class="sig-name descname"><span class="pre">dist_mat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xyz1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xyz2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.fingerprinter.dist_mat" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="analysis.fingerprinter.electrostatic">
+<span class="sig-prename descclassname"><span class="pre">analysis.fingerprinter.</span></span><span class="sig-name descname"><span class="pre">electrostatic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge_i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge_j</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.fingerprinter.electrostatic" title="Link to this definition"></a></dt>
+<dd><p>Calculate electrostatic energy between two particles.
+Cutoff at 12 Angstrom without switching.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>distance</strong> (<em>float</em>) – distance between particles i and j (nm)</p></li>
+<li><p><strong>charge_i</strong> (<em>float</em>) – charge of particle i (e-)</p></li>
+<li><p><strong>charge_j</strong> (<em>float</em>) – charge of particle j (e-)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Electrostatic energy between particles (kJ/mol)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>energy (float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="analysis.fingerprinter.electrostatic_sum">
+<span class="sig-prename descclassname"><span class="pre">analysis.fingerprinter.</span></span><span class="sig-name descname"><span class="pre">electrostatic_sum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distances</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge_is</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge_js</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.fingerprinter.electrostatic_sum" title="Link to this definition"></a></dt>
+<dd><p>Calculate sum of all electrostatic interactions between two
+sets of particles.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>distances</strong> (<em>np.ndarray</em>) – distances between particles,
+shape: (len(charge_is),len(charge_js))</p></li>
+<li><p><strong>charge_is</strong> (<em>np.ndarray</em>) – group i charges</p></li>
+<li><p><strong>charge_js</strong> (<em>np.ndarray</em>) – group j charges</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="analysis.fingerprinter.fingerprints">
+<span class="sig-prename descclassname"><span class="pre">analysis.fingerprinter.</span></span><span class="sig-name descname"><span class="pre">fingerprints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xyzs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charges</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigmas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_resmap</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binder_inds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.fingerprinter.fingerprints" title="Link to this definition"></a></dt>
+<dd><p>Calculates electrostatic fingerprint.
+ES energy between each target residue and all binder residues.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>(np.ndarray, np.ndarray),</dt><dd><p>shape=(n_target_residues, n_target_residues)</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>fingerprints</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="analysis.fingerprinter.lennard_jones">
+<span class="sig-prename descclassname"><span class="pre">analysis.fingerprinter.</span></span><span class="sig-name descname"><span class="pre">lennard_jones</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_j</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon_i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon_j</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.fingerprinter.lennard_jones" title="Link to this definition"></a></dt>
+<dd><p>Calculate LJ energy between two particles.
+Cutoff at 12 Angstrom without switching.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>(</strong><strong>float</strong><strong>)</strong> (<em>epsilon_j</em>)</p></li>
+<li><p><strong>(</strong><strong>float</strong><strong>)</strong></p></li>
+<li><p><strong>(</strong><strong>float</strong><strong>)</strong></p></li>
+<li><p><strong>(</strong><strong>float</strong><strong>)</strong></p></li>
+<li><p><strong>(</strong><strong>float</strong><strong>)</strong></p></li>
+<li><p><strong>Returns</strong> (<em>energy</em><em> (</em><em>float</em><em>)</em><em>: LJ interaction energy</em><em> (</em><em>kJ/mol</em><em>)</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="analysis.fingerprinter.lennard_jones_sum">
+<span class="sig-prename descclassname"><span class="pre">analysis.fingerprinter.</span></span><span class="sig-name descname"><span class="pre">lennard_jones_sum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distances</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_is</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_js</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon_is</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon_js</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.fingerprinter.lennard_jones_sum" title="Link to this definition"></a></dt>
+<dd><p>Calculate sum of all LJ interactions between two sets of
+particles.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>distances</strong> (<em>np.ndarray</em>) – distances between particles,
+shape: (len(sigma_is),len(sigma_js))</p></li>
+<li><p><strong>sigma_is</strong> (<em>np.ndarray</em>) – group i sigma parameters</p></li>
+<li><p><strong>sigma_js</strong> (<em>np.ndarray</em>) – group j sigma parameters</p></li>
+<li><p><strong>epsilon_is</strong> (<em>np.ndarray</em>) – group i epsilon parameters</p></li>
+<li><p><strong>epsilon_js</strong> (<em>np.ndarray</em>) – group j epsilon parameters</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="analysis.fingerprinter.unravel_index">
+<span class="sig-prename descclassname"><span class="pre">analysis.fingerprinter.</span></span><span class="sig-name descname"><span class="pre">unravel_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.fingerprinter.unravel_index" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-analysis.interaction_energy">
+<span id="analysis-interaction-energy-module"></span><h2>analysis.interaction_energy module<a class="headerlink" href="#module-analysis.interaction_energy" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="analysis.interaction_energy.DynamicInteractionEnergy">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">analysis.interaction_energy.</span></span><span class="sig-name descname"><span class="pre">DynamicInteractionEnergy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">top</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">traj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'A'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">platform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'CUDA'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_residue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_residue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress_bar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.interaction_energy.DynamicInteractionEnergy" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class for obtaining interaction energies of a trajectory. Utilizes the
+InteractionEnergyFrame child class to run per-frame energy calculations
+and orchestrates the trajectory operations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>top</strong> (<em>PathLike</em>) – Path to prmtop topology file.</p></li>
+<li><p><strong>traj</strong> (<em>PathLike</em>) – Path to DCD trajectory file.</p></li>
+<li><p><strong>stride</strong> (<em>int</em>) – Defaults to 1. The stride with which to move through the trajectory.</p></li>
+<li><p><strong>chain</strong> (<em>str</em>) – Defaults to A. The chain for which to compute the energy between.
+Computes energy between this chain and all other components in PDB file.
+Set to a whitespace if there are no chains in your PDB.</p></li>
+<li><p><strong>platform</strong> (<em>str</em>) – Defaults to CUDA. Supports running on GPU for speed.</p></li>
+<li><p><strong>first_residue</strong> (<em>int</em><em> | </em><em>None</em>) – Defaults to None. If set, will restrict the
+calculation to residues beginning with resid <cite>first_residue</cite>.</p></li>
+<li><p><strong>last_residue</strong> (<em>int</em><em> | </em><em>None</em>) – Defaults to None. If set, will restrict the
+calculation to residues ending with resid <cite>last_residue</cite>.</p></li>
+<li><p><strong>progress_bar</strong> (<em>bool</em>) – Defaults to False. If True a tqdm progress bar will
+display progress.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.interaction_energy.DynamicInteractionEnergy.build_system">
+<span class="sig-name descname"><span class="pre">build_system</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">top</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.interaction_energy.DynamicInteractionEnergy.build_system" title="Link to this definition"></a></dt>
+<dd><p>Builds OpenMM system for both pdb and prmtop topology files.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>top</strong> (<em>PathLike</em>) – Path to topology file.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>OpenMM system object.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(System)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.interaction_energy.DynamicInteractionEnergy.compute_energies">
+<span class="sig-name descname"><span class="pre">compute_energies</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.interaction_energy.DynamicInteractionEnergy.compute_energies" title="Link to this definition"></a></dt>
+<dd><p>Computes the energy for each frame in trajectory, storing internally.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.interaction_energy.DynamicInteractionEnergy.load_traj">
+<span class="sig-name descname"><span class="pre">load_traj</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">top</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">traj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.interaction_energy.DynamicInteractionEnergy.load_traj" title="Link to this definition"></a></dt>
+<dd><p>Loads trajectory into mdtraj and extracts full coordinate array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>top</strong> (<em>PathLike</em>) – Path to topology file.</p></li>
+<li><p><strong>traj</strong> (<em>PathLike</em>) – Path to trajectory file.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Coordinate array of shape (n_frames, n_atoms, 3)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(np.ndarray)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.interaction_energy.DynamicInteractionEnergy.setup_pbar">
+<span class="sig-name descname"><span class="pre">setup_pbar</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.interaction_energy.DynamicInteractionEnergy.setup_pbar" title="Link to this definition"></a></dt>
+<dd><p>Builds tqdm progress bar.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="analysis.interaction_energy.InteractionEnergy">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">analysis.interaction_energy.</span></span><span class="sig-name descname"><span class="pre">InteractionEnergy</span></span><a class="headerlink" href="#analysis.interaction_energy.InteractionEnergy" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.interaction_energy.InteractionEnergy.compute">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compute</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.interaction_energy.InteractionEnergy.compute" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.interaction_energy.InteractionEnergy.energy">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">energy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.interaction_energy.InteractionEnergy.energy" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.interaction_energy.InteractionEnergy.get_selection">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_selection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.interaction_energy.InteractionEnergy.get_selection" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="analysis.interaction_energy.InteractionEnergyFrame">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">analysis.interaction_energy.</span></span><span class="sig-name descname"><span class="pre">InteractionEnergyFrame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">system</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'A'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">platform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'CUDA'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_residue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_residue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.interaction_energy.InteractionEnergyFrame" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#analysis.interaction_energy.StaticInteractionEnergy" title="analysis.interaction_energy.StaticInteractionEnergy"><code class="xref py py-class docutils literal notranslate"><span class="pre">StaticInteractionEnergy</span></code></a></p>
+<p>Inherits from StaticInteractionEnergy and overloads <cite>get_system</cite> to allow for
+more easily running this analysis on a trajectory of frames. Requires the
+OpenMM system and topology to be built externally and passed in rather than
+beginning from a PDB file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>system</strong> (<em>System</em>) – OpenMM system object.</p></li>
+<li><p><strong>top</strong> (<em>Topology</em>) – OpenMM topology object.</p></li>
+<li><p><strong>chain</strong> (<em>str</em>) – Defaults to A. The chain for which to compute the energy between.
+Computes energy between this chain and all other components in PDB file.
+Set to a whitespace if there are no chains in your PDB.</p></li>
+<li><p><strong>platform</strong> (<em>str</em>) – Defaults to CUDA. Supports running on GPU for speed.</p></li>
+<li><p><strong>first_residue</strong> (<em>int</em><em> | </em><em>None</em>) – Defaults to None. If set, will restrict the
+calculation to residues beginning with resid <cite>first_residue</cite>.</p></li>
+<li><p><strong>last_residue</strong> (<em>int</em><em> | </em><em>None</em>) – Defaults to None. If set, will restrict the
+calculation to residues ending with resid <cite>last_residue</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.interaction_energy.InteractionEnergyFrame.get_system">
+<span class="sig-name descname"><span class="pre">get_system</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.interaction_energy.InteractionEnergyFrame.get_system" title="Link to this definition"></a></dt>
+<dd><p>Sets self.selection via self.get_selection and returns existing OpenMM
+system object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>OpenMM system object.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(System)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="analysis.interaction_energy.StaticInteractionEnergy">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">analysis.interaction_energy.</span></span><span class="sig-name descname"><span class="pre">StaticInteractionEnergy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'A'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">platform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'CUDA'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_residue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_residue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.interaction_energy.StaticInteractionEnergy" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#analysis.interaction_energy.InteractionEnergy" title="analysis.interaction_energy.InteractionEnergy"><code class="xref py py-class docutils literal notranslate"><span class="pre">InteractionEnergy</span></code></a></p>
+<p>Computes the linear interaction energy between specified chain and other simulation
+components. Can specify a range of residues in chain to limit calculation to. Works on
+a static model but can be adapted to run on dynamics data.</p>
+<dl>
+<dt>Inputs:</dt><dd><p>pdb (str): Path to input PDB file
+chain (str): Defaults to A. The chain for which to compute the energy between.</p>
+<blockquote>
+<div><p>Computes energy between this chain and all other components in PDB file.
+Set to a whitespace if there are no chains in your PDB.</p>
+</div></blockquote>
+<p>platform (str): Defaults to CUDA. Supports running on GPU for speed.
+first_residue (int | None): Defaults to None. If set, will restrict the</p>
+<blockquote>
+<div><p>calculation to residues beginning with resid <cite>first_residue</cite>.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>last_residue (int | None): Defaults to None. If set, will restrict the</dt><dd><p>calculation to residues ending with resid <cite>last_residue</cite>.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.interaction_energy.StaticInteractionEnergy.compute">
+<span class="sig-name descname"><span class="pre">compute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">positions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.interaction_energy.StaticInteractionEnergy.compute" title="Link to this definition"></a></dt>
+<dd><p>Compute interaction energy of system. Can optionally provide atomic
+positions such that this operation can be scaled onto a trajectory of
+frames rather than a static model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>positions</strong> (<em>np.ndarray</em><em> | </em><em>None</em>) – Defaults to None. If provided, inject
+the positions into the OpenMM context.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.interaction_energy.StaticInteractionEnergy.energy">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solute_coulomb_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solute_lj_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solvent_coulomb_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solvent_lj_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.interaction_energy.StaticInteractionEnergy.energy" title="Link to this definition"></a></dt>
+<dd><p>Computes the potential energy for provided context object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>context</strong> (<em>Context</em>) – OpenMM context object.</p></li>
+<li><p><strong>solute_coulomb_scale</strong> (<em>int</em>) – Defaults to 0. If 1 we will consider solute
+contributions to coulombic non-bonded energy.</p></li>
+<li><p><strong>solute_lj_scale</strong> (<em>int</em>) – Defaults to 0. If 1 we will consider solute
+contributions to LJ non-bonded energy.</p></li>
+<li><p><strong>solvent_coulomb_scale</strong> (<em>int</em>) – Defaults to 0. If 1 we will consider solvent
+contributions to coulombic non-bonded energy.</p></li>
+<li><p><strong>solvent_lj_scale</strong> (<em>int</em>) – Defaults to 0. If 1 we will consider solvent
+contributions to LJ non-bonded energy.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Computed energy term.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.interaction_energy.StaticInteractionEnergy.fix_pdb">
+<span class="sig-name descname"><span class="pre">fix_pdb</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.interaction_energy.StaticInteractionEnergy.fix_pdb" title="Link to this definition"></a></dt>
+<dd><p>Using the OpenMM adjacent tool, PDBFixer, repair input PDB by adding
+hydrogens, and missing atoms such that we can actually construct an
+OpenMM system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.interaction_energy.StaticInteractionEnergy.get_selection">
+<span class="sig-name descname"><span class="pre">get_selection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">topology</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.interaction_energy.StaticInteractionEnergy.get_selection" title="Link to this definition"></a></dt>
+<dd><p>Using the poorly documented OpenMM selection language, get indices of
+atoms that we want to isolate for pairwise interaction energy calculation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>topology</strong> (<em>Topology</em>) – OpenMM topology object.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.interaction_energy.StaticInteractionEnergy.get_system">
+<span class="sig-name descname"><span class="pre">get_system</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.interaction_energy.StaticInteractionEnergy.get_system" title="Link to this definition"></a></dt>
+<dd><p>Builds implicit solvent OpenMM system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>OpenMM system object.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(System)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="analysis.interaction_energy.StaticInteractionEnergy.interactions">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">interactions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#analysis.interaction_energy.StaticInteractionEnergy.interactions" title="Link to this definition"></a></dt>
+<dd><p>Places the LJ and coulombic energies into an array of shape (1, 2).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Energy array.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(np.ndarray)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-analysis.ipSAE">
+<span id="analysis-ipsae-module"></span><h2>analysis.ipSAE module<a class="headerlink" href="#module-analysis.ipSAE" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="analysis.ipSAE.ModelParser">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">analysis.ipSAE.</span></span><span class="sig-name descname"><span class="pre">ModelParser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ModelParser" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Helper class to read in and process a structure file for downstream
+scoring tasks. Capable of reading both PDB and CIF formats.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>structure</strong> (<em>PathLike</em>) – Path to PDB or CIF file.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.ipSAE.ModelParser.classify_chains">
+<span class="sig-name descname"><span class="pre">classify_chains</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ModelParser.classify_chains" title="Link to this definition"></a></dt>
+<dd><p>Reads through residue data to assign the identity of each chain as
+either protein (by default) or nucleic acid if an NA residue is detected.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="analysis.ipSAE.ModelParser.nucleic_acids">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">nucleic_acids</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#analysis.ipSAE.ModelParser.nucleic_acids" title="Link to this definition"></a></dt>
+<dd><p>Stores the canonical resnames for RNA and DNA residues.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List of nucleic acid resnames.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(list[str])</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.ipSAE.ModelParser.package_line">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">package_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atom_num</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atom_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">residue_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">residue_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ModelParser.package_line" title="Link to this definition"></a></dt>
+<dd><p>Packs various information from a single line of a structure file into
+a dictionary to maintain consistency.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>atom_num</strong> (<em>str</em>) – Atom index.</p></li>
+<li><p><strong>atom_name</strong> (<em>str</em>) – Atom name.</p></li>
+<li><p><strong>residue_name</strong> (<em>str</em>) – Resname.</p></li>
+<li><p><strong>chain_id</strong> (<em>str</em>) – ChainID.</p></li>
+<li><p><strong>residue_id</strong> (<em>str</em>) – ResID.</p></li>
+<li><p><strong>x</strong> (<em>str</em>) – X coordinate.</p></li>
+<li><p><strong>y</strong> (<em>str</em>) – Y coordinate.</p></li>
+<li><p><strong>z</strong> (<em>str</em>) – Z coordinate.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary representation of data.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(dict[str, Any])</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.ipSAE.ModelParser.parse_cif_line">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parse_cif_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fields</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ModelParser.parse_cif_line" title="Link to this definition"></a></dt>
+<dd><p>Parses a single line of a CIF file, extracting atom and residue information.
+Processes this into a dictionary and returns the dict.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>line</strong> (<em>str</em>) – Actual line from CIF file.</p></li>
+<li><p><strong>fields</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>int</em><em>]</em>) – Definition of where each field is found.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary representation of data.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(dict[str, Any])</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.ipSAE.ModelParser.parse_pdb_line">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parse_pdb_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ModelParser.parse_pdb_line" title="Link to this definition"></a></dt>
+<dd><p>Parses a single line of a PDB file, extracting atom and residue information.
+Processes this into a dictionary and returns the dict.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>line</strong> (<em>str</em>) – Actual line from PDB file.</p></li>
+<li><p><strong>*args</strong> – Just here so we can use the same API for PDB and CIF.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary representation of data.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(dict[str, Any])</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.ipSAE.ModelParser.parse_structure_file">
+<span class="sig-name descname"><span class="pre">parse_structure_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ModelParser.parse_structure_file" title="Link to this definition"></a></dt>
+<dd><p>Identify filetype, and parses line by line, storing relevant data
+for all C-alpha, C-beta and C1, C3 atoms for proteins and nucleic
+acids alike.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="analysis.ipSAE.ScoreCalculator">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">analysis.ipSAE.</span></span><span class="sig-name descname"><span class="pre">ScoreCalculator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chains</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain_pair_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_residues</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdockq_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pae_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">12.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ScoreCalculator" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Computes various model quality scores including: pDockQ, pDockQ2, LIS, ipTM and
+the ipSAE score.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>chains</strong> (<em>np.ndarray</em>) – Array of chainIDs.</p></li>
+<li><p><strong>chain_pair_type</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>str</em><em>]</em>) – Dictionary mapping of chainID to chain type.</p></li>
+<li><p><strong>n_residues</strong> (<em>int</em>) – Number of residues total in structure.</p></li>
+<li><p><strong>pdockq_cutoff</strong> (<em>float</em>) – Defaults to 8.0 Å.</p></li>
+<li><p><strong>pae_cutoff</strong> (<em>float</em>) – Defaults to 12.0 Å.</p></li>
+<li><p><strong>dist_cutoff</strong> (<em>float</em>) – Defaults to 10.0 Å.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.ipSAE.ScoreCalculator.compute_LIS">
+<span class="sig-name descname"><span class="pre">compute_LIS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chain1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ScoreCalculator.compute_LIS" title="Link to this definition"></a></dt>
+<dd><p>Computes Local Interaction Score (LIS) which is based on a subset of the
+predicted aligned error using a cutoff of 12. Values range in the interval
+(0, 1] and can be interpreted as how accurate a fold is within the error
+cutoff where a mean error of 0 yields a LIS value of 1 and a mean error
+that approaches 12 has a LIS value that approaches 0.
+Adapted from: <a class="reference external" href="https://doi.org/10.1101/2024.02.19.580970">https://doi.org/10.1101/2024.02.19.580970</a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>chain1</strong> (<em>str</em>) – The string name of the first chain.</p></li>
+<li><p><strong>chain2</strong> (<em>str</em>) – The string name of the second chain.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The LIS value for both chains.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.ipSAE.ScoreCalculator.compute_d0">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compute_d0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">L</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pair_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ScoreCalculator.compute_d0" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span></p>
+<p>Computes d0 term per the following equation.
+$d0 = min(1.0, 1.24 * (L - 15)^}(</p>
+</p>
+</dd>
+</dl>
+<p>rac{1}{3})} - 1.8)$</p>
+<blockquote>
+<div><dl class="simple">
+<dt>Arguments:</dt><dd><p>L (int): Length of sequence up to 27 residues.
+pair_type (str): Whether or not chain is a nucleic acid.</p>
+</dd>
+<dt>Returns:</dt><dd><p>(float): d0</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.ipSAE.ScoreCalculator.compute_ipTM_ipSAE">
+<span class="sig-name descname"><span class="pre">compute_ipTM_ipSAE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chain1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ScoreCalculator.compute_ipTM_ipSAE" title="Link to this definition"></a></dt>
+<dd><p>Computes the ipTM and ipSAE scores for a given pair of chains. These operations
+are combined since they rely on very similar processing of the data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>chain1</strong> (<em>str</em>) – The first chain to compare.</p></li>
+<li><p><strong>chain2</strong> (<em>str</em>) – The second chain to compare.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple containing the ipTM and ipSAE scores respectively.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(tuple[float])</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.ipSAE.ScoreCalculator.compute_pDockQ_scores">
+<span class="sig-name descname"><span class="pre">compute_pDockQ_scores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chain1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ScoreCalculator.compute_pDockQ_scores" title="Link to this definition"></a></dt>
+<dd><p>Computes both the pDockQ and pDockQ2 scores for the interface between two chains.
+pDockQ is dependent solely on the pLDDT matrix while pDockQ2 is dependent on both
+pLDDT and the PAE matrix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>chain1</strong> (<em>str</em>) – The string name of the first chain.</p></li>
+<li><p><strong>chain2</strong> (<em>str</em>) – The string name of the first chain.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple of the pDockQ and pDockQ2 scores respectively.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(tuple[float, float])</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="analysis.ipSAE.ScoreCalculator.compute_pTM">
+<span class="sig-name descname"><span class="pre">compute_pTM</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;numpy.vectorize</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#analysis.ipSAE.ScoreCalculator.compute_pTM" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.ipSAE.ScoreCalculator.compute_scores">
+<span class="sig-name descname"><span class="pre">compute_scores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distances</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pLDDT</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">PAE</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ScoreCalculator.compute_scores" title="Link to this definition"></a></dt>
+<dd><p>Based on the input distance, pLDDT and PAE matrices, compute the pairwise pDockQ, pDockQ2,
+LIS, ipTM and ipSAE scores.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.ipSAE.ScoreCalculator.get_max_values">
+<span class="sig-name descname"><span class="pre">get_max_values</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ScoreCalculator.get_max_values" title="Link to this definition"></a></dt>
+<dd><p>Because some scores like ipSAE are not symmetric, meaning A-&gt;B != B-&gt;A, we
+take the maximal score for either direction to be the undirected score.
+Here we scrape through the internal dataframe and keeps only the rows with
+the maximal values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.ipSAE.ScoreCalculator.pDockQ2_score">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pDockQ2_score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ScoreCalculator.pDockQ2_score" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span></p>
+<p>Computes pDockQ2 score per the following equation.
+$pDockQ =</p>
+</p>
+</dd>
+</dl>
+<p>rac{1.31}{(1 + e^{-0.075 * (x - 84.733)}) + 0.005}$</p>
+<blockquote>
+<div><p>Details on the pDockQ2 score at: <a class="reference external" href="https://doi.org/10.1093/bioinformatics/btad424">https://doi.org/10.1093/bioinformatics/btad424</a></p>
+<dl class="simple">
+<dt>Arguments:</dt><dd><p>x (float): Mean pLDDT score scaled by mean PAE score.</p>
+</dd>
+<dt>Returns:</dt><dd><p>(float): pDockQ2 score</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.ipSAE.ScoreCalculator.pDockQ_score">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pDockQ_score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ScoreCalculator.pDockQ_score" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span></p>
+<p>Computes pDockQ score per the following equation.
+$pDockQ =</p>
+</p>
+</dd>
+</dl>
+<p>rac{0.724}{(1 + e^{-0.052 * (x - 152.611)}) + 0.018}$</p>
+<blockquote>
+<div><p>Details on the pDockQ score at: <a class="reference external" href="https://doi.org/10.1038/s41467-022-28865-w">https://doi.org/10.1038/s41467-022-28865-w</a></p>
+<dl class="simple">
+<dt>Arguments:</dt><dd><dl class="simple">
+<dt>x (float): Mean pLDDT score scaled by the log10 number of residue pairs</dt><dd><p>that meet pLDDT and distance cutoffs.</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p>(float): pDockQ score</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.ipSAE.ScoreCalculator.permute_chains">
+<span class="sig-name descname"><span class="pre">permute_chains</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ScoreCalculator.permute_chains" title="Link to this definition"></a></dt>
+<dd><p>Helper function that gives all permutations of chainID except
+the pair (self, self) for each chainID. This also ensures that
+if we have (A, B) we do not also store (B, A).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="analysis.ipSAE.ipSAE">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">analysis.ipSAE.</span></span><span class="sig-name descname"><span class="pre">ipSAE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plddt_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pae_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ipSAE" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Compute the interaction prediction Score from Aligned Errors for a model.
+Adapted from <a class="reference external" href="https://doi.org/10.1101/2025.02.10.637595">https://doi.org/10.1101/2025.02.10.637595</a>. Currently supports
+only outputs which provide plddt and pae data which limits us to Boltz and
+AlphaFold.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>structure_file</strong> (<em>PathLike</em>) – Path to PDB/CIF model.</p></li>
+<li><p><strong>plddt_file</strong> (<em>PathLike</em>) – Path to plddt npy file.</p></li>
+<li><p><strong>pae_file</strong> (<em>PathLike</em>) – Path to pae npy file.</p></li>
+<li><p><strong>out_path</strong> (<em>PathLike</em><em> | </em><em>None</em>) – Defaults to None. Path for outputs, or if None,
+will use the parent path from the plddt file.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.ipSAE.ipSAE.load_PAE_file">
+<span class="sig-name descname"><span class="pre">load_PAE_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ipSAE.load_PAE_file" title="Link to this definition"></a></dt>
+<dd><p>Loads PAE file and returns data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Array of PAE values.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(np.ndarray)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.ipSAE.ipSAE.load_pLDDT_file">
+<span class="sig-name descname"><span class="pre">load_pLDDT_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ipSAE.load_pLDDT_file" title="Link to this definition"></a></dt>
+<dd><p>Loads pLDDT file and scales data by 100.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Scaled pLDDT array.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(np.ndarray)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.ipSAE.ipSAE.parse_structure_file">
+<span class="sig-name descname"><span class="pre">parse_structure_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ipSAE.parse_structure_file" title="Link to this definition"></a></dt>
+<dd><p>Runs parser to read in structure file and extract relevant details.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.ipSAE.ipSAE.prepare_scorer">
+<span class="sig-name descname"><span class="pre">prepare_scorer</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ipSAE.prepare_scorer" title="Link to this definition"></a></dt>
+<dd><p>Prepares scorer for computing various scores.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.ipSAE.ipSAE.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ipSAE.run" title="Link to this definition"></a></dt>
+<dd><p>Main logic of class. Parses structure file, computes distogram, unpacks
+pLDDT and PAE, feeds data to scorer and saves out scores.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.ipSAE.ipSAE.save_scores">
+<span class="sig-name descname"><span class="pre">save_scores</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ipSAE.save_scores" title="Link to this definition"></a></dt>
+<dd><p>Saves scores dataframe to a parquet file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-analysis.sasa">
+<span id="analysis-sasa-module"></span><h2>analysis.sasa module<a class="headerlink" href="#module-analysis.sasa" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="analysis.sasa.RelativeSASA">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">analysis.sasa.</span></span><span class="sig-name descname"><span class="pre">RelativeSASA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ag</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">probe_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.sasa.RelativeSASA" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#analysis.sasa.SASA" title="analysis.sasa.SASA"><code class="xref py py-class docutils literal notranslate"><span class="pre">SASA</span></code></a></p>
+<p>Computese Relative SASA for a specified atomgroup. Relative SASA is defined
+by the measured SASA divided by the maximum accessible surface area and for
+proteins we define this as within a tripeptide context so as to not overestimate
+SASA of the amide linkage and its neighbors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ag</strong> (<em>mda.AtomGroup</em>) – AtomGroup for which to perform SASA.</p></li>
+<li><p><strong>probe_radius</strong> (<em>float</em>) – Defaults to 1.4Å. This is pretty standard and should not
+be altered in most cases.</p></li>
+<li><p><strong>n_points</strong> (<em>int</em>) – Defaults to 256. Number of points to place on each sphere, where
+a higher number is more costly but accurate.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="analysis.sasa.SASA">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">analysis.sasa.</span></span><span class="sig-name descname"><span class="pre">SASA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ag</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">probe_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.sasa.SASA" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">AnalysisBase</span></code></p>
+<p>Computes solvent-accessible surface area using the Shrake-Rupley algorithm.
+Code is adapted from the biopython and mdtraj implementations as well as an
+unmerged PR from MDAnalysis. Implemented as an instance of AnalysisBase to
+support ease of deployment and baked-in parallelism.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ag</strong> (<em>mda.AtomGroup</em>) – AtomGroup for which to perform SASA.</p></li>
+<li><p><strong>probe_radius</strong> (<em>float</em>) – Defaults to 1.4Å. This is pretty standard and should not
+be altered in most cases.</p></li>
+<li><p><strong>n_points</strong> (<em>int</em>) – Defaults to 256. Number of points to place on each sphere, where
+a higher number is more costly but accurate.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.sasa.SASA.get_sphere">
+<span class="sig-name descname"><span class="pre">get_sphere</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.sasa.SASA.get_sphere" title="Link to this definition"></a></dt>
+<dd><p>Returns a fibonacci unit sphere for a given number of points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Array of points in fibonacci sphere.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(np.ndarray)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.sasa.SASA.measure_sasa">
+<span class="sig-name descname"><span class="pre">measure_sasa</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ag</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.sasa.SASA.measure_sasa" title="Link to this definition"></a></dt>
+<dd><p>Measures the SASA of input atomgroup.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ag</strong> (<em>mda.AtomGroup</em>) – MDAnalysis AtomGroup.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>SASA value.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-analysis.utils">
+<span id="analysis-utils-module"></span><h2>analysis.utils module<a class="headerlink" href="#module-analysis.utils" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="analysis.utils.EmbedData">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">analysis.utils.</span></span><span class="sig-name descname"><span class="pre">EmbedData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embedding_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.utils.EmbedData" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Embeds given data into the beta-factor column of PDB. Writes out to same
+path as input PDB and backs up old PDB file, unless an output path is
+explicitly provided. Embedding data should be provided as a dictionary where
+the keys are MDAnalysis selection strings and the values are numpy arrays
+of shape (n_frames, n_residues, n_datapoints) or (n_residues, n_datapoints).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pdb</strong> (<em>Path</em>) – Path to PDB file to load. Also will be the output if one is
+not provided.</p></li>
+<li><p><strong>embedding_dict</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>np.ndarray</em><em>]</em>) – A dictionary containing MDAnalysis
+selections as keys and data as the values.</p></li>
+<li><p><strong>out</strong> (<em>OptPath</em>) – Defaults to None. If not None this will be the path to the
+output PDB.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.utils.EmbedData.embed">
+<span class="sig-name descname"><span class="pre">embed</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.utils.EmbedData.embed" title="Link to this definition"></a></dt>
+<dd><p>Unpacks embedding dictionary, embeds data and writes out new PDB.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.utils.EmbedData.embed_selection">
+<span class="sig-name descname"><span class="pre">embed_selection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">selection</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.utils.EmbedData.embed_selection" title="Link to this definition"></a></dt>
+<dd><p>Embeds data into given selection in the beta column for each residue.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>selection</strong> (<em>str</em>) – MDAnalysis selection string.</p></li>
+<li><p><strong>data</strong> (<em>np.ndarray</em>) – Array of data to place in beta column. Shape should
+be (n_residues_in_selection, 1).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.utils.EmbedData.write_new_pdb">
+<span class="sig-name descname"><span class="pre">write_new_pdb</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.utils.EmbedData.write_new_pdb" title="Link to this definition"></a></dt>
+<dd><p>Writes out PDB file. If an output was not designated, backs up original
+PDB with the extension .orig.pdb. If this backup already exists, do not
+back up the PDB as that may occur if you run this twice and to do so would
+mean losing the actual original PDB.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="analysis.utils.EmbedEnergyData">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">analysis.utils.</span></span><span class="sig-name descname"><span class="pre">EmbedEnergyData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embedding_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.utils.EmbedEnergyData" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#analysis.utils.EmbedData" title="analysis.utils.EmbedData"><code class="xref py py-class docutils literal notranslate"><span class="pre">EmbedData</span></code></a></p>
+<p>Special instance of EmbedData in which the data stored in embedding_dict is
+non-bonded energy data with both LJ and coulombic terms. In this case we need
+to obtain the total energy by summing these and rescale it as many softwares
+do not understand a negative beta factor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pdb</strong> (<em>Path</em>) – Path to PDB file to load. Also will be the output if one is
+not provided.</p></li>
+<li><p><strong>embedding_dict</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>np.ndarray</em><em>]</em>) – A dictionary containing MDAnalysis
+selections as keys and data as the values.</p></li>
+<li><p><strong>out</strong> (<em>OptPath</em>) – Defaults to None. If not None this will be the path to the
+output PDB.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.utils.EmbedEnergyData.preprocess">
+<span class="sig-name descname"><span class="pre">preprocess</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.utils.EmbedEnergyData.preprocess" title="Link to this definition"></a></dt>
+<dd><p>Processes embeddings data so that it can be fed through parent methods.
+This requires the embeddings data contain values of one-dimensional arrays,
+and that the data be rescaled such that there are no negative values while
+preserving the distance between values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Processed data array.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(dict[str, np.ndarray])</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="analysis.utils.EmbedEnergyData.sanitize_data">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sanitize_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.utils.EmbedEnergyData.sanitize_data" title="Link to this definition"></a></dt>
+<dd><p>Takes in data of shape (n_frames, n_residues, n_terms) and
+returns one-dimensional array of shape (n_residues,) by
+first averaging in the first dimension and then summing in
+the new second dimension - originally the third dimension.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>np.ndarray</em>) – Unprocessed input data.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>One-dimensional processed data.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(np.ndarray)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-analysis">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-analysis" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="modules.html" class="btn btn-neutral float-left" title="molecular_simulations" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="build.html" class="btn btn-neutral float-right" title="build package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Matt Sinclair.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -141,10 +141,10 @@ class Simulator:
 
         if self.restart.exists():
             self.check_num_steps_left()
-            self.production(chkpt=self.restart, 
+            self.production(chkpt=str(self.restart), 
                             restart=True)
         else:
-            self.production(chkpt=self.eq_chkpt,
+            self.production(chkpt=str(self.eq_chkpt),
                             restart=False)
 
     def equilibrate(self) -> Simulation:

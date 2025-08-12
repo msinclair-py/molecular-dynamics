@@ -15,8 +15,7 @@ Results = dict[str, dict[str, float]]
 TaskTree = tuple[list[Callable], list[str]]
 
 class PPInteractions:
-    """
-    Code herein adapted from: 
+    """Code herein adapted from: 
         https://www.biorxiv.org/content/10.1101/2025.03.24.644990v1.full.pdf
     Takes an input topology file and trajectory file, and highlights relevant
     interactions between two selections. To this end we first compute the 
@@ -68,8 +67,7 @@ class PPInteractions:
         self.plot = plot
 
     def run(self) -> None:
-        """
-        Main function that runs the workflow. Obtains a covariance matrix,
+        """Main function that runs the workflow. Obtains a covariance matrix,
         screens for close interactions, evaluates each pairwise interaction
         for each amino acid and report the contact probability of each.
 
@@ -96,8 +94,7 @@ class PPInteractions:
     def compute_interactions(self,
                              res1: int,
                              res2: int) -> Results:
-        """
-        Ingests two resIDs, generates MDAnalysis AtomGroups for each, identifies
+        """Ingests two resIDs, generates MDAnalysis AtomGroups for each, identifies
         relevant non-bonded interactions (HBonds, saltbridge, hydrophobic) and
         computes each. Returns a dict containing the proportion of simulation time
         that each interaction is engaged.
@@ -187,8 +184,7 @@ class PPInteractions:
     def res_map(self,
                 ag1: mda.AtomGroup,
                 ag2: mda.AtomGroup) -> None:
-        """
-        Map covariance matrix indices to AtomGroup resIDs so that we are
+        """Map covariance matrix indices to AtomGroup resIDs so that we are
         examining the correct pairs of residues.
 
         Arguments:
@@ -209,8 +205,7 @@ class PPInteractions:
 
     def interpret_covariance(self,
                              cov_mat: np.ndarray) -> tuple[tuple[int, int]]:
-        """
-        Identify pairs of residues with positive or negative correlations.
+        """Identify pairs of residues with positive or negative correlations.
         Returns a tuple comprised of pairs for each.
 
         Arguments:
@@ -247,8 +242,7 @@ class PPInteractions:
     def identify_interaction_type(self,
                                   res1: str,
                                   res2: str) -> TaskTree:
-        """
-        Identifies what analyses to compute for a given pair of protein
+        """Identifies what analyses to compute for a given pair of protein
         residues (i.e. hydrophobic interactions, hydrogen bonds, saltbridges).
 
         Arguments:
@@ -295,8 +289,7 @@ class PPInteractions:
     def analyze_saltbridge(self,
                            res1: mda.AtomGroup,
                            res2: mda.AtomGroup) -> float:
-        """
-        Uses a simple distance cutoff to highlight the occupancy of 
+        """Uses a simple distance cutoff to highlight the occupancy of 
         saltbridge between two residues. Returns the fraction of
         simulation time spent engaged in saltbridge.
 
@@ -343,8 +336,7 @@ class PPInteractions:
     def analyze_hbond(self,
                       res1: mda.AtomGroup,
                       res2: mda.AtomGroup) -> float:
-        """
-        Identifies all potential donor/acceptor atoms between two
+        """Identifies all potential donor/acceptor atoms between two
         residues. Culls this list based on distance array across simulation
         and then evaluates each pair over the trajectory utilizing a
         distance and angle cutoff.
@@ -367,8 +359,7 @@ class PPInteractions:
     def analyze_hydrophobic(self,
                             res1: mda.AtomGroup,
                             res2: mda.AtomGroup) -> float:
-        """
-        Uses a simple distance cutoff to highlight the occupancy of 
+        """Uses a simple distance cutoff to highlight the occupancy of 
         hydrophobic interaction between two residues. Returns the fraction of
         simulation time spent engaged in interaction.
 
@@ -401,8 +392,7 @@ class PPInteractions:
     def survey_donors_acceptors(self,
                                 res1: mda.AtomGroup,
                                 res2: mda.AtomGroup) -> tuple[mda.AtomGroup]:
-        """
-        First pass distance threshhold to identify potential Hydrogen bonds.
+        """First pass distance threshhold to identify potential Hydrogen bonds.
         Should be followed by querying HBond angles but this serves to reduce
         our search space and time complexity. Only returns donors/acceptors which
         are within the distance cutoff in at least a single frame.
@@ -440,8 +430,7 @@ class PPInteractions:
     def evaluate_hbond(self,
                        donor: mda.AtomGroup,
                        acceptor: mda.AtomGroup) -> int:
-        """
-        Evaluates whether there is a defined hydrogen bond between any
+        """Evaluates whether there is a defined hydrogen bond between any
         donor and acceptor atoms in a given frame. Must pass a distance
         cutoff as well as an angle cutoff. Returns early when a legal
         HBond is detected.
@@ -474,8 +463,7 @@ class PPInteractions:
 
     def save(self,
              results: Results) -> None:
-        """
-        Save results as a json file.
+        """Save results as a json file.
 
         Arguments:
             results (Results): Dictionary of results to be saved.
@@ -488,8 +476,7 @@ class PPInteractions:
     
     def plot_results(self,
                      results: Results) -> None:
-        """
-        Plot results.
+        """Plot results.
 
         Arguments:
             results (Results): Dictionary of results to be plotted.
@@ -519,8 +506,7 @@ class PPInteractions:
     
     def parse_results(self, 
                       results: Results) -> pl.DataFrame:
-        """
-        Prepares results for plotting. Removes any entries which are
+        """Prepares results for plotting. Removes any entries which are
         all 0. and returns as a pandas DataFrame for easier plotting.
         
         Arguments:
@@ -550,8 +536,7 @@ class PPInteractions:
                   column: str,
                   name: PathLike,
                   fs: int=15) -> None:
-        """
-        Generates a seaborn barplot from a dataframe for a specified column.
+        """Generates a seaborn barplot from a dataframe for a specified column.
 
         Arguments:
             data (pl.DataFrame): Polars dataframe of data.

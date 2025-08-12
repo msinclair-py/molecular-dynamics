@@ -12,5 +12,6 @@ molecular-simulations documentation
    :maxdepth: 2
    :caption: Contents:
 
-    usage
-    api
+   usage
+   api
+   modules

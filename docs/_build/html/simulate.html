@@ -1,0 +1,1330 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>simulate package &mdash; molecular-simulations 2025 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=cb975c41"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="build package" href="build.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            molecular-simulations
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">molecular_simulations</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="analysis.html">analysis package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="build.html">build package</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">simulate package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-simulate.mmpbsa">simulate.mmpbsa module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#simulate.mmpbsa.FileHandler"><code class="docutils literal notranslate"><span class="pre">FileHandler</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#simulate.mmpbsa.MMPBSA"><code class="docutils literal notranslate"><span class="pre">MMPBSA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#simulate.mmpbsa.MMPBSA_settings"><code class="docutils literal notranslate"><span class="pre">MMPBSA_settings</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#simulate.mmpbsa.OutputAnalyzer"><code class="docutils literal notranslate"><span class="pre">OutputAnalyzer</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-simulate.omm_simulator">simulate.omm_simulator module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#simulate.omm_simulator.CustomForcesSimulator"><code class="docutils literal notranslate"><span class="pre">CustomForcesSimulator</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#simulate.omm_simulator.ImplicitSimulator"><code class="docutils literal notranslate"><span class="pre">ImplicitSimulator</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#simulate.omm_simulator.Minimizer"><code class="docutils literal notranslate"><span class="pre">Minimizer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#simulate.omm_simulator.Simulator"><code class="docutils literal notranslate"><span class="pre">Simulator</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-simulate.parsl_settings">simulate.parsl_settings module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#simulate.parsl_settings.AuroraSettings"><code class="docutils literal notranslate"><span class="pre">AuroraSettings</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#simulate.parsl_settings.BaseComputeSettings"><code class="docutils literal notranslate"><span class="pre">BaseComputeSettings</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#simulate.parsl_settings.BaseSettings"><code class="docutils literal notranslate"><span class="pre">BaseSettings</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#simulate.parsl_settings.LocalSettings"><code class="docutils literal notranslate"><span class="pre">LocalSettings</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#simulate.parsl_settings.PolarisSettings"><code class="docutils literal notranslate"><span class="pre">PolarisSettings</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-simulate">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">molecular-simulations</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">molecular_simulations</a></li>
+      <li class="breadcrumb-item active">simulate package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/simulate.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="simulate-package">
+<h1>simulate package<a class="headerlink" href="#simulate-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-simulate.mmpbsa">
+<span id="simulate-mmpbsa-module"></span><h2>simulate.mmpbsa module<a class="headerlink" href="#module-simulate.mmpbsa" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="simulate.mmpbsa.FileHandler">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">simulate.mmpbsa.</span></span><span class="sig-name descname"><span class="pre">FileHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">top</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">traj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cpptraj_binary</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.mmpbsa.FileHandler" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Performs preprocessing for MM-PBSA runs and manages the pathing to all file
+inputs. Additionally used to write out various cpptraj input files by the
+MMPBSA class.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="simulate.mmpbsa.FileHandler.files">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">files</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#simulate.mmpbsa.FileHandler.files" title="Link to this definition"></a></dt>
+<dd><p>Returns a zip generator containing the output paths, topologies,
+trajectories and pdbs for each system. This is done to ensure we
+have the correct order for housekeeping reasons.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>System order, topologies, trajectories and pdbs.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(tuple[list[str]])</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.mmpbsa.FileHandler.prepare_topologies">
+<span class="sig-name descname"><span class="pre">prepare_topologies</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#simulate.mmpbsa.FileHandler.prepare_topologies" title="Link to this definition"></a></dt>
+<dd><p>Slices out each sub-topology for the desolvated complex, receptor and
+ligand using cpptraj due to the difficulty of working with AMBER FF
+files otherwise (including PARMED).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.mmpbsa.FileHandler.prepare_trajectories">
+<span class="sig-name descname"><span class="pre">prepare_trajectories</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#simulate.mmpbsa.FileHandler.prepare_trajectories" title="Link to this definition"></a></dt>
+<dd><p>Converts DCD trajectory to AMBER CRD format which is explicitly
+required by MM-G(P)BSA.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.mmpbsa.FileHandler.write_file">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">write_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lines</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filepath</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.mmpbsa.FileHandler.write_file" title="Link to this definition"></a></dt>
+<dd><p>Given an input of either a list of strings or a single string,
+write input to file. If a list, join by newline characters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lines</strong> (<em>list</em><em>[</em><em>str</em><em>]</em>) – Input to be written to file.</p></li>
+<li><p><strong>filepath</strong> (<em>PathLike</em>) – Path to the file to be written.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="simulate.mmpbsa.MMPBSA">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">simulate.mmpbsa.</span></span><span class="sig-name descname"><span class="pre">MMPBSA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">top</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dcd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selections</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_frame</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_frame</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_cpus</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mmpbsa'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solvent_probe</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gb_surften</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0072</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gb_surfoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amberhome</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.mmpbsa.MMPBSA" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#simulate.mmpbsa.MMPBSA_settings" title="simulate.mmpbsa.MMPBSA_settings"><code class="xref py py-class docutils literal notranslate"><span class="pre">MMPBSA_settings</span></code></a></p>
+<p>This is an experiment in patience. What follows is a reconstruction of the various
+pieces of code that run MM-P(G)BSA from AMBER but written in a more digestible manner
+with actual documentation. Herein we have un-CLI’d what should never have been a
+CLI and piped together the correct pieces of the ambertools ecosystem to perform
+MM-P(G)BSA and that alone. Your trajectory is required to be concatenated into a single
+continuous trajectory - or you can run this serially over each by instancing this class
+for each trajectory you have. In this way we have also disentangled the requirement to
+parallelize by use of MPI, allowing the user to choose their own parallelization/scaling
+scheme.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>top</strong> (<em>PathLike</em>) – Input topology for a solvated system. Should match the input trajectory.</p></li>
+<li><p><strong>dcd</strong> (<em>PathLike</em>) – Input trajectory. Can be DCD format or MDCRD already.</p></li>
+<li><p><strong>selections</strong> (<em>list</em><em>[</em><em>str</em><em>]</em>) – A list of residue ID selections for the receptor and ligand
+in that order. Should be formatted for cpptraj (e.g. <cite>:1-10</cite>).</p></li>
+<li><p><strong>first_frame</strong> (<em>int</em>) – Defaults to 0. The first frame of the input trajectory to begin
+the calculations on.</p></li>
+<li><p><strong>last_frame</strong> (<em>int</em>) – Defaults to -1. Optional final frame to cut trajectory at. If -1,
+acts as a flag to run the whole trajectory.</p></li>
+<li><p><strong>stride</strong> (<em>int</em>) – Defaults to 1. The number of frames to stride the trajectory by.</p></li>
+<li><p><strong>n_cpus</strong> (<em>int</em>) – Number of parallel processes</p></li>
+<li><p><strong>out</strong> (<em>str</em>) – The prefix name or path for output files.</p></li>
+<li><p><strong>solvent_probe</strong> (<em>float</em>) – Defaults to 1.4Å. The probe radius to use for SA calculations.</p></li>
+<li><p><strong>offset</strong> (<em>int</em>) – Defaults to 0Å. I don’t know what this does.</p></li>
+<li><p><strong>gb_surften</strong> (<em>float</em>) – Defaults to 0.0072.</p></li>
+<li><p><strong>gb_suroff</strong> (<em>float</em>) – Defaults to 0.0.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.mmpbsa.MMPBSA.calculate_energy">
+<span class="sig-name descname"><span class="pre">calculate_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pre</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mdin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suf</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.mmpbsa.MMPBSA.calculate_energy" title="Link to this definition"></a></dt>
+<dd><p>Runs mmpbsa_py_energy, an undocumented binary file which somehow mysteriously
+computes the energy of a system. This software is not only undocumented but is
+a binary which we cannot inspect ourselves.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pre</strong> (<em>str</em>) – Prefix for output file.</p></li>
+<li><p><strong>prm</strong> (<em>PathLike</em>) – Path to prmtop file.</p></li>
+<li><p><strong>trj</strong> (<em>PathLike</em>) – Path to CRD trajectory file.</p></li>
+<li><p><strong>pdb</strong> (<em>PathLike</em>) – Path to PDB file.</p></li>
+<li><p><strong>mdin</strong> (<em>PathLike</em>) – Configuration file for the program.</p></li>
+<li><p><strong>suf</strong> (<em>str</em>) – Suffix for output file.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.mmpbsa.MMPBSA.calculate_sasa">
+<span class="sig-name descname"><span class="pre">calculate_sasa</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pre</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.mmpbsa.MMPBSA.calculate_sasa" title="Link to this definition"></a></dt>
+<dd><p>Runs the molsurf command in cpptraj to compute the SASA of a given system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pre</strong> (<em>str</em>) – Prefix for output SASA file.</p></li>
+<li><p><strong>prm</strong> (<em>PathLike</em>) – Path to prmtop file.</p></li>
+<li><p><strong>trj</strong> (<em>PathLike</em>) – Path to CRD trajectory file.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.mmpbsa.MMPBSA.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#simulate.mmpbsa.MMPBSA.run" title="Link to this definition"></a></dt>
+<dd><p>Main logic of MM-PBSA. Computes the SASA with molsurf in cpptraj, and
+the various energy terms for GB/PB using mmpbsa_py_energy from ambertools.
+Finally, parse outputs and collate into a neat form consisting of a json
+of raw data and a plain text file of the binding free energies.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.mmpbsa.MMPBSA.write_mdins">
+<span class="sig-name descname"><span class="pre">write_mdins</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#simulate.mmpbsa.MMPBSA.write_mdins" title="Link to this definition"></a></dt>
+<dd><p>Writes out the configuration files that are to be fed to mmpbsa_py_energy.
+These are also undocumented and I took the parameters from the location
+in which they are hardcoded in ambertools.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple of paths to the GB mdin and the PB mdin.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(tuple[Path, Path])</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="simulate.mmpbsa.MMPBSA_settings">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">simulate.mmpbsa.</span></span><span class="sig-name descname"><span class="pre">MMPBSA_settings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">top</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dcd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selections</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_frame</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_frame</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_cpus</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mmpbsa'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solvent_probe</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gb_surften</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0072</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gb_surfoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.mmpbsa.MMPBSA_settings" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.mmpbsa.MMPBSA_settings.dcd">
+<span class="sig-name descname"><span class="pre">dcd</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code><span class="pre">[</span><code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code><span class="pre">,</span> <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code><span class="pre">]</span></em><a class="headerlink" href="#simulate.mmpbsa.MMPBSA_settings.dcd" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.mmpbsa.MMPBSA_settings.first_frame">
+<span class="sig-name descname"><span class="pre">first_frame</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#simulate.mmpbsa.MMPBSA_settings.first_frame" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.mmpbsa.MMPBSA_settings.gb_surfoff">
+<span class="sig-name descname"><span class="pre">gb_surfoff</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.0</span></em><a class="headerlink" href="#simulate.mmpbsa.MMPBSA_settings.gb_surfoff" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.mmpbsa.MMPBSA_settings.gb_surften">
+<span class="sig-name descname"><span class="pre">gb_surften</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.0072</span></em><a class="headerlink" href="#simulate.mmpbsa.MMPBSA_settings.gb_surften" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.mmpbsa.MMPBSA_settings.last_frame">
+<span class="sig-name descname"><span class="pre">last_frame</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">-1</span></em><a class="headerlink" href="#simulate.mmpbsa.MMPBSA_settings.last_frame" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.mmpbsa.MMPBSA_settings.n_cpus">
+<span class="sig-name descname"><span class="pre">n_cpus</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#simulate.mmpbsa.MMPBSA_settings.n_cpus" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.mmpbsa.MMPBSA_settings.offset">
+<span class="sig-name descname"><span class="pre">offset</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#simulate.mmpbsa.MMPBSA_settings.offset" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.mmpbsa.MMPBSA_settings.out">
+<span class="sig-name descname"><span class="pre">out</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'mmpbsa'</span></em><a class="headerlink" href="#simulate.mmpbsa.MMPBSA_settings.out" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.mmpbsa.MMPBSA_settings.selections">
+<span class="sig-name descname"><span class="pre">selections</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code><span class="pre">[</span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code><span class="pre">]</span></em><a class="headerlink" href="#simulate.mmpbsa.MMPBSA_settings.selections" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.mmpbsa.MMPBSA_settings.solvent_probe">
+<span class="sig-name descname"><span class="pre">solvent_probe</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1.4</span></em><a class="headerlink" href="#simulate.mmpbsa.MMPBSA_settings.solvent_probe" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.mmpbsa.MMPBSA_settings.stride">
+<span class="sig-name descname"><span class="pre">stride</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#simulate.mmpbsa.MMPBSA_settings.stride" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.mmpbsa.MMPBSA_settings.top">
+<span class="sig-name descname"><span class="pre">top</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code><span class="pre">[</span><code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code><span class="pre">,</span> <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code><span class="pre">]</span></em><a class="headerlink" href="#simulate.mmpbsa.MMPBSA_settings.top" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="simulate.mmpbsa.OutputAnalyzer">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">simulate.mmpbsa.</span></span><span class="sig-name descname"><span class="pre">OutputAnalyzer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface_tension</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0072</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sasa_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_tolerance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.005</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.mmpbsa.OutputAnalyzer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Analyzes the outputs from an MM-PBSA run. Stores data in a Polars dataframe
+internally, and writes out data in the form of json/plain text.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.mmpbsa.OutputAnalyzer.check_bonded_terms">
+<span class="sig-name descname"><span class="pre">check_bonded_terms</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#simulate.mmpbsa.OutputAnalyzer.check_bonded_terms" title="Link to this definition"></a></dt>
+<dd><p>Performs a sanity check on the bonded terms which should perfectly cancel out
+(e.g. complex = receptor + ligand). If this is not the case something horrible
+has happened and we can’t trust the non-bonded energies either. Additionally
+sets a few terms we will need later such as the number of frames as given by
+the dataframe height and sqrt(n_frames).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.mmpbsa.OutputAnalyzer.compute_dG">
+<span class="sig-name descname"><span class="pre">compute_dG</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#simulate.mmpbsa.OutputAnalyzer.compute_dG" title="Link to this definition"></a></dt>
+<dd><p>For each energy dataframe (GB/PB) compute the ∆G of binding by subtracting out
+relevant contributions in accordance with how this is done under the hood of the
+MMPBSA code.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.mmpbsa.OutputAnalyzer.generate_summary">
+<span class="sig-name descname"><span class="pre">generate_summary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#simulate.mmpbsa.OutputAnalyzer.generate_summary" title="Link to this definition"></a></dt>
+<dd><p>Summarizes all processed energy data into a single polars dataframe
+and dumps it to a json file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.mmpbsa.OutputAnalyzer.parse_energy_file">
+<span class="sig-name descname"><span class="pre">parse_energy_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_contents</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.mmpbsa.OutputAnalyzer.parse_energy_file" title="Link to this definition"></a></dt>
+<dd><p>Parses the contents of an energy calculation using a dictionary of
+energy terms to extract theory-level observables (e.g. EGB vs EPB).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file_contents</strong> (<em>list</em><em>[</em><em>str</em><em>]</em>) – A list of each line from an energy calculation.</p></li>
+<li><p><strong>data</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>list</em><em>]</em>) – The relevant energy terms to be scraped from input.</p></li>
+<li><p><strong>system</strong> (<em>str</em>) – The name of the system which will be included as an additional
+kv pair in the returned dataframe. This ensures we can track which portion
+of the calculation we are accounting for (e.g. complex, receptor, ligand).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A Polars dataframe of shape (n_frames, n_calculations + system).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(pl.DataFrame)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.mmpbsa.OutputAnalyzer.parse_line">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parse_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.mmpbsa.OutputAnalyzer.parse_line" title="Link to this definition"></a></dt>
+<dd><p>Parses a line from mmpbsa_energy to get the various energy terms and values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>A tuple containing the list of energy</dt><dd><p>term names and corresponding energy values.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(tuple[list[str], list[float]])</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.mmpbsa.OutputAnalyzer.parse_outputs">
+<span class="sig-name descname"><span class="pre">parse_outputs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#simulate.mmpbsa.OutputAnalyzer.parse_outputs" title="Link to this definition"></a></dt>
+<dd><p>Parse all the output files.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.mmpbsa.OutputAnalyzer.pretty_print">
+<span class="sig-name descname"><span class="pre">pretty_print</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dfs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.mmpbsa.OutputAnalyzer.pretty_print" title="Link to this definition"></a></dt>
+<dd><p>Ingests a list of Polars dataframes for GB and PB and prints their contents
+in a human-readable form to STDIN. Also saves out the energies to a plain
+text file called <cite>deltaG.txt</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dfs</strong> (<em>list</em><em>[</em><em>pl.DataFrame</em><em>]</em>) – List of dataframes for GB and PB.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.mmpbsa.OutputAnalyzer.read_GB">
+<span class="sig-name descname"><span class="pre">read_GB</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.mmpbsa.OutputAnalyzer.read_GB" title="Link to this definition"></a></dt>
+<dd><p>Read in the GB mdout files and returns a Polars dataframe of the values
+for each term for every frame. Also adds a <cite>system</cite> label to more easily
+compute summary statistics later.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_file</strong> (<em>PathLike</em>) – Energy data file path.</p></li>
+<li><p><strong>system</strong> (<em>str</em>) – String label for which system we are processing (e.g. complex).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Polars dataframe containing the parsed energy data.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(pl.DataFrame)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.mmpbsa.OutputAnalyzer.read_PB">
+<span class="sig-name descname"><span class="pre">read_PB</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.mmpbsa.OutputAnalyzer.read_PB" title="Link to this definition"></a></dt>
+<dd><p>Read in the PB mdout files and returns a Polars dataframe of the values
+for each term for every frame. Also adds a <cite>system</cite> label to more easily
+compute summary statistics later.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_file</strong> (<em>PathLike</em>) – Energy data file path.</p></li>
+<li><p><strong>system</strong> (<em>str</em>) – String label for which system we are processing (e.g. complex).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Polars dataframe containing the parsed energy data.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(pl.DataFrame)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.mmpbsa.OutputAnalyzer.read_sasa">
+<span class="sig-name descname"><span class="pre">read_sasa</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_file</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.mmpbsa.OutputAnalyzer.read_sasa" title="Link to this definition"></a></dt>
+<dd><p>Reads in the results of the cpptraj SASA calculation and returns the
+per-frame SASA scaled by a hardcoded value for surface tension that is
+a mostly undocumented heuristic.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>_file</strong> (<em>PathLike</em>) – Path to a file containing the SASA data.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A numpy array of the per-frame rescaled SASA energies.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(np.ndarray)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-simulate.omm_simulator">
+<span id="simulate-omm-simulator-module"></span><h2>simulate.omm_simulator module<a class="headerlink" href="#module-simulate.omm_simulator" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="simulate.omm_simulator.CustomForcesSimulator">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">simulate.omm_simulator.</span></span><span class="sig-name descname"><span class="pre">CustomForcesSimulator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom_force_objects</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">equil_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1250000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prod_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">250000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_equil_cycles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reporter_frequency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">platform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'CUDA'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">equilibration_force_constant</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.omm_simulator.CustomForcesSimulator" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#simulate.omm_simulator.Simulator" title="simulate.omm_simulator.Simulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Simulator</span></code></a></p>
+<p>Simulator for utilizing custom user-defined forces. Inherits from Simulator while
+providing a way to inject custom forces.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>PathLike</em>) – Path to simulation inputs, same as output path.</p></li>
+<li><p><strong>custom_force_objects</strong> (<em>list</em>) – <p>??</p>
+</p></li>
+<li><p><strong>equil_steps</strong> (<em>int</em>) – Defaults to 1,250,000 (2.5 ns). Number of simulation timesteps to
+perform equilibration for (2fs timestep).</p></li>
+<li><p><strong>prod_steps</strong> (<em>int</em>) – Defaults to 250,000,000 (1 µs). Number of simulation timesteps to
+perform production MD for (4fs timestep).</p></li>
+<li><p><strong>n_equil_cycles</strong> (<em>int</em>) – Defaults to 3 cycles. Number of additional unrestrained
+equilibration cycles to perform. Increasing this may triage unstable systems
+at the cost of more simulation time albeit this may be negligible in the
+grand scheme of things.</p></li>
+<li><p><strong>reporter_frequency</strong> (<em>int</em>) – Defaults to 1,000 timesteps. How often to write out to
+the logs and trajectory files in equilibration. X times less frequently during
+production MD.</p></li>
+<li><p><strong>platform</strong> (<em>str</em>) – Defaults to CUDA. Which OpenMM platform to simulate with (options
+include CUDA, CPU, OpenCL).</p></li>
+<li><p><strong>device_ids</strong> (<em>list</em><em>[</em><em>int</em><em>]</em>) – Defaults to [0]. Which accelerators to use (multiple GPU
+support is tenuous with OpenMM). Primarily used to distribute jobs to different
+GPUs on a node of an HPC resource.</p></li>
+<li><p><strong>force_constant</strong> (<em>float</em>) – Defaults to 10.0 kcal/mol*Å^2. Force constant to use for
+harmonic restraints during equilibration. Currently restraints are only applied
+to protein backbone atoms.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.omm_simulator.CustomForcesSimulator.add_forces">
+<span class="sig-name descname"><span class="pre">add_forces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">system</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.omm_simulator.CustomForcesSimulator.add_forces" title="Link to this definition"></a></dt>
+<dd><p>Systematically adds all custom forces to provided system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>system</strong> (<em>System</em>) – OpenMM system object.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>OpenMM system object with custom forces added.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(System)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.omm_simulator.CustomForcesSimulator.load_amber_files">
+<span class="sig-name descname"><span class="pre">load_amber_files</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#simulate.omm_simulator.CustomForcesSimulator.load_amber_files" title="Link to this definition"></a></dt>
+<dd><p>Loads OpenMM system and adds in custom forces.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>OpenMM system object with custom forces.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(System)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="simulate.omm_simulator.ImplicitSimulator">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">simulate.omm_simulator.</span></span><span class="sig-name descname"><span class="pre">ImplicitSimulator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">equil_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1250000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prod_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">250000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_equil_cycles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reporter_frequency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">platform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'CUDA'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_constant</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">implicit_solvent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">GBn2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solute_dielectric</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solvent_dielectric</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">78.5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.omm_simulator.ImplicitSimulator" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#simulate.omm_simulator.Simulator" title="simulate.omm_simulator.Simulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Simulator</span></code></a></p>
+<p>Implicit solvent simulator. Inherits from Simulator and overloads relevant
+methods to support the slight differences in how implicit solvent is implemented
+in OpenMM.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>PathLike</em>) – Path to simulation inputs, same as output path.</p></li>
+<li><p><strong>equil_steps</strong> (<em>int</em>) – Defaults to 1,250,000 (2.5 ns). Number of simulation timesteps to
+perform equilibration for (2fs timestep).</p></li>
+<li><p><strong>prod_steps</strong> (<em>int</em>) – Defaults to 250,000,000 (1 µs). Number of simulation timesteps to
+perform production MD for (4fs timestep).</p></li>
+<li><p><strong>n_equil_cycles</strong> (<em>int</em>) – Defaults to 3 cycles. Number of additional unrestrained
+equilibration cycles to perform. Increasing this may triage unstable systems
+at the cost of more simulation time albeit this may be negligible in the
+grand scheme of things.</p></li>
+<li><p><strong>reporter_frequency</strong> (<em>int</em>) – Defaults to 1,000 timesteps. How often to write out to
+the logs and trajectory files in equilibration. X times less frequently during
+production MD.</p></li>
+<li><p><strong>platform</strong> (<em>str</em>) – Defaults to CUDA. Which OpenMM platform to simulate with (options
+include CUDA, CPU, OpenCL).</p></li>
+<li><p><strong>device_ids</strong> (<em>list</em><em>[</em><em>int</em><em>]</em>) – Defaults to [0]. Which accelerators to use (multiple GPU
+support is tenuous with OpenMM). Primarily used to distribute jobs to different
+GPUs on a node of an HPC resource.</p></li>
+<li><p><strong>force_constant</strong> (<em>float</em>) – Defaults to 10.0 kcal/mol*Å^2. Force constant to use for
+harmonic restraints during equilibration. Currently restraints are only applied
+to protein backbone atoms.</p></li>
+<li><p><strong>implicit_solvent</strong> (<em>Singleton</em>) – Defaults to GBn2. Which implicit solvent model to use.</p></li>
+<li><p><strong>solute_dielectric</strong> (<em>float</em>) – Defaults to 1.0. Probably shouldn’t change this.</p></li>
+<li><p><strong>solvent_dielectric</strong> (<em>float</em>) – Defaults to 78.5. Also shouldn’t change this.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.omm_simulator.ImplicitSimulator.equilibrate">
+<span class="sig-name descname"><span class="pre">equilibrate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#simulate.omm_simulator.ImplicitSimulator.equilibrate" title="Link to this definition"></a></dt>
+<dd><p>Runs reduced equilibration protocol. Due to the faster convergence of
+using implicit solvent we don’t need to be quite as rigorous as with
+explicit solvent system relaxation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>OpenMM simulation object.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(Simulation)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.omm_simulator.ImplicitSimulator.load_amber_files">
+<span class="sig-name descname"><span class="pre">load_amber_files</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#simulate.omm_simulator.ImplicitSimulator.load_amber_files" title="Link to this definition"></a></dt>
+<dd><p>Loads an OpenMM system object with implicit solvent parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>OpenMM system object.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(System)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="simulate.omm_simulator.Minimizer">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">simulate.omm_simulator.</span></span><span class="sig-name descname"><span class="pre">Minimizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">topology</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'min.pdb'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">platform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'OpenCL'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.omm_simulator.Minimizer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class for just performing energy minimization and writing out minimized structures.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>topology</strong> (<em>PathLike</em>) – Topology file which can be either a PDB or an AMBER prmtop.</p></li>
+<li><p><strong>coordinates</strong> (<em>OptPath</em>) – Defaults to None. If using a prmtop, you need to provide
+an inpcrd file for the coordinates. Otherwise these are also acquired from
+the PDB used as topology.</p></li>
+<li><p><strong>out</strong> (<em>PathLike</em>) – Defaults to min.pdb. The name of the output minimized PDB file.
+The path is inherited from the parent path of the topology file.</p></li>
+<li><p><strong>platform</strong> (<em>str</em>) – Defaults to OpenCL. Which OpenMM platform to run.</p></li>
+<li><p><strong>device_ids</strong> (<em>list</em><em>[</em><em>int</em><em>]</em>) – Accelerator IDs.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.omm_simulator.Minimizer.load_amber">
+<span class="sig-name descname"><span class="pre">load_amber</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#simulate.omm_simulator.Minimizer.load_amber" title="Link to this definition"></a></dt>
+<dd><p>Loads AMBER input files into OpenMM System.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>OpenMM system object.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(System)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.omm_simulator.Minimizer.load_files">
+<span class="sig-name descname"><span class="pre">load_files</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#simulate.omm_simulator.Minimizer.load_files" title="Link to this definition"></a></dt>
+<dd><p>Loads an OpenMM system depending on what file types you have provided
+for the topology (AMBER, PDB, etc).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.omm_simulator.Minimizer.load_gromacs">
+<span class="sig-name descname"><span class="pre">load_gromacs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#simulate.omm_simulator.Minimizer.load_gromacs" title="Link to this definition"></a></dt>
+<dd><p>Loads GROMACS input files into OpenMM System. UNTESTED!</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>OpenMM system object.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(System)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.omm_simulator.Minimizer.load_pdb">
+<span class="sig-name descname"><span class="pre">load_pdb</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#simulate.omm_simulator.Minimizer.load_pdb" title="Link to this definition"></a></dt>
+<dd><p>Loads PDB into OpenMM System. Beware the topology guesser.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>OpenMM system object.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(System)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.omm_simulator.Minimizer.minimize">
+<span class="sig-name descname"><span class="pre">minimize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#simulate.omm_simulator.Minimizer.minimize" title="Link to this definition"></a></dt>
+<dd><p>Loads an OpenMM system, builds simulation object and runs energy minimization.
+Dumps final coordinates into output PDB file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="simulate.omm_simulator.Simulator">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">simulate.omm_simulator.</span></span><span class="sig-name descname"><span class="pre">Simulator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">equil_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1250000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prod_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">250000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_equil_cycles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reporter_frequency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">platform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'CUDA'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_constant</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.omm_simulator.Simulator" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class for performing OpenMM simulations on AMBER FF inputs. Inputs must conform
+to naming conventions found below in the init.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>PathLike</em>) – Path to simulation inputs, same as output path.</p></li>
+<li><p><strong>equil_steps</strong> (<em>int</em>) – Defaults to 1,250,000 (2.5 ns). Number of simulation timesteps to
+perform equilibration for (2fs timestep).</p></li>
+<li><p><strong>prod_steps</strong> (<em>int</em>) – Defaults to 250,000,000 (1 µs). Number of simulation timesteps to
+perform production MD for (4fs timestep).</p></li>
+<li><p><strong>n_equil_cycles</strong> (<em>int</em>) – Defaults to 3 cycles. Number of additional unrestrained
+equilibration cycles to perform. Increasing this may triage unstable systems
+at the cost of more simulation time albeit this may be negligible in the
+grand scheme of things.</p></li>
+<li><p><strong>reporter_frequency</strong> (<em>int</em>) – Defaults to 1,000 timesteps. How often to write out to
+the logs and trajectory files in equilibration. X times less frequently during
+production MD.</p></li>
+<li><p><strong>platform</strong> (<em>str</em>) – Defaults to CUDA. Which OpenMM platform to simulate with (options
+include CUDA, CPU, OpenCL).</p></li>
+<li><p><strong>device_ids</strong> (<em>list</em><em>[</em><em>int</em><em>]</em>) – Defaults to [0]. Which accelerators to use (multiple GPU
+support is tenuous with OpenMM). Primarily used to distribute jobs to different
+GPUs on a node of an HPC resource.</p></li>
+<li><p><strong>force_constant</strong> (<em>float</em>) – Defaults to 10.0 kcal/mol*Å^2. Force constant to use for
+harmonic restraints during equilibration. Currently restraints are only applied
+to protein backbone atoms.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.omm_simulator.Simulator.add_backbone_posres">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">add_backbone_posres</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">system</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">restraint_force</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.omm_simulator.Simulator.add_backbone_posres" title="Link to this definition"></a></dt>
+<dd><p>Adds harmonic restraints to an OpenMM system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>system</strong> (<em>System</em>) – OpenMM system object.</p></li>
+<li><p><strong>positions</strong> (<em>np.ndarray</em>) – Position array for all atoms in system.</p></li>
+<li><p><strong>atoms</strong> (<em>list</em><em>[</em><em>topology.Atom</em><em>]</em>) – List of all Atom objects in system.</p></li>
+<li><p><strong>indices</strong> (<em>list</em><em>[</em><em>int</em><em>]</em>) – List of atomic indices to restrain.</p></li>
+<li><p><strong>restraint_force</strong> (<em>float</em>) – Defaults to 10.0 kcal/mol*Å^2. The force
+constant to use for harmonic restraints.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>OpenMM system with harmonic restraints.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(System)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.omm_simulator.Simulator.attach_reporters">
+<span class="sig-name descname"><span class="pre">attach_reporters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">simulation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dcd_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rst_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">restart</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.omm_simulator.Simulator.attach_reporters" title="Link to this definition"></a></dt>
+<dd><p>Attaches a StateDataReporter for logging, CheckpointReporter to output
+periodic checkpoints and a DCDReporter to output trajectory data to
+simulation object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>simulation</strong> (<em>Simulation</em>) – OpenMM simulation object.</p></li>
+<li><p><strong>dcd_file</strong> (<em>PathLike</em>) – DCD file to write to.</p></li>
+<li><p><strong>log_file</strong> (<em>PathLike</em>) – Log file to write to.</p></li>
+<li><p><strong>rst_file</strong> (<em>PathLike</em>) – Checkpoint file to write to.</p></li>
+<li><p><strong>restart</strong> (<em>bool</em>) – Defaults to False. Whether or not we should be appending
+to an existing DCD file or writing a new one, potentially overwriting
+an existing DCD (if false).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>OpenMM simulation object with reporters now attached.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(Simulation)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.omm_simulator.Simulator.check_num_steps_left">
+<span class="sig-name descname"><span class="pre">check_num_steps_left</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#simulate.omm_simulator.Simulator.check_num_steps_left" title="Link to this definition"></a></dt>
+<dd><p>Reads the production log file to see if we have completed a simulation.
+If there is still simulation to be completed, decrements the existing progress
+from internal number of steps to perform. Additionally, accounts for any frames
+that have been written to DCD that are not accounted for in the log.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.omm_simulator.Simulator.equilibrate">
+<span class="sig-name descname"><span class="pre">equilibrate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#simulate.omm_simulator.Simulator.equilibrate" title="Link to this definition"></a></dt>
+<dd><p>Sets up and runs equilibrium MD, including energy minimization to begin.
+Sets backbone harmonic restraints and performs a slow heating protocol
+before periodically lessening restraints, finishing with user-specified
+number of rounds of unrestrained equilibration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>OpenMM simulation object.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(Simulation)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.omm_simulator.Simulator.get_restraint_indices">
+<span class="sig-name descname"><span class="pre">get_restraint_indices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">addtl_selection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.omm_simulator.Simulator.get_restraint_indices" title="Link to this definition"></a></dt>
+<dd><p>Obtains atom indices that will be used to set harmonic restraints. First
+loads an MDAnalysis universe with the input prmtop and inpcrd files. Uses
+a base selection of protein or nucleic acid backbone but if provided an
+additional selection can be included for things like restraining ligand
+molecules.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>addtl_selection</strong> (<em>str</em>) – Defaults to empty string. If provided, will
+be used to define additional atoms for restraining.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of atomic indices for atoms to be restrained.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(list[int])</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.omm_simulator.Simulator.load_amber_files">
+<span class="sig-name descname"><span class="pre">load_amber_files</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#simulate.omm_simulator.Simulator.load_amber_files" title="Link to this definition"></a></dt>
+<dd><p>Builds an OpenMM system using the prmtop/inpcrd files. PME is utilized for
+electrostatics and a 1 nm non-bonded cutoff is used as well as 1.5 amu HMR.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>OpenMM system</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(System)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.omm_simulator.Simulator.load_checkpoint">
+<span class="sig-name descname"><span class="pre">load_checkpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">simulation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">checkpoint</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.omm_simulator.Simulator.load_checkpoint" title="Link to this definition"></a></dt>
+<dd><p>Loads a previous checkpoint into provided simulation object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>simulation</strong> (<em>Simulation</em>) – OpenMM simulation object.</p></li>
+<li><p><strong>checkpoint</strong> (<em>PathLike</em>) – OpenMM checkpoint file.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>OpenMM simulation object that has been checkpointed.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(Simulation)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.omm_simulator.Simulator.production">
+<span class="sig-name descname"><span class="pre">production</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chkpt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">restart</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.omm_simulator.Simulator.production" title="Link to this definition"></a></dt>
+<dd><p>Performs production MD. Loads a new system, integrator and simulation object
+and loads equilibration or past production checkpoint to allow either the
+continuation of a past simulation or to inherit the outputs of equilibration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>chkpt</strong> (<em>PathLike</em>) – The checkpoint file to load. Should be either the equilibration
+checkpoint or a past production checkpoint.</p></li>
+<li><p><strong>restart</strong> (<em>bool</em>) – Defaults to False. Flag to ensure we log the full simulation
+to reporter log. Otherwise restarts will overwrite the original log file.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.omm_simulator.Simulator.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#simulate.omm_simulator.Simulator.run" title="Link to this definition"></a></dt>
+<dd><p>Main logic of class. Determines whether or not we are restarting based on
+if all the equilibration outputs are present. Importantly the state file
+will not be written out until equilibration is complete. Also checks the
+production MD log to see if we have finished, otherwise decrements our
+progress from the total number of timesteps. Finally, runs production MD.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.omm_simulator.Simulator.setup_sim">
+<span class="sig-name descname"><span class="pre">setup_sim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">system</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.omm_simulator.Simulator.setup_sim" title="Link to this definition"></a></dt>
+<dd><p>Builds OpenMM Integrator and Simulation objects utilizing a provided
+OpenMM System object and integration timestep, dt.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>system</strong> (<em>System</em>) – OpenMM system to build simulation object of.</p></li>
+<li><p><strong>dt</strong> (<em>float</em>) – Integration timestep in units of picoseconds.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A tuple containing both the Simulation</dt><dd><p>and Integrator objects.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(tuple[Simulation, Integrator])</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-simulate.parsl_settings">
+<span id="simulate-parsl-settings-module"></span><h2>simulate.parsl_settings module<a class="headerlink" href="#module-simulate.parsl_settings" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="simulate.parsl_settings.AuroraSettings">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">simulate.parsl_settings.</span></span><span class="sig-name descname"><span class="pre">AuroraSettings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.parsl_settings.AuroraSettings" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#simulate.parsl_settings.BaseComputeSettings" title="simulate.parsl_settings.BaseComputeSettings"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseComputeSettings</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.parsl_settings.AuroraSettings.account">
+<span class="sig-name descname"><span class="pre">account</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></em><a class="headerlink" href="#simulate.parsl_settings.AuroraSettings.account" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.parsl_settings.AuroraSettings.available_accelerators">
+<span class="sig-name descname"><span class="pre">available_accelerators</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code><span class="pre">[</span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code><span class="pre">]</span></em><a class="headerlink" href="#simulate.parsl_settings.AuroraSettings.available_accelerators" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.parsl_settings.AuroraSettings.config_factory">
+<span class="sig-name descname"><span class="pre">config_factory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run_dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.parsl_settings.AuroraSettings.config_factory" title="Link to this definition"></a></dt>
+<dd><p>Create a Parsl configuration for running on Aurora.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Config</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.parsl_settings.AuroraSettings.cpus_per_node">
+<span class="sig-name descname"><span class="pre">cpus_per_node</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></em><a class="headerlink" href="#simulate.parsl_settings.AuroraSettings.cpus_per_node" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.parsl_settings.AuroraSettings.label">
+<span class="sig-name descname"><span class="pre">label</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></em><a class="headerlink" href="#simulate.parsl_settings.AuroraSettings.label" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.parsl_settings.AuroraSettings.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar[ConfigDict]</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#simulate.parsl_settings.AuroraSettings.model_config" title="Link to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.parsl_settings.AuroraSettings.num_nodes">
+<span class="sig-name descname"><span class="pre">num_nodes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></em><a class="headerlink" href="#simulate.parsl_settings.AuroraSettings.num_nodes" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.parsl_settings.AuroraSettings.queue">
+<span class="sig-name descname"><span class="pre">queue</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></em><a class="headerlink" href="#simulate.parsl_settings.AuroraSettings.queue" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.parsl_settings.AuroraSettings.retries">
+<span class="sig-name descname"><span class="pre">retries</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></em><a class="headerlink" href="#simulate.parsl_settings.AuroraSettings.retries" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.parsl_settings.AuroraSettings.scheduler_options">
+<span class="sig-name descname"><span class="pre">scheduler_options</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></em><a class="headerlink" href="#simulate.parsl_settings.AuroraSettings.scheduler_options" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.parsl_settings.AuroraSettings.strategy">
+<span class="sig-name descname"><span class="pre">strategy</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></em><a class="headerlink" href="#simulate.parsl_settings.AuroraSettings.strategy" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.parsl_settings.AuroraSettings.walltime">
+<span class="sig-name descname"><span class="pre">walltime</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></em><a class="headerlink" href="#simulate.parsl_settings.AuroraSettings.walltime" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.parsl_settings.AuroraSettings.worker_init">
+<span class="sig-name descname"><span class="pre">worker_init</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></em><a class="headerlink" href="#simulate.parsl_settings.AuroraSettings.worker_init" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="simulate.parsl_settings.BaseComputeSettings">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">simulate.parsl_settings.</span></span><span class="sig-name descname"><span class="pre">BaseComputeSettings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.parsl_settings.BaseComputeSettings" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code>, <a class="reference internal" href="#simulate.parsl_settings.BaseSettings" title="simulate.parsl_settings.BaseSettings"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseSettings</span></code></a></p>
+<p>Compute settings (HPC platform, number of GPUs, etc).</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.parsl_settings.BaseComputeSettings.config_factory">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">config_factory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run_dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.parsl_settings.BaseComputeSettings.config_factory" title="Link to this definition"></a></dt>
+<dd><p>Create new Parsl configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Config</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.parsl_settings.BaseComputeSettings.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar[ConfigDict]</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#simulate.parsl_settings.BaseComputeSettings.model_config" title="Link to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="simulate.parsl_settings.BaseSettings">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">simulate.parsl_settings.</span></span><span class="sig-name descname"><span class="pre">BaseSettings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.parsl_settings.BaseSettings" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModel</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.parsl_settings.BaseSettings.dump_yaml">
+<span class="sig-name descname"><span class="pre">dump_yaml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.parsl_settings.BaseSettings.dump_yaml" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.parsl_settings.BaseSettings.from_yaml">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_yaml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.parsl_settings.BaseSettings.from_yaml" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">_T</span></code>)</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.parsl_settings.BaseSettings.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar[ConfigDict]</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#simulate.parsl_settings.BaseSettings.model_config" title="Link to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="simulate.parsl_settings.LocalSettings">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">simulate.parsl_settings.</span></span><span class="sig-name descname"><span class="pre">LocalSettings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.parsl_settings.LocalSettings" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#simulate.parsl_settings.BaseComputeSettings" title="simulate.parsl_settings.BaseComputeSettings"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseComputeSettings</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.parsl_settings.LocalSettings.available_accelerators">
+<span class="sig-name descname"><span class="pre">available_accelerators</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code><span class="pre">[</span><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code><span class="pre">,</span> <code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code><span class="pre">[</span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code><span class="pre">]]</span></em><a class="headerlink" href="#simulate.parsl_settings.LocalSettings.available_accelerators" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.parsl_settings.LocalSettings.config_factory">
+<span class="sig-name descname"><span class="pre">config_factory</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#simulate.parsl_settings.LocalSettings.config_factory" title="Link to this definition"></a></dt>
+<dd><p>Create new Parsl configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Config</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.parsl_settings.LocalSettings.label">
+<span class="sig-name descname"><span class="pre">label</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></em><a class="headerlink" href="#simulate.parsl_settings.LocalSettings.label" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.parsl_settings.LocalSettings.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar[ConfigDict]</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#simulate.parsl_settings.LocalSettings.model_config" title="Link to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.parsl_settings.LocalSettings.retries">
+<span class="sig-name descname"><span class="pre">retries</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></em><a class="headerlink" href="#simulate.parsl_settings.LocalSettings.retries" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.parsl_settings.LocalSettings.worker_port_range">
+<span class="sig-name descname"><span class="pre">worker_port_range</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code><span class="pre">[</span><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code><span class="pre">,</span> <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code><span class="pre">]</span></em><a class="headerlink" href="#simulate.parsl_settings.LocalSettings.worker_port_range" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="simulate.parsl_settings.PolarisSettings">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">simulate.parsl_settings.</span></span><span class="sig-name descname"><span class="pre">PolarisSettings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.parsl_settings.PolarisSettings" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#simulate.parsl_settings.BaseComputeSettings" title="simulate.parsl_settings.BaseComputeSettings"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseComputeSettings</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.parsl_settings.PolarisSettings.account">
+<span class="sig-name descname"><span class="pre">account</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></em><a class="headerlink" href="#simulate.parsl_settings.PolarisSettings.account" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.parsl_settings.PolarisSettings.available_accelerators">
+<span class="sig-name descname"><span class="pre">available_accelerators</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code><span class="pre">[</span><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code><span class="pre">,</span> <code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code><span class="pre">[</span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code><span class="pre">]]</span></em><a class="headerlink" href="#simulate.parsl_settings.PolarisSettings.available_accelerators" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.parsl_settings.PolarisSettings.config_factory">
+<span class="sig-name descname"><span class="pre">config_factory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run_dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.parsl_settings.PolarisSettings.config_factory" title="Link to this definition"></a></dt>
+<dd><p>Create a configuration suitable for running all tasks on single nodes of Polaris
+We will launch 4 workers per node, each pinned to a different GPU
+:param num_nodes: Number of nodes to use for the MPI parallel tasks
+:param user_options: Options for which account to use, location of environment files, etc
+:type run_dir: <span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code>]</span>
+:param run_dir: Directory in which to store Parsl run files. Default: <cite>runinfo</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Config</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.parsl_settings.PolarisSettings.cpus_per_node">
+<span class="sig-name descname"><span class="pre">cpus_per_node</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></em><a class="headerlink" href="#simulate.parsl_settings.PolarisSettings.cpus_per_node" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.parsl_settings.PolarisSettings.label">
+<span class="sig-name descname"><span class="pre">label</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></em><a class="headerlink" href="#simulate.parsl_settings.PolarisSettings.label" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.parsl_settings.PolarisSettings.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar[ConfigDict]</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#simulate.parsl_settings.PolarisSettings.model_config" title="Link to this definition"></a></dt>
+<dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.parsl_settings.PolarisSettings.num_nodes">
+<span class="sig-name descname"><span class="pre">num_nodes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></em><a class="headerlink" href="#simulate.parsl_settings.PolarisSettings.num_nodes" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.parsl_settings.PolarisSettings.queue">
+<span class="sig-name descname"><span class="pre">queue</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></em><a class="headerlink" href="#simulate.parsl_settings.PolarisSettings.queue" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.parsl_settings.PolarisSettings.scheduler_options">
+<span class="sig-name descname"><span class="pre">scheduler_options</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></em><a class="headerlink" href="#simulate.parsl_settings.PolarisSettings.scheduler_options" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.parsl_settings.PolarisSettings.strategy">
+<span class="sig-name descname"><span class="pre">strategy</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></em><a class="headerlink" href="#simulate.parsl_settings.PolarisSettings.strategy" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.parsl_settings.PolarisSettings.walltime">
+<span class="sig-name descname"><span class="pre">walltime</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></em><a class="headerlink" href="#simulate.parsl_settings.PolarisSettings.walltime" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="simulate.parsl_settings.PolarisSettings.worker_init">
+<span class="sig-name descname"><span class="pre">worker_init</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></em><a class="headerlink" href="#simulate.parsl_settings.PolarisSettings.worker_init" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-simulate">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-simulate" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="build.html" class="btn btn-neutral float-left" title="build package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Matt Sinclair.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

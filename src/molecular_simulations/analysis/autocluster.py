@@ -12,8 +12,7 @@ PathLike = Union[Path, str]
 _T = TypeVar('_T')
 
 class GenericDataloader:
-    """
-    Loads any generic data stored in numpy arrays and stores the full
+    """Loads any generic data stored in numpy arrays and stores the full
     dataset. Capable of loading data with variable row lengths but must
     be consistent in the columnar dimension.
 
@@ -26,8 +25,7 @@ class GenericDataloader:
         self.load_data()
 
     def load_data(self) -> None:
-        """
-        Lumps data into one large array.
+        """Lumps data into one large array.
 
         Returns:
             None
@@ -71,16 +69,14 @@ class GenericDataloader:
 
 
 class PeriodicDataloader(GenericDataloader):
-    """
-    Decomposes periodic data using sin and cos, returning double the features.
+    """Decomposes periodic data using sin and cos, returning double the features.
     """
     def __init__(self,
                  data_files: list[PathLike]):
         super().__init__(data_files)
         
     def load_data(self) -> None:
-        """
-        Loads file of input periodic data.
+        """Loads file of input periodic data.
 
         Returns:
             None
@@ -95,8 +91,7 @@ class PeriodicDataloader(GenericDataloader):
 
     def remove_periodicity(self,
                            arr: np.ndarray) -> np.ndarray:
-        """
-        Removes periodicity from each feature using sin and cos. Each
+        """Removes periodicity from each feature using sin and cos. Each
         column is expanded into two such that the indices become
         i -> 2*i, 2*i + 1.
 
@@ -117,9 +112,8 @@ class PeriodicDataloader(GenericDataloader):
 
 
 class AutoKMeans:
-    """
-    Performs automatic clustering using KMeans++ including dimensionality reduction
-    of the feature space.
+    """Performs automatic clustering using KMeans++ including dimensionality 
+    reduction of the feature space.
 
     Arguments:
         data_directory (PathLike): Directory where data files can be found.
@@ -155,8 +149,7 @@ class AutoKMeans:
         self.decomposition = Decomposition(reduction_algorithm, **reduction_kws)
     
     def run(self) -> None:
-        """
-        Runs the automated clustering workflow.
+        """Runs the automated clustering workflow.
 
         Returns:
             None
@@ -168,8 +161,7 @@ class AutoKMeans:
         self.save_labels()
 
     def reduce_dimensionality(self) -> None:
-        """
-        Performs dimensionality reduction using decomposer of choice.
+        """Performs dimensionality reduction using decomposer of choice.
 
         Returns:
             None
@@ -178,8 +170,7 @@ class AutoKMeans:
 
     def sweep_n_clusters(self,
                          n_clusters: list[int]) -> None:
-        """
-        Uses silhouette score to perform a parameter sweep over number of clusters.
+        """Uses silhouette score to perform a parameter sweep over number of clusters.
         Stores the cluster centers for the best performing parameterization.
 
         Arguments:
@@ -206,8 +197,7 @@ class AutoKMeans:
         self.labels = best_labels
 
     def map_centers_to_frames(self) -> None:
-        """
-        Finds and stores the data point which lies closest to the cluster center 
+        """Finds and stores the data point which lies closest to the cluster center 
         for each cluster.
 
         Returns:
@@ -226,8 +216,7 @@ class AutoKMeans:
         self.cluster_centers = cluster_centers
 
     def save_centers(self) -> None:
-        """
-        Saves out cluster centers as a json file.
+        """Saves out cluster centers as a json file.
 
         Returns:
             None
@@ -236,8 +225,7 @@ class AutoKMeans:
             json.dump(self.cluster_centers, fout, indent=4)
 
     def save_labels(self) -> None:
-        """
-        Generates a polars dataframe containing system, frame and cluster label 
+        """Generates a polars dataframe containing system, frame and cluster label 
         assignments and saves to a parquet file.
 
         Returns:
@@ -260,8 +248,7 @@ class AutoKMeans:
 
 
 class Decomposition:
-    """
-    Thin wrapper for various dimensionality reduction algorithms. Uses scikit-learn style
+    """Thin wrapper for various dimensionality reduction algorithms. Uses scikit-learn style
     methods like `fit` and `fit_transform`.
 
     Arguments:
@@ -282,8 +269,7 @@ class Decomposition:
     
     def fit(self,
             X: np.ndarray) -> None:
-        """
-        Fits the decomposer with data.
+        """Fits the decomposer with data.
 
         Arguments:
             X (np.ndarray): Array of input data.
@@ -295,9 +281,8 @@ class Decomposition:
 
     def transform(self,
                   X: np.ndarray) -> np.ndarray:
-        """
-        Returns the reduced dimension data from a decomposer which has already been
-        fit.
+        """Returns the reduced dimension data from a decomposer which has 
+        already been fit.
 
         Arguments:
             X (np.ndarray): Array of input data.
@@ -309,8 +294,7 @@ class Decomposition:
 
     def fit_transform(self,
                       X: np.ndarray) -> np.ndarray:
-        """
-        Fits the decomposer with data and returns the reduced dimension
+        """Fits the decomposer with data and returns the reduced dimension
         data.
 
         Arguments:
