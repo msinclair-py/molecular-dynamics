@@ -6,7 +6,7 @@ version: 2
 
 # Build documentation in Sphinx
 sphinx:
-  configuration: docs/source/conf.py
+  configuration: docs/conf.py
 
 # Set the OS, Python version, and other tools you might need
 build:
