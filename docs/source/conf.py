@@ -22,7 +22,6 @@ release = '2025'
 # make sure sphinx always uses the current branch
 import sys
 import os
-import furo
 
 sys.path.insert(0, os.path.abspath("../.."))
 
@@ -40,5 +39,5 @@ exclude_patterns = []
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = 'furo'
+html_theme = 'alabaster'
 html_static_path = ['_static']
