@@ -48,10 +48,6 @@ autodoc_typehints = 'description'
 sys.modules['openbabel'] = types.ModuleType('openbabel')
 sys.modules['parmed'] = types.ModuleType('parmed')
 sys.modules['pdbfixer'] = types.ModuleType('pdbfixer')
-sys.modules['rdkit'] = types.ModuleType('rdkit')
-
-sys.modules['rdkit.Chem'] = types.ModuleType('rdkit.Chem') 
-sys.modules['rdkit.Chem.AllChem'] = types.ModuleType('rdkit.Chem.AllChem') 
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output

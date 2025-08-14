@@ -5,6 +5,7 @@ openmm
 polars
 pyyaml
 pydantic
+rdkit
 scikit-learn
 sphinx
 sphinx-autodoc-typehints
