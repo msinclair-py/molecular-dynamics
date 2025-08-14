@@ -98,28 +98,28 @@ providing a way to inject custom forces.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>path</strong> (<em>PathLike</em>) – Path to simulation inputs, same as output path.</p></li>
-<li><p><strong>custom_force_objects</strong> (<em>list</em>) – <p>??</p>
+<li><p><strong>custom_force_objects</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – <p>??</p>
 </p></li>
-<li><p><strong>equil_steps</strong> (<em>int</em>) – Defaults to 1,250,000 (2.5 ns). Number of simulation timesteps to
+<li><p><strong>equil_steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Defaults to 1,250,000 (2.5 ns). Number of simulation timesteps to
 perform equilibration for (2fs timestep).</p></li>
-<li><p><strong>prod_steps</strong> (<em>int</em>) – Defaults to 250,000,000 (1 µs). Number of simulation timesteps to
+<li><p><strong>prod_steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Defaults to 250,000,000 (1 µs). Number of simulation timesteps to
 perform production MD for (4fs timestep).</p></li>
-<li><p><strong>n_equil_cycles</strong> (<em>int</em>) – Defaults to 3 cycles. Number of additional unrestrained
+<li><p><strong>n_equil_cycles</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Defaults to 3 cycles. Number of additional unrestrained
 equilibration cycles to perform. Increasing this may triage unstable systems
 at the cost of more simulation time albeit this may be negligible in the
 grand scheme of things.</p></li>
-<li><p><strong>reporter_frequency</strong> (<em>int</em>) – Defaults to 1,000 timesteps. How often to write out to
+<li><p><strong>reporter_frequency</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Defaults to 1,000 timesteps. How often to write out to
 the logs and trajectory files in equilibration. X times less frequently during
 production MD.</p></li>
-<li><p><strong>platform</strong> (<em>str</em>) – Defaults to CUDA. Which OpenMM platform to simulate with (options
+<li><p><strong>platform</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Defaults to CUDA. Which OpenMM platform to simulate with (options
 include CUDA, CPU, OpenCL).</p></li>
-<li><p><strong>device_ids</strong> (<em>list</em><em>[</em><em>int</em><em>]</em>) – Defaults to [0]. Which accelerators to use (multiple GPU
+<li><p><strong>device_ids</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>]</em>) – Defaults to [0]. Which accelerators to use (multiple GPU
 support is tenuous with OpenMM). Primarily used to distribute jobs to different
 GPUs on a node of an HPC resource.</p></li>
-<li><p><strong>force_constant</strong> (<em>float</em>) – Defaults to 10.0 kcal/mol*Å^2. Force constant to use for
+<li><p><strong>force_constant</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Defaults to 10.0 kcal/mol*Å^2. Force constant to use for
 harmonic restraints during equilibration. Currently restraints are only applied
 to protein backbone atoms.</p></li>
-<li><p><strong>equilibration_force_constant</strong> (<em>float</em>)</p></li>
+<li><p><strong>equilibration_force_constant</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>)</p></li>
 </ul>
 </dd>
 </dl>
@@ -167,28 +167,28 @@ in OpenMM.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>path</strong> (<em>PathLike</em>) – Path to simulation inputs, same as output path.</p></li>
-<li><p><strong>equil_steps</strong> (<em>int</em>) – Defaults to 1,250,000 (2.5 ns). Number of simulation timesteps to
+<li><p><strong>equil_steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Defaults to 1,250,000 (2.5 ns). Number of simulation timesteps to
 perform equilibration for (2fs timestep).</p></li>
-<li><p><strong>prod_steps</strong> (<em>int</em>) – Defaults to 250,000,000 (1 µs). Number of simulation timesteps to
+<li><p><strong>prod_steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Defaults to 250,000,000 (1 µs). Number of simulation timesteps to
 perform production MD for (4fs timestep).</p></li>
-<li><p><strong>n_equil_cycles</strong> (<em>int</em>) – Defaults to 3 cycles. Number of additional unrestrained
+<li><p><strong>n_equil_cycles</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Defaults to 3 cycles. Number of additional unrestrained
 equilibration cycles to perform. Increasing this may triage unstable systems
 at the cost of more simulation time albeit this may be negligible in the
 grand scheme of things.</p></li>
-<li><p><strong>reporter_frequency</strong> (<em>int</em>) – Defaults to 1,000 timesteps. How often to write out to
+<li><p><strong>reporter_frequency</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Defaults to 1,000 timesteps. How often to write out to
 the logs and trajectory files in equilibration. X times less frequently during
 production MD.</p></li>
-<li><p><strong>platform</strong> (<em>str</em>) – Defaults to CUDA. Which OpenMM platform to simulate with (options
+<li><p><strong>platform</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Defaults to CUDA. Which OpenMM platform to simulate with (options
 include CUDA, CPU, OpenCL).</p></li>
-<li><p><strong>device_ids</strong> (<em>list</em><em>[</em><em>int</em><em>]</em>) – Defaults to [0]. Which accelerators to use (multiple GPU
+<li><p><strong>device_ids</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>]</em>) – Defaults to [0]. Which accelerators to use (multiple GPU
 support is tenuous with OpenMM). Primarily used to distribute jobs to different
 GPUs on a node of an HPC resource.</p></li>
-<li><p><strong>force_constant</strong> (<em>float</em>) – Defaults to 10.0 kcal/mol*Å^2. Force constant to use for
+<li><p><strong>force_constant</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Defaults to 10.0 kcal/mol*Å^2. Force constant to use for
 harmonic restraints during equilibration. Currently restraints are only applied
 to protein backbone atoms.</p></li>
 <li><p><strong>implicit_solvent</strong> (<em>Singleton</em>) – Defaults to GBn2. Which implicit solvent model to use.</p></li>
-<li><p><strong>solute_dielectric</strong> (<em>float</em>) – Defaults to 1.0. Probably shouldn’t change this.</p></li>
-<li><p><strong>solvent_dielectric</strong> (<em>float</em>) – Defaults to 78.5. Also shouldn’t change this.</p></li>
+<li><p><strong>solute_dielectric</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Defaults to 1.0. Probably shouldn’t change this.</p></li>
+<li><p><strong>solvent_dielectric</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Defaults to 78.5. Also shouldn’t change this.</p></li>
 </ul>
 </dd>
 </dl>
@@ -227,7 +227,7 @@ explicit solvent system relaxation.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="molecular_simulations.simulate.omm_simulator.Minimizer">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.simulate.omm_simulator.</span></span><span class="sig-name descname"><span class="pre">Minimizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">topology</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'min.pdb'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">platform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'OpenCL'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.simulate.omm_simulator.Minimizer" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Class for just performing energy minimization and writing out minimized structures.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -238,8 +238,8 @@ an inpcrd file for the coordinates. Otherwise these are also acquired from
 the PDB used as topology.</p></li>
 <li><p><strong>out</strong> (<em>PathLike</em>) – Defaults to min.pdb. The name of the output minimized PDB file.
 The path is inherited from the parent path of the topology file.</p></li>
-<li><p><strong>platform</strong> (<em>str</em>) – Defaults to OpenCL. Which OpenMM platform to run.</p></li>
-<li><p><strong>device_ids</strong> (<em>list</em><em>[</em><em>int</em><em>]</em>) – Accelerator IDs.</p></li>
+<li><p><strong>platform</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Defaults to OpenCL. Which OpenMM platform to run.</p></li>
+<li><p><strong>device_ids</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>]</em>) – Accelerator IDs.</p></li>
 </ul>
 </dd>
 </dl>
@@ -264,7 +264,7 @@ The path is inherited from the parent path of the topology file.</p></li>
 for the topology (AMBER, PDB, etc).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>None</p>
@@ -307,7 +307,7 @@ for the topology (AMBER, PDB, etc).</p>
 Dumps final coordinates into output PDB file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>None</p>
@@ -320,30 +320,30 @@ Dumps final coordinates into output PDB file.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="molecular_simulations.simulate.omm_simulator.Simulator">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.simulate.omm_simulator.</span></span><span class="sig-name descname"><span class="pre">Simulator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">equil_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1250000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prod_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">250000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_equil_cycles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reporter_frequency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">platform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'CUDA'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_constant</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.simulate.omm_simulator.Simulator" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Class for performing OpenMM simulations on AMBER FF inputs. Inputs must conform
 to naming conventions found below in the init.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>path</strong> (<em>PathLike</em>) – Path to simulation inputs, same as output path.</p></li>
-<li><p><strong>equil_steps</strong> (<em>int</em>) – Defaults to 1,250,000 (2.5 ns). Number of simulation timesteps to
+<li><p><strong>equil_steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Defaults to 1,250,000 (2.5 ns). Number of simulation timesteps to
 perform equilibration for (2fs timestep).</p></li>
-<li><p><strong>prod_steps</strong> (<em>int</em>) – Defaults to 250,000,000 (1 µs). Number of simulation timesteps to
+<li><p><strong>prod_steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Defaults to 250,000,000 (1 µs). Number of simulation timesteps to
 perform production MD for (4fs timestep).</p></li>
-<li><p><strong>n_equil_cycles</strong> (<em>int</em>) – Defaults to 3 cycles. Number of additional unrestrained
+<li><p><strong>n_equil_cycles</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Defaults to 3 cycles. Number of additional unrestrained
 equilibration cycles to perform. Increasing this may triage unstable systems
 at the cost of more simulation time albeit this may be negligible in the
 grand scheme of things.</p></li>
-<li><p><strong>reporter_frequency</strong> (<em>int</em>) – Defaults to 1,000 timesteps. How often to write out to
+<li><p><strong>reporter_frequency</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Defaults to 1,000 timesteps. How often to write out to
 the logs and trajectory files in equilibration. X times less frequently during
 production MD.</p></li>
-<li><p><strong>platform</strong> (<em>str</em>) – Defaults to CUDA. Which OpenMM platform to simulate with (options
+<li><p><strong>platform</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Defaults to CUDA. Which OpenMM platform to simulate with (options
 include CUDA, CPU, OpenCL).</p></li>
-<li><p><strong>device_ids</strong> (<em>list</em><em>[</em><em>int</em><em>]</em>) – Defaults to [0]. Which accelerators to use (multiple GPU
+<li><p><strong>device_ids</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>]</em>) – Defaults to [0]. Which accelerators to use (multiple GPU
 support is tenuous with OpenMM). Primarily used to distribute jobs to different
 GPUs on a node of an HPC resource.</p></li>
-<li><p><strong>force_constant</strong> (<em>float</em>) – Defaults to 10.0 kcal/mol*Å^2. Force constant to use for
+<li><p><strong>force_constant</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Defaults to 10.0 kcal/mol*Å^2. Force constant to use for
 harmonic restraints during equilibration. Currently restraints are only applied
 to protein backbone atoms.</p></li>
 </ul>
@@ -358,9 +358,9 @@ to protein backbone atoms.</p></li>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>system</strong> (<em>System</em>) – OpenMM system object.</p></li>
 <li><p><strong>positions</strong> (<em>np.ndarray</em>) – Position array for all atoms in system.</p></li>
-<li><p><strong>atoms</strong> (<em>list</em><em>[</em><em>topology.Atom</em><em>]</em>) – List of all Atom objects in system.</p></li>
-<li><p><strong>indices</strong> (<em>list</em><em>[</em><em>int</em><em>]</em>) – List of atomic indices to restrain.</p></li>
-<li><p><strong>restraint_force</strong> (<em>float</em>) – Defaults to 10.0 kcal/mol*Å^2. The force
+<li><p><strong>atoms</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>[</em><em>topology.Atom</em><em>]</em>) – List of all Atom objects in system.</p></li>
+<li><p><strong>indices</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>]</em>) – List of atomic indices to restrain.</p></li>
+<li><p><strong>restraint_force</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Defaults to 10.0 kcal/mol*Å^2. The force
 constant to use for harmonic restraints.</p></li>
 </ul>
 </dd>
@@ -386,7 +386,7 @@ simulation object.</p>
 <li><p><strong>dcd_file</strong> (<em>PathLike</em>) – DCD file to write to.</p></li>
 <li><p><strong>log_file</strong> (<em>PathLike</em>) – Log file to write to.</p></li>
 <li><p><strong>rst_file</strong> (<em>PathLike</em>) – Checkpoint file to write to.</p></li>
-<li><p><strong>restart</strong> (<em>bool</em>) – Defaults to False. Whether or not we should be appending
+<li><p><strong>restart</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Defaults to False. Whether or not we should be appending
 to an existing DCD file or writing a new one, potentially overwriting
 an existing DCD (if false).</p></li>
 </ul>
@@ -409,7 +409,7 @@ from internal number of steps to perform. Additionally, accounts for any frames
 that have been written to DCD that are not accounted for in the log.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>None</p>
@@ -444,14 +444,14 @@ additional selection can be included for things like restraining ligand
 molecules.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>addtl_selection</strong> (<em>str</em>) – Defaults to empty string. If provided, will
+<dd class="field-odd"><p><strong>addtl_selection</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Defaults to empty string. If provided, will
 be used to define additional atoms for restraining.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>List of atomic indices for atoms to be restrained.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>(list[int])</p>
+<dd class="field-odd"><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)">list</a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)">int</a>])</p>
 </dd>
 </dl>
 </dd></dl>
@@ -502,12 +502,12 @@ continuation of a past simulation or to inherit the outputs of equilibration.</p
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>chkpt</strong> (<em>PathLike</em>) – The checkpoint file to load. Should be either the equilibration
 checkpoint or a past production checkpoint.</p></li>
-<li><p><strong>restart</strong> (<em>bool</em>) – Defaults to False. Flag to ensure we log the full simulation
+<li><p><strong>restart</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Defaults to False. Flag to ensure we log the full simulation
 to reporter log. Otherwise restarts will overwrite the original log file.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -522,7 +522,7 @@ production MD log to see if we have finished, otherwise decrements our
 progress from the total number of timesteps. Finally, runs production MD.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -536,7 +536,7 @@ OpenMM System object and integration timestep, dt.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>system</strong> (<em>System</em>) – OpenMM system to build simulation object of.</p></li>
-<li><p><strong>dt</strong> (<em>float</em>) – Integration timestep in units of picoseconds.</p></li>
+<li><p><strong>dt</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Integration timestep in units of picoseconds.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -547,7 +547,7 @@ OpenMM System object and integration timestep, dt.</p>
 </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>(tuple[Simulation, Integrator])</p>
+<dd class="field-odd"><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)">tuple</a>[Simulation, Integrator])</p>
 </dd>
 </dl>
 </dd></dl>

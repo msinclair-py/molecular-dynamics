@@ -91,7 +91,7 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="molecular_simulations.analysis.cov_ppi.PPInteractions">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.cov_ppi.</span></span><span class="sig-name descname"><span class="pre">PPInteractions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">top</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">traj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sel1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'chainID</span> <span class="pre">A'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sel2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'chainID</span> <span class="pre">B'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cov_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(11.0,</span> <span class="pre">13.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sb_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hbond_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hbond_angle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hydrophobic_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.cov_ppi.PPInteractions" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <dl class="simple">
 <dt>Code herein adapted from:</dt><dd><p><a class="reference external" href="https://www.biorxiv.org/content/10.1101/2025.03.24.644990v1.full.pdf">https://www.biorxiv.org/content/10.1101/2025.03.24.644990v1.full.pdf</a></p>
 </dd>
@@ -108,18 +108,18 @@ cutoffs defined in the literature.</p>
 <li><p><strong>top</strong> (<em>PathLike</em>) – Path to topology file.</p></li>
 <li><p><strong>traj</strong> (<em>PathLike</em>) – Path to trajectory file.</p></li>
 <li><p><strong>out</strong> (<em>PathLike</em>) – Path to outputs.</p></li>
-<li><p><strong>sel1</strong> (<em>str</em>) – Defaults to ‘chainID A’. MDAnalysis selection string for the
+<li><p><strong>sel1</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Defaults to ‘chainID A’. MDAnalysis selection string for the
 first selection.</p></li>
-<li><p><strong>sel2</strong> (<em>str</em>) – Defaults to ‘chainID B’. MDAnalysis selection string for the
+<li><p><strong>sel2</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Defaults to ‘chainID B’. MDAnalysis selection string for the
 second selection.</p></li>
-<li><p><strong>cov_cutoff</strong> (<em>tuple</em><em>[</em><em>float</em><em>]</em>) – Defaults to (11., 13.). Tuple of the distance
+<li><p><strong>cov_cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>]</em>) – Defaults to (11., 13.). Tuple of the distance
 cutoffs to use for positive and negative covariance respectively.</p></li>
-<li><p><strong>sb_cutoff</strong> (<em>float</em>) – Defaults to 6.0Å. Distance cutoff for salt bridges.</p></li>
-<li><p><strong>hbond_cutoff</strong> (<em>float</em>) – Defaults to 3.5Å. Distance cutoff for hydrogen bonds.</p></li>
-<li><p><strong>hbond_angle</strong> (<em>float</em>) – Defaults to 30.0 degrees. Angle cutoff for hydrogen bonds.</p></li>
-<li><p><strong>hydrophobic_cutoff</strong> (<em>float</em>) – Defaults to 8.0Å. Distance cutoff for hydrophobic
+<li><p><strong>sb_cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Defaults to 6.0Å. Distance cutoff for salt bridges.</p></li>
+<li><p><strong>hbond_cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Defaults to 3.5Å. Distance cutoff for hydrogen bonds.</p></li>
+<li><p><strong>hbond_angle</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Defaults to 30.0 degrees. Angle cutoff for hydrogen bonds.</p></li>
+<li><p><strong>hydrophobic_cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Defaults to 8.0Å. Distance cutoff for hydrophobic
 interactions.</p></li>
-<li><p><strong>plot</strong> (<em>bool</em>) – Defaults to True. Whether or not to plot results. Saves plots
+<li><p><strong>plot</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Defaults to True. Whether or not to plot results. Saves plots
 at the output directory.</p></li>
 </ul>
 </dd>
@@ -142,7 +142,7 @@ distance and angle cutoff.</p>
 <dd class="field-even"><p>Proportion of simulation time spent in hydrogen bond.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>(float)</p>
+<dd class="field-odd"><p>(<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)">float</a>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -164,7 +164,7 @@ simulation time spent engaged in interaction.</p>
 <dd class="field-even"><p>Proportion of simulation time spent in interaction.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>(float)</p>
+<dd class="field-odd"><p>(<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)">float</a>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -186,7 +186,7 @@ simulation time spent engaged in saltbridge.</p>
 <dd class="field-even"><p>Proportion of simulation time spent in salt bridge.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>(float)</p>
+<dd class="field-odd"><p>(<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)">float</a>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -201,8 +201,8 @@ that each interaction is engaged.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>res1</strong> (<em>int</em>) – ResID for a residue in sel1.</p></li>
-<li><p><strong>res2</strong> (<em>int</em>) – ResID for a residue in sel2.</p></li>
+<li><p><strong>res1</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – ResID for a residue in sel1.</p></li>
+<li><p><strong>res2</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – ResID for a residue in sel2.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -236,7 +236,7 @@ HBond is detected.</p>
 <dd class="field-even"><p>1 if legal hbond found, else 0</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>(int)</p>
+<dd class="field-odd"><p>(<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)">int</a>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -273,8 +273,8 @@ residues (i.e. hydrophobic interactions, hydrogen bonds, saltbridges).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>res1</strong> (<em>str</em>) – 3-letter code resname for a residue from selection 1.</p></li>
-<li><p><strong>res2</strong> (<em>str</em>) – 3-letter code resname for a residue from selection 2.</p></li>
+<li><p><strong>res1</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – 3-letter code resname for a residue from selection 1.</p></li>
+<li><p><strong>res2</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – 3-letter code resname for a residue from selection 2.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -303,7 +303,7 @@ Returns a tuple comprised of pairs for each.</p>
 </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>(tuple[tuple[int, int]])</p>
+<dd class="field-odd"><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)">int</a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)">int</a>]])</p>
 </dd>
 </dl>
 </dd></dl>
@@ -316,13 +316,13 @@ Returns a tuple comprised of pairs for each.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>data</strong> (<em>pl.DataFrame</em>) – Polars dataframe of data.</p></li>
-<li><p><strong>column</strong> (<em>str</em>) – Label for desired column.</p></li>
+<li><p><strong>column</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Label for desired column.</p></li>
 <li><p><strong>name</strong> (<em>PathLike</em>) – Path to file to save plot to.</p></li>
-<li><p><strong>fs</strong> (<em>int</em>) – Defaults to 15. Size of font for plot.</p></li>
+<li><p><strong>fs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Defaults to 15. Size of font for plot.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>None</p>
@@ -357,7 +357,7 @@ all 0. and returns as a pandas DataFrame for easier plotting.</p>
 <dd class="field-odd"><p><strong>results</strong> (<em>Results</em>) – Dictionary of results to be plotted.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>None</p>
@@ -378,7 +378,7 @@ examining the correct pairs of residues.</p>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>None</p>
@@ -394,7 +394,7 @@ screens for close interactions, evaluates each pairwise interaction
 for each amino acid and report the contact probability of each.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>None</p>
@@ -411,7 +411,7 @@ for each amino acid and report the contact probability of each.</p>
 <dd class="field-odd"><p><strong>results</strong> (<em>Results</em>) – Dictionary of results to be saved.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>None</p>
@@ -441,7 +441,7 @@ are within the distance cutoff in at least a single frame.</p>
 </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>(tuple[mda.AtomGroup])</p>
+<dd class="field-odd"><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)">tuple</a>[mda.AtomGroup])</p>
 </dd>
 </dl>
 </dd></dl>

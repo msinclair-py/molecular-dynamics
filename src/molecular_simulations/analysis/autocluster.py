@@ -48,7 +48,8 @@ class GenericDataloader:
 
     @property
     def data(self) -> np.ndarray:
-        """
+        """Property for storing data array.
+
         Returns:
             (np.ndarray): Internal data array.
         """
@@ -56,7 +57,8 @@ class GenericDataloader:
 
     @property
     def shape(self) -> tuple[int]:
-        """
+        """Property for storing shapes of input data.
+        
         Returns:
             (tuple[int]): Shape of each individual data file, or if they have 
                 different shapes, the shape of each based on the order they were

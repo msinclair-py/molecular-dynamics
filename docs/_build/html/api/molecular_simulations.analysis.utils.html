@@ -91,7 +91,7 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="molecular_simulations.analysis.utils.EmbedData">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.utils.</span></span><span class="sig-name descname"><span class="pre">EmbedData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embedding_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.utils.EmbedData" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Embeds given data into the beta-factor column of PDB. Writes out to same
 path as input PDB and backs up old PDB file, unless an output path is
 explicitly provided. Embedding data should be provided as a dictionary where
@@ -102,7 +102,7 @@ of shape (n_frames, n_residues, n_datapoints) or (n_residues, n_datapoints).</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pdb</strong> (<em>Path</em>) – Path to PDB file to load. Also will be the output if one is
 not provided.</p></li>
-<li><p><strong>embedding_dict</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>np.ndarray</em><em>]</em>) – A dictionary containing MDAnalysis
+<li><p><strong>embedding_dict</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>np.ndarray</em><em>]</em>) – A dictionary containing MDAnalysis
 selections as keys and data as the values.</p></li>
 <li><p><strong>out</strong> (<em>OptPath</em>) – Defaults to None. If not None this will be the path to the
 output PDB.</p></li>
@@ -115,7 +115,7 @@ output PDB.</p></li>
 <dd><p>Unpacks embedding dictionary, embeds data and writes out new PDB.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>None</p>
@@ -130,13 +130,13 @@ output PDB.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>selection</strong> (<em>str</em>) – MDAnalysis selection string.</p></li>
+<li><p><strong>selection</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – MDAnalysis selection string.</p></li>
 <li><p><strong>data</strong> (<em>np.ndarray</em>) – Array of data to place in beta column. Shape should
 be (n_residues_in_selection, 1).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>None</p>
@@ -153,7 +153,7 @@ back up the PDB as that may occur if you run this twice and to do so would
 mean losing the actual original PDB.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>None</p>
@@ -176,7 +176,7 @@ do not understand a negative beta factor.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pdb</strong> (<em>Path</em>) – Path to PDB file to load. Also will be the output if one is
 not provided.</p></li>
-<li><p><strong>embedding_dict</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>np.ndarray</em><em>]</em>) – A dictionary containing MDAnalysis
+<li><p><strong>embedding_dict</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>np.ndarray</em><em>]</em>) – A dictionary containing MDAnalysis
 selections as keys and data as the values.</p></li>
 <li><p><strong>out</strong> (<em>OptPath</em>) – Defaults to None. If not None this will be the path to the
 output PDB.</p></li>
@@ -195,7 +195,7 @@ preserving the distance between values.</p>
 <dd class="field-odd"><p>Processed data array.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>(dict[str, np.ndarray])</p>
+<dd class="field-even"><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>, np.ndarray])</p>
 </dd>
 </dl>
 </dd></dl>

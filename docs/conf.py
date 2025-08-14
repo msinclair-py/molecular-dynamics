@@ -25,6 +25,8 @@ import sphinx_rtd_theme
 import sys
 import types
 
+print('CONF LOADED; RTD =', os.environ.get('READTHEDOCS'))
+
 sys.path.insert(0, os.path.abspath('../src'))
 
 # add sphinx extensions and autodoc configuration
@@ -45,21 +47,19 @@ autodoc_default_options = {
 autoclass_content = 'both'
 autodoc_typehints = 'description'
 
-sys.modules['numba'] = types.ModuleType('numba')
-sys.modules['numba.njit'] = types.ModuleType('numba.njit')
-sys.modules['openbabel'] = types.ModuleType('openbabel')
-sys.modules['openbabel.pybel'] = types.ModuleType('openbabel.pybel')
-sys.modules['parmed'] = types.ModuleType('parmed')
-sys.modules['pdbfixer'] = types.ModuleType('pdbfixer')
-sys.modules['pdbfixer.PDBFixer'] = types.ModuleType('pdbfixer.PDBFixer')
-sys.modules['pdbfixer.pdbfixer'] = types.ModuleType('pdbfixer.pdbfixer')
-sys.modules['pdbfixer.pdbfixer.Sequence'] = types.ModuleType('pdbfixer.pdbfixer.Sequence')
+autodoc_mock_imports = [
+    'numba', 'numba.njit', 'openbabel', 'openbabel.pybel',
+    'parmed', 'pdbfixer', 'pdbfixer.PDBFixer', 'pdbfixer.pdbfixer',
+    'pdbfixer.pdbfixer.Sequence'
+]
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
+
+templates_path = ['_templates']
 
 # Configuration for intersphinx
 intersphinx_mapping = {
@@ -70,7 +70,7 @@ intersphinx_mapping = {
     "numpy": ("https://numpy.org/doc/stable/", None),
     "openmm": ("https://docs.openmm.org/latest/userguide/", None),
     "parsl": ("https://parsl.readthedocs.io/en/stable", None),
-    "polars": ("https://docs.pola.rs", None),
+    "polars": ("https://docs.pola.rs/api/python/stable", None),
     "parmed": ("https://parmed.github.io/ParmEd/html/", None),
     "rdkit": ("https://rdkit.org/docs/", None),
     "dask": ("https://docs.dask.org/en/stable/", None),
