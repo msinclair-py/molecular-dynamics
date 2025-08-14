@@ -9,3 +9,4 @@ pydantic
 scikit-learn
 sphinx
 sphinx-rtd-theme
+sphinx-autodoc-typehints
