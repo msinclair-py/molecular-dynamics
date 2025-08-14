@@ -19,6 +19,9 @@ classifiers = [
 ]
 license = "MIT"
 license-files = ["LICEN[CS]E*"]
+dependencies = [
+
+]
 
 [project.urls]
 Homepage = "https://github.com/msinclair-py/molecular-dynamics"

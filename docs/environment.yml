@@ -1,0 +1,24 @@
+name: molecular_simulations
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - MDAnalysis
+  - mdtraj
+  - natsort
+  - numba
+  - openbabel
+  - openmm
+  - parmed
+  - parsl
+  - pdbfixer
+  - polars
+  - pydantic
+  - python=3.12
+  - pyyaml
+  - rdkit
+  - scikit-learn
+  - seaborn
+  - sphinx
+  - sphinx-autodoc-typehints
+  - sphinx-rtd-theme

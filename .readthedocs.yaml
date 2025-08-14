@@ -17,8 +17,10 @@ build:
 sphinx:
   configuration: docs/conf.py
 
+conda:
+  environment: environment.yml
+
 python:
   install:
     - method: pip
       path: .
-    - requirements: docs/requirements.txt
