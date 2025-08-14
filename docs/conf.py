@@ -44,6 +44,7 @@ autodock_mock_imports = [
     'MDAnalysis',
     'openbabel',
     'parmed',
+    'pdbfixer',
     'rdkit',
 ]
 
