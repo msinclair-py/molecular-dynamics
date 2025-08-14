@@ -1,0 +1,583 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>molecular_simulations.analysis.ipSAE module &mdash; molecular-simulations 2025 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=cb975c41"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="molecular_simulations.analysis.sasa module" href="molecular_simulations.analysis.sasa.html" />
+    <link rel="prev" title="molecular_simulations.analysis.interaction_energy module" href="molecular_simulations.analysis.interaction_energy.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            molecular-simulations
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">molecular_simulations</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="molecular_simulations.html">molecular_simulations package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="molecular_simulations.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="molecular_simulations.analysis.html">molecular_simulations.analysis package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.build.html">molecular_simulations.build package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.simulate.html">molecular_simulations.simulate package</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">molecular-simulations</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">molecular_simulations</a></li>
+          <li class="breadcrumb-item"><a href="molecular_simulations.html">molecular_simulations package</a></li>
+          <li class="breadcrumb-item"><a href="molecular_simulations.analysis.html">molecular_simulations.analysis package</a></li>
+      <li class="breadcrumb-item active">molecular_simulations.analysis.ipSAE module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/molecular_simulations.analysis.ipSAE.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-molecular_simulations.analysis.ipSAE">
+<span id="molecular-simulations-analysis-ipsae-module"></span><h1>molecular_simulations.analysis.ipSAE module<a class="headerlink" href="#module-molecular_simulations.analysis.ipSAE" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ModelParser">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.ipSAE.</span></span><span class="sig-name descname"><span class="pre">ModelParser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ModelParser" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Helper class to read in and process a structure file for downstream
+scoring tasks. Capable of reading both PDB and CIF formats.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>structure</strong> (<em>PathLike</em>) – Path to PDB or CIF file.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ModelParser.classify_chains">
+<span class="sig-name descname"><span class="pre">classify_chains</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ModelParser.classify_chains" title="Link to this definition"></a></dt>
+<dd><p>Reads through residue data to assign the identity of each chain as
+either protein (by default) or nucleic acid if an NA residue is detected.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ModelParser.nucleic_acids">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">nucleic_acids</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ModelParser.nucleic_acids" title="Link to this definition"></a></dt>
+<dd><p>Stores the canonical resnames for RNA and DNA residues.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List of nucleic acid resnames.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(list[str])</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ModelParser.package_line">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">package_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atom_num</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atom_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">residue_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">residue_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ModelParser.package_line" title="Link to this definition"></a></dt>
+<dd><p>Packs various information from a single line of a structure file into
+a dictionary to maintain consistency.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>atom_num</strong> (<em>str</em>) – Atom index.</p></li>
+<li><p><strong>atom_name</strong> (<em>str</em>) – Atom name.</p></li>
+<li><p><strong>residue_name</strong> (<em>str</em>) – Resname.</p></li>
+<li><p><strong>chain_id</strong> (<em>str</em>) – ChainID.</p></li>
+<li><p><strong>residue_id</strong> (<em>str</em>) – ResID.</p></li>
+<li><p><strong>x</strong> (<em>str</em>) – X coordinate.</p></li>
+<li><p><strong>y</strong> (<em>str</em>) – Y coordinate.</p></li>
+<li><p><strong>z</strong> (<em>str</em>) – Z coordinate.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary representation of data.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(dict[str, Any])</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ModelParser.parse_cif_line">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parse_cif_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fields</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ModelParser.parse_cif_line" title="Link to this definition"></a></dt>
+<dd><p>Parses a single line of a CIF file, extracting atom and residue information.
+Processes this into a dictionary and returns the dict.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>line</strong> (<em>str</em>) – Actual line from CIF file.</p></li>
+<li><p><strong>fields</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>int</em><em>]</em>) – Definition of where each field is found.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary representation of data.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(dict[str, Any])</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ModelParser.parse_pdb_line">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parse_pdb_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ModelParser.parse_pdb_line" title="Link to this definition"></a></dt>
+<dd><p>Parses a single line of a PDB file, extracting atom and residue information.
+Processes this into a dictionary and returns the dict.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>line</strong> (<em>str</em>) – Actual line from PDB file.</p></li>
+<li><p><strong>*args</strong> – Just here so we can use the same API for PDB and CIF.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary representation of data.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(dict[str, Any])</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ModelParser.parse_structure_file">
+<span class="sig-name descname"><span class="pre">parse_structure_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ModelParser.parse_structure_file" title="Link to this definition"></a></dt>
+<dd><p>Identify filetype, and parses line by line, storing relevant data
+for all C-alpha, C-beta and C1, C3 atoms for proteins and nucleic
+acids alike.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ScoreCalculator">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.ipSAE.</span></span><span class="sig-name descname"><span class="pre">ScoreCalculator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chains</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain_pair_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_residues</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdockq_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pae_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">12.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ScoreCalculator" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Computes various model quality scores including: pDockQ, pDockQ2, LIS, ipTM and
+the ipSAE score.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>chains</strong> (<em>np.ndarray</em>) – Array of chainIDs.</p></li>
+<li><p><strong>chain_pair_type</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>str</em><em>]</em>) – Dictionary mapping of chainID to chain type.</p></li>
+<li><p><strong>n_residues</strong> (<em>int</em>) – Number of residues total in structure.</p></li>
+<li><p><strong>pdockq_cutoff</strong> (<em>float</em>) – Defaults to 8.0 Å.</p></li>
+<li><p><strong>pae_cutoff</strong> (<em>float</em>) – Defaults to 12.0 Å.</p></li>
+<li><p><strong>dist_cutoff</strong> (<em>float</em>) – Defaults to 10.0 Å.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ScoreCalculator.compute_LIS">
+<span class="sig-name descname"><span class="pre">compute_LIS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chain1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ScoreCalculator.compute_LIS" title="Link to this definition"></a></dt>
+<dd><p>Computes Local Interaction Score (LIS) which is based on a subset of the
+predicted aligned error using a cutoff of 12. Values range in the interval
+(0, 1] and can be interpreted as how accurate a fold is within the error
+cutoff where a mean error of 0 yields a LIS value of 1 and a mean error
+that approaches 12 has a LIS value that approaches 0.
+Adapted from: <a class="reference external" href="https://doi.org/10.1101/2024.02.19.580970">https://doi.org/10.1101/2024.02.19.580970</a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>chain1</strong> (<em>str</em>) – The string name of the first chain.</p></li>
+<li><p><strong>chain2</strong> (<em>str</em>) – The string name of the second chain.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The LIS value for both chains.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ScoreCalculator.compute_d0">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compute_d0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">L</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pair_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ScoreCalculator.compute_d0" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span></p>
+<p>Computes d0 term per the following equation.
+$d0 = min(1.0, 1.24 * (L - 15)^}(</p>
+</p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>L</strong> (<em>int</em>)</p></li>
+<li><p><strong>pair_type</strong> (<em>str</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<p>rac{1}{3})} - 1.8)$</p>
+<blockquote>
+<div><dl class="simple">
+<dt>Arguments:</dt><dd><p>L (int): Length of sequence up to 27 residues.
+pair_type (str): Whether or not chain is a nucleic acid.</p>
+</dd>
+<dt>Returns:</dt><dd><p>(float): d0</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ScoreCalculator.compute_ipTM_ipSAE">
+<span class="sig-name descname"><span class="pre">compute_ipTM_ipSAE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chain1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ScoreCalculator.compute_ipTM_ipSAE" title="Link to this definition"></a></dt>
+<dd><p>Computes the ipTM and ipSAE scores for a given pair of chains. These operations
+are combined since they rely on very similar processing of the data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>chain1</strong> (<em>str</em>) – The first chain to compare.</p></li>
+<li><p><strong>chain2</strong> (<em>str</em>) – The second chain to compare.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple containing the ipTM and ipSAE scores respectively.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(tuple[float])</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ScoreCalculator.compute_pDockQ_scores">
+<span class="sig-name descname"><span class="pre">compute_pDockQ_scores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chain1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ScoreCalculator.compute_pDockQ_scores" title="Link to this definition"></a></dt>
+<dd><p>Computes both the pDockQ and pDockQ2 scores for the interface between two chains.
+pDockQ is dependent solely on the pLDDT matrix while pDockQ2 is dependent on both
+pLDDT and the PAE matrix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>chain1</strong> (<em>str</em>) – The string name of the first chain.</p></li>
+<li><p><strong>chain2</strong> (<em>str</em>) – The string name of the first chain.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple of the pDockQ and pDockQ2 scores respectively.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(tuple[float, float])</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ScoreCalculator.compute_pTM">
+<span class="sig-name descname"><span class="pre">compute_pTM</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;numpy.vectorize</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ScoreCalculator.compute_pTM" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ScoreCalculator.compute_scores">
+<span class="sig-name descname"><span class="pre">compute_scores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distances</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pLDDT</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">PAE</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ScoreCalculator.compute_scores" title="Link to this definition"></a></dt>
+<dd><p>Based on the input distance, pLDDT and PAE matrices, compute the pairwise pDockQ, pDockQ2,
+LIS, ipTM and ipSAE scores.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>distances</strong> (<em>ndarray</em>)</p></li>
+<li><p><strong>pLDDT</strong> (<em>ndarray</em>)</p></li>
+<li><p><strong>PAE</strong> (<em>ndarray</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ScoreCalculator.get_max_values">
+<span class="sig-name descname"><span class="pre">get_max_values</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ScoreCalculator.get_max_values" title="Link to this definition"></a></dt>
+<dd><p>Because some scores like ipSAE are not symmetric, meaning A-&gt;B != B-&gt;A, we
+take the maximal score for either direction to be the undirected score.
+Here we scrape through the internal dataframe and keeps only the rows with
+the maximal values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ScoreCalculator.pDockQ2_score">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pDockQ2_score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ScoreCalculator.pDockQ2_score" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span></p>
+<p>Computes pDockQ2 score per the following equation.
+$pDockQ =</p>
+</p>
+</dd>
+</dl>
+<p>rac{1.31}{(1 + e^{-0.075 * (x - 84.733)}) + 0.005}$</p>
+<blockquote>
+<div><p>Details on the pDockQ2 score at: <a class="reference external" href="https://doi.org/10.1093/bioinformatics/btad424">https://doi.org/10.1093/bioinformatics/btad424</a></p>
+<dl class="simple">
+<dt>Arguments:</dt><dd><p>x (float): Mean pLDDT score scaled by mean PAE score.</p>
+</dd>
+<dt>Returns:</dt><dd><p>(float): pDockQ2 score</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ScoreCalculator.pDockQ_score">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pDockQ_score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ScoreCalculator.pDockQ_score" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span></p>
+<p>Computes pDockQ score per the following equation.
+$pDockQ =</p>
+</p>
+</dd>
+</dl>
+<p>rac{0.724}{(1 + e^{-0.052 * (x - 152.611)}) + 0.018}$</p>
+<blockquote>
+<div><p>Details on the pDockQ score at: <a class="reference external" href="https://doi.org/10.1038/s41467-022-28865-w">https://doi.org/10.1038/s41467-022-28865-w</a></p>
+<dl class="simple">
+<dt>Arguments:</dt><dd><dl class="simple">
+<dt>x (float): Mean pLDDT score scaled by the log10 number of residue pairs</dt><dd><p>that meet pLDDT and distance cutoffs.</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p>(float): pDockQ score</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ScoreCalculator.permute_chains">
+<span class="sig-name descname"><span class="pre">permute_chains</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ScoreCalculator.permute_chains" title="Link to this definition"></a></dt>
+<dd><p>Helper function that gives all permutations of chainID except
+the pair (self, self) for each chainID. This also ensures that
+if we have (A, B) we do not also store (B, A).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ipSAE">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.ipSAE.</span></span><span class="sig-name descname"><span class="pre">ipSAE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plddt_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pae_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ipSAE" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Compute the interaction prediction Score from Aligned Errors for a model.
+Adapted from <a class="reference external" href="https://doi.org/10.1101/2025.02.10.637595">https://doi.org/10.1101/2025.02.10.637595</a>. Currently supports
+only outputs which provide plddt and pae data which limits us to Boltz and
+AlphaFold.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>structure_file</strong> (<em>PathLike</em>) – Path to PDB/CIF model.</p></li>
+<li><p><strong>plddt_file</strong> (<em>PathLike</em>) – Path to plddt npy file.</p></li>
+<li><p><strong>pae_file</strong> (<em>PathLike</em>) – Path to pae npy file.</p></li>
+<li><p><strong>out_path</strong> (<em>PathLike</em><em> | </em><em>None</em>) – Defaults to None. Path for outputs, or if None,
+will use the parent path from the plddt file.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ipSAE.load_PAE_file">
+<span class="sig-name descname"><span class="pre">load_PAE_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ipSAE.load_PAE_file" title="Link to this definition"></a></dt>
+<dd><p>Loads PAE file and returns data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Array of PAE values.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(np.ndarray)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ipSAE.load_pLDDT_file">
+<span class="sig-name descname"><span class="pre">load_pLDDT_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ipSAE.load_pLDDT_file" title="Link to this definition"></a></dt>
+<dd><p>Loads pLDDT file and scales data by 100.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Scaled pLDDT array.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(np.ndarray)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ipSAE.parse_structure_file">
+<span class="sig-name descname"><span class="pre">parse_structure_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ipSAE.parse_structure_file" title="Link to this definition"></a></dt>
+<dd><p>Runs parser to read in structure file and extract relevant details.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ipSAE.prepare_scorer">
+<span class="sig-name descname"><span class="pre">prepare_scorer</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ipSAE.prepare_scorer" title="Link to this definition"></a></dt>
+<dd><p>Prepares scorer for computing various scores.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ipSAE.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ipSAE.run" title="Link to this definition"></a></dt>
+<dd><p>Main logic of class. Parses structure file, computes distogram, unpacks
+pLDDT and PAE, feeds data to scorer and saves out scores.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ipSAE.save_scores">
+<span class="sig-name descname"><span class="pre">save_scores</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ipSAE.save_scores" title="Link to this definition"></a></dt>
+<dd><p>Saves scores dataframe to a parquet file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="molecular_simulations.analysis.interaction_energy.html" class="btn btn-neutral float-left" title="molecular_simulations.analysis.interaction_energy module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="molecular_simulations.analysis.sasa.html" class="btn btn-neutral float-right" title="molecular_simulations.analysis.sasa module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Matt Sinclair.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

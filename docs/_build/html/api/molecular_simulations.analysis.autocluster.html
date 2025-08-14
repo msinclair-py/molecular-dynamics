@@ -1,0 +1,402 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>molecular_simulations.analysis.autocluster module &mdash; molecular-simulations 2025 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=cb975c41"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="molecular_simulations.analysis.cov_ppi module" href="molecular_simulations.analysis.cov_ppi.html" />
+    <link rel="prev" title="molecular_simulations.analysis package" href="molecular_simulations.analysis.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            molecular-simulations
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">molecular_simulations</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="molecular_simulations.html">molecular_simulations package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="molecular_simulations.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="molecular_simulations.analysis.html">molecular_simulations.analysis package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.build.html">molecular_simulations.build package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.simulate.html">molecular_simulations.simulate package</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">molecular-simulations</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">molecular_simulations</a></li>
+          <li class="breadcrumb-item"><a href="molecular_simulations.html">molecular_simulations package</a></li>
+          <li class="breadcrumb-item"><a href="molecular_simulations.analysis.html">molecular_simulations.analysis package</a></li>
+      <li class="breadcrumb-item active">molecular_simulations.analysis.autocluster module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/molecular_simulations.analysis.autocluster.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-molecular_simulations.analysis.autocluster">
+<span id="molecular-simulations-analysis-autocluster-module"></span><h1>molecular_simulations.analysis.autocluster module<a class="headerlink" href="#module-molecular_simulations.analysis.autocluster" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.autocluster.AutoKMeans">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.autocluster.</span></span><span class="sig-name descname"><span class="pre">AutoKMeans</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern=''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataloader=&lt;class</span> <span class="pre">'molecular_simulations.analysis.autocluster.GenericDataloader'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_clusters=10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction_algorithm='PCA'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction_kws={'n_components':</span> <span class="pre">2}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.autocluster.AutoKMeans" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Performs automatic clustering using KMeans++ including dimensionality
+reduction of the feature space.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_directory</strong> (<em>PathLike</em>) – Directory where data files can be found.</p></li>
+<li><p><strong>pattern</strong> (<em>str</em>) – Optional filename pattern to select out subset of npy files
+using glob.</p></li>
+<li><p><strong>dataloader</strong> (<em>Type</em><em>[</em><em>_T</em><em>]</em>) – Defaults to GenericDataLoader. Which dataloader to use.</p></li>
+<li><p><strong>max_clusters</strong> (<em>int</em>) – Defaults to 10. The maximum number of clusters to test
+during parameter sweep.</p></li>
+<li><p><strong>stride</strong> (<em>int</em>) – Defaults to 1. Linear stride of number of clusters during
+parameter sweep. Aids on not testing too many values if number of clusters
+is high.</p></li>
+<li><p><strong>reduction_algorithm</strong> (<em>str</em>) – Defaults to PCA. Which dimensionality reduction
+algorithm to use. Currently only PCA is supported.</p></li>
+<li><p><strong>reduction_kws</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Defaults to {‘n_components’: 2} for PCA. kwargs
+for supplied reduction_algorithm.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.autocluster.AutoKMeans.map_centers_to_frames">
+<span class="sig-name descname"><span class="pre">map_centers_to_frames</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.autocluster.AutoKMeans.map_centers_to_frames" title="Link to this definition"></a></dt>
+<dd><p>Finds and stores the data point which lies closest to the cluster center
+for each cluster.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.autocluster.AutoKMeans.reduce_dimensionality">
+<span class="sig-name descname"><span class="pre">reduce_dimensionality</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.autocluster.AutoKMeans.reduce_dimensionality" title="Link to this definition"></a></dt>
+<dd><p>Performs dimensionality reduction using decomposer of choice.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.autocluster.AutoKMeans.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.autocluster.AutoKMeans.run" title="Link to this definition"></a></dt>
+<dd><p>Runs the automated clustering workflow.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.autocluster.AutoKMeans.save_centers">
+<span class="sig-name descname"><span class="pre">save_centers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.autocluster.AutoKMeans.save_centers" title="Link to this definition"></a></dt>
+<dd><p>Saves out cluster centers as a json file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.autocluster.AutoKMeans.save_labels">
+<span class="sig-name descname"><span class="pre">save_labels</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.autocluster.AutoKMeans.save_labels" title="Link to this definition"></a></dt>
+<dd><p>Generates a polars dataframe containing system, frame and cluster label
+assignments and saves to a parquet file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.autocluster.AutoKMeans.sweep_n_clusters">
+<span class="sig-name descname"><span class="pre">sweep_n_clusters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_clusters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.autocluster.AutoKMeans.sweep_n_clusters" title="Link to this definition"></a></dt>
+<dd><p>Uses silhouette score to perform a parameter sweep over number of clusters.
+Stores the cluster centers for the best performing parameterization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n_clusters</strong> (<em>list</em><em>[</em><em>int</em><em>]</em>) – List of number of clusters to test.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.autocluster.Decomposition">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.autocluster.</span></span><span class="sig-name descname"><span class="pre">Decomposition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">algorithm</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.autocluster.Decomposition" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Thin wrapper for various dimensionality reduction algorithms. Uses scikit-learn style
+methods like <cite>fit</cite> and <cite>fit_transform</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>algorithm</strong> (<em>str</em>) – Which algorithm to use from PCA, TICA and UMAP. Currently only
+PCA is supported.</p></li>
+<li><p><strong>kwargs</strong> – algorithm-specific kwargs to inject into the decomposer.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.autocluster.Decomposition.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.autocluster.Decomposition.fit" title="Link to this definition"></a></dt>
+<dd><p>Fits the decomposer with data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>X</strong> (<em>np.ndarray</em>) – Array of input data.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.autocluster.Decomposition.fit_transform">
+<span class="sig-name descname"><span class="pre">fit_transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.autocluster.Decomposition.fit_transform" title="Link to this definition"></a></dt>
+<dd><p>Fits the decomposer with data and returns the reduced dimension
+data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>X</strong> (<em>np.ndarray</em>) – Array of input data.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Reduced dimension data.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(np.ndarray)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.autocluster.Decomposition.transform">
+<span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.autocluster.Decomposition.transform" title="Link to this definition"></a></dt>
+<dd><p>Returns the reduced dimension data from a decomposer which has
+already been fit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>X</strong> (<em>np.ndarray</em>) – Array of input data.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Reduced dimension data.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(np.ndarray)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.autocluster.GenericDataloader">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.autocluster.</span></span><span class="sig-name descname"><span class="pre">GenericDataloader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_files</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.autocluster.GenericDataloader" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Loads any generic data stored in numpy arrays and stores the full
+dataset. Capable of loading data with variable row lengths but must
+be consistent in the columnar dimension.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data_files</strong> (<em>list</em><em>[</em><em>PathLike</em><em>]</em>) – List of paths to input data files.</p>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.autocluster.GenericDataloader.data">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#molecular_simulations.analysis.autocluster.GenericDataloader.data" title="Link to this definition"></a></dt>
+<dd><p>Returns:
+(np.ndarray): Internal data array.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.autocluster.GenericDataloader.load_data">
+<span class="sig-name descname"><span class="pre">load_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.autocluster.GenericDataloader.load_data" title="Link to this definition"></a></dt>
+<dd><p>Lumps data into one large array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.autocluster.GenericDataloader.shape">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">shape</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#molecular_simulations.analysis.autocluster.GenericDataloader.shape" title="Link to this definition"></a></dt>
+<dd><p>Returns:
+(tuple[int]): Shape of each individual data file, or if they have</p>
+<blockquote>
+<div><p>different shapes, the shape of each based on the order they were
+provided to this class.</p>
+</div></blockquote>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.autocluster.PeriodicDataloader">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.autocluster.</span></span><span class="sig-name descname"><span class="pre">PeriodicDataloader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_files</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.autocluster.PeriodicDataloader" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#molecular_simulations.analysis.autocluster.GenericDataloader" title="molecular_simulations.analysis.autocluster.GenericDataloader"><code class="xref py py-class docutils literal notranslate"><span class="pre">GenericDataloader</span></code></a></p>
+<p>Decomposes periodic data using sin and cos, returning double the features.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data_files</strong> (<em>list</em><em>[</em><em>Path</em><em> | </em><em>str</em><em>]</em>)</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.autocluster.PeriodicDataloader.load_data">
+<span class="sig-name descname"><span class="pre">load_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.autocluster.PeriodicDataloader.load_data" title="Link to this definition"></a></dt>
+<dd><p>Loads file of input periodic data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.autocluster.PeriodicDataloader.remove_periodicity">
+<span class="sig-name descname"><span class="pre">remove_periodicity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.autocluster.PeriodicDataloader.remove_periodicity" title="Link to this definition"></a></dt>
+<dd><p>Removes periodicity from each feature using sin and cos. Each
+column is expanded into two such that the indices become
+i -&gt; 2*i, 2*i + 1.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>arr</strong> (<em>np.ndarray</em>) – Data to perform decomposition on.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>New array which should be shape (arr.shape[0], arr.shape[1] * 2).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(np.ndarray)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="molecular_simulations.analysis.html" class="btn btn-neutral float-left" title="molecular_simulations.analysis package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="molecular_simulations.analysis.cov_ppi.html" class="btn btn-neutral float-right" title="molecular_simulations.analysis.cov_ppi module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Matt Sinclair.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

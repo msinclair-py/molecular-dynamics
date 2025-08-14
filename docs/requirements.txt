@@ -1,12 +1,10 @@
-docutils
 mdtraj
 natsort
 openmm
-parsl
 polars
 pyyaml
 pydantic
 scikit-learn
 sphinx
-sphinx-rtd-theme
 sphinx-autodoc-typehints
+sphinx-rtd-theme

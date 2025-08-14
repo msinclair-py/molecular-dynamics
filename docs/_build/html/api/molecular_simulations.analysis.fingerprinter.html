@@ -1,0 +1,384 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>molecular_simulations.analysis.fingerprinter module &mdash; molecular-simulations 2025 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=cb975c41"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="molecular_simulations.analysis.interaction_energy module" href="molecular_simulations.analysis.interaction_energy.html" />
+    <link rel="prev" title="molecular_simulations.analysis.cov_ppi module" href="molecular_simulations.analysis.cov_ppi.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            molecular-simulations
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">molecular_simulations</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="molecular_simulations.html">molecular_simulations package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="molecular_simulations.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="molecular_simulations.analysis.html">molecular_simulations.analysis package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.build.html">molecular_simulations.build package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.simulate.html">molecular_simulations.simulate package</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">molecular-simulations</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">molecular_simulations</a></li>
+          <li class="breadcrumb-item"><a href="molecular_simulations.html">molecular_simulations package</a></li>
+          <li class="breadcrumb-item"><a href="molecular_simulations.analysis.html">molecular_simulations.analysis package</a></li>
+      <li class="breadcrumb-item active">molecular_simulations.analysis.fingerprinter module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/molecular_simulations.analysis.fingerprinter.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-molecular_simulations.analysis.fingerprinter">
+<span id="molecular-simulations-analysis-fingerprinter-module"></span><h1>molecular_simulations.analysis.fingerprinter module<a class="headerlink" href="#module-molecular_simulations.analysis.fingerprinter" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.fingerprinter.Fingerprinter">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.fingerprinter.</span></span><span class="sig-name descname"><span class="pre">Fingerprinter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">topology</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trajectory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_selection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'segid</span> <span class="pre">A'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binder_selection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.fingerprinter.Fingerprinter" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Calculates interaction energy fingerprint between target and binder chains.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>topology</strong> (<em>PathLike</em>) – Path to topology file.</p></li>
+<li><p><strong>trajectory</strong> (<em>OptPath</em>) – Defaults to None. If not None, should be a path to a
+trajectory file or coordinates file.</p></li>
+<li><p><strong>target_selection</strong> (<em>str</em>) – Defaults to ‘segid A’. Any MDAnalysis selection
+string that encompasses target.</p></li>
+<li><p><strong>binder_selection</strong> (<em>str</em><em> | </em><em>None</em>) – Defaults to None. If None, binder is defined
+as anything that is not the target. Otherwise should be an MDAnalysis
+selection string that encompasses the binder.</p></li>
+<li><p><strong>out_path</strong> (<em>OptPath</em>) – Defaults to None. If provided will be where outputs are
+saved to, otherwise the topology parent path is used.</p></li>
+<li><p><strong>out_name</strong> (<em>str</em><em> | </em><em>None</em>) – Defaults to None. If None, output file will be called
+‘fingerprint.npz’.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Usage:</dt><dd><p>m = Fingerprinter(<a href="#id1"><span class="problematic" id="id2">*</span></a>args)
+m.run()
+m.save()</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.fingerprinter.Fingerprinter.assign_nonbonded_params">
+<span class="sig-name descname"><span class="pre">assign_nonbonded_params</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.fingerprinter.Fingerprinter.assign_nonbonded_params" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.fingerprinter.Fingerprinter.assign_residue_mapping">
+<span class="sig-name descname"><span class="pre">assign_residue_mapping</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.fingerprinter.Fingerprinter.assign_residue_mapping" title="Link to this definition"></a></dt>
+<dd><p>Map each residue index (1-based) to corresponding atom indices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.fingerprinter.Fingerprinter.calculate_fingerprints">
+<span class="sig-name descname"><span class="pre">calculate_fingerprints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame_index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.fingerprinter.Fingerprinter.calculate_fingerprints" title="Link to this definition"></a></dt>
+<dd><p>Calculates fingerprints for a given frame of the trajectory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>frame_index</strong> (<em>int</em>) – Frame index, since frame number and index might be
+discontinuous.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.fingerprinter.Fingerprinter.iterate_frames">
+<span class="sig-name descname"><span class="pre">iterate_frames</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.fingerprinter.Fingerprinter.iterate_frames" title="Link to this definition"></a></dt>
+<dd><p>Runs calculations over each frame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.fingerprinter.Fingerprinter.load_pdb">
+<span class="sig-name descname"><span class="pre">load_pdb</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.fingerprinter.Fingerprinter.load_pdb" title="Link to this definition"></a></dt>
+<dd><p>Loads topology into MDAnalysis universe object. Can take either a PDB
+or an AMBER prmtop. If trajectory was not specified, will look for either
+inpcrd or rst7 with the same path and stem as the topology file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.fingerprinter.Fingerprinter.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.fingerprinter.Fingerprinter.run" title="Link to this definition"></a></dt>
+<dd><p>Main logic. Obtains parameters, loads PDB and then
+iterates through trajectory to obtain fingerprints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.fingerprinter.Fingerprinter.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.fingerprinter.Fingerprinter.save" title="Link to this definition"></a></dt>
+<dd><p>Saves data to an npz stack.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.fingerprinter.dist_mat">
+<span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.fingerprinter.</span></span><span class="sig-name descname"><span class="pre">dist_mat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xyz1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xyz2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.fingerprinter.dist_mat" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span></p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>xyz1</strong> (<em>ndarray</em>)</p></li>
+<li><p><strong>xyz2</strong> (<em>ndarray</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.fingerprinter.electrostatic">
+<span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.fingerprinter.</span></span><span class="sig-name descname"><span class="pre">electrostatic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge_i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge_j</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.fingerprinter.electrostatic" title="Link to this definition"></a></dt>
+<dd><p>Calculate electrostatic energy between two particles.
+Cutoff at 12 Angstrom without switching.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>distance</strong> (<em>float</em>) – distance between particles i and j (nm)</p></li>
+<li><p><strong>charge_i</strong> (<em>float</em>) – charge of particle i (e-)</p></li>
+<li><p><strong>charge_j</strong> (<em>float</em>) – charge of particle j (e-)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Electrostatic energy between particles (kJ/mol)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>energy (float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.fingerprinter.electrostatic_sum">
+<span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.fingerprinter.</span></span><span class="sig-name descname"><span class="pre">electrostatic_sum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distances</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge_is</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge_js</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.fingerprinter.electrostatic_sum" title="Link to this definition"></a></dt>
+<dd><p>Calculate sum of all electrostatic interactions between two
+sets of particles.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>distances</strong> (<em>np.ndarray</em>) – distances between particles,
+shape: (len(charge_is),len(charge_js))</p></li>
+<li><p><strong>charge_is</strong> (<em>np.ndarray</em>) – group i charges</p></li>
+<li><p><strong>charge_js</strong> (<em>np.ndarray</em>) – group j charges</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.fingerprinter.fingerprints">
+<span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.fingerprinter.</span></span><span class="sig-name descname"><span class="pre">fingerprints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xyzs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charges</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigmas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_resmap</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binder_inds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.fingerprinter.fingerprints" title="Link to this definition"></a></dt>
+<dd><p>Calculates electrostatic fingerprint.
+ES energy between each target residue and all binder residues.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>(np.ndarray, np.ndarray),</dt><dd><p>shape=(n_target_residues, n_target_residues)</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>fingerprints</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.fingerprinter.lennard_jones">
+<span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.fingerprinter.</span></span><span class="sig-name descname"><span class="pre">lennard_jones</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_j</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon_i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon_j</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.fingerprinter.lennard_jones" title="Link to this definition"></a></dt>
+<dd><p>Calculate LJ energy between two particles.
+Cutoff at 12 Angstrom without switching.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>(</strong><strong>float</strong><strong>)</strong> (<em>epsilon_j</em>)</p></li>
+<li><p><strong>(</strong><strong>float</strong><strong>)</strong></p></li>
+<li><p><strong>(</strong><strong>float</strong><strong>)</strong></p></li>
+<li><p><strong>(</strong><strong>float</strong><strong>)</strong></p></li>
+<li><p><strong>(</strong><strong>float</strong><strong>)</strong></p></li>
+<li><p><strong>Returns</strong> (<em>energy</em><em> (</em><em>float</em><em>)</em><em>: LJ interaction energy</em><em> (</em><em>kJ/mol</em><em>)</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.fingerprinter.lennard_jones_sum">
+<span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.fingerprinter.</span></span><span class="sig-name descname"><span class="pre">lennard_jones_sum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distances</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_is</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_js</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon_is</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon_js</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.fingerprinter.lennard_jones_sum" title="Link to this definition"></a></dt>
+<dd><p>Calculate sum of all LJ interactions between two sets of
+particles.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>distances</strong> (<em>np.ndarray</em>) – distances between particles,
+shape: (len(sigma_is),len(sigma_js))</p></li>
+<li><p><strong>sigma_is</strong> (<em>np.ndarray</em>) – group i sigma parameters</p></li>
+<li><p><strong>sigma_js</strong> (<em>np.ndarray</em>) – group j sigma parameters</p></li>
+<li><p><strong>epsilon_is</strong> (<em>np.ndarray</em>) – group i epsilon parameters</p></li>
+<li><p><strong>epsilon_js</strong> (<em>np.ndarray</em>) – group j epsilon parameters</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.fingerprinter.unravel_index">
+<span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.fingerprinter.</span></span><span class="sig-name descname"><span class="pre">unravel_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.fingerprinter.unravel_index" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]</span></p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>n1</strong> (<em>int</em>)</p></li>
+<li><p><strong>n2</strong> (<em>int</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="molecular_simulations.analysis.cov_ppi.html" class="btn btn-neutral float-left" title="molecular_simulations.analysis.cov_ppi module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="molecular_simulations.analysis.interaction_energy.html" class="btn btn-neutral float-right" title="molecular_simulations.analysis.interaction_energy module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Matt Sinclair.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

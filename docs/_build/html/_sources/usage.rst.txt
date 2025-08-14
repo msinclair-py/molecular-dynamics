@@ -1,30 +1,24 @@
 Usage
 =====
 
-.. _installation:
-.. _examples:
-
 Installation
 ------------
-
-To use molecular-simulations, first install it using pip:
-
-.. code-block:: shell
+.. code-block:: console
 
    $ pip install molecular-simulations -U
 
-Examples
---------
+Example
+-------
 .. code-block:: python
-    :linenos:
 
-    from molecular_simulations.build import ExplicitSolvent
-    from molecular_simulations.simulate import Simulator
-    from pathlib import Path
+   from molecular_simulations.build import ExplicitSolvent
+   from molecular_simulations.simulate import Simulator
+   from pathlib import Path
 
-    input_pdb = Path('protein.pdb').resolve()
-    builder = ExplicitSolvent(input_pdb)
-    builder.build()
+   pdb_file = Path('/path/to/file.pdb')
+   out_path = Path('/path/to/sim_inputs')
+   builder = ExplicitSolvent(out_path, pdb_file)
+   builder.build()
 
-    sim = Simulator(builder.out, builder.out.with_suffix('.inpcrd'))
-    sim.run()
+   sim = Simulator(builder.out, builder.out.with_suffix('inpcrd'))
+   sim.run()

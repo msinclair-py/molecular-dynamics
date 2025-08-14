@@ -19,7 +19,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="API" href="api.html" />
+    <link rel="next" title="molecular_simulations" href="api/modules.html" />
     <link rel="prev" title="molecular-simulations documentation" href="index.html" /> 
 </head>
 
@@ -45,12 +45,11 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Usage</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#examples">Installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id2">Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#example">Example</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="modules.html">molecular_simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/modules.html">molecular_simulations</a></li>
 </ul>
 
         </div>
@@ -79,25 +78,25 @@
              
   <section id="usage">
 <h1>Usage<a class="headerlink" href="#usage" title="Link to this heading"></a></h1>
-<section id="examples">
-<span id="installation"></span><span id="id1"></span><h2>Installation<a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
-<p>To use molecular-simulations, first install it using pip:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>molecular-simulations<span class="w"> </span>-U
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h2>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>molecular-simulations<span class="w"> </span>-U
 </pre></div>
 </div>
 </section>
-<section id="id2">
-<h2>Examples<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">from</span><span class="w"> </span><span class="nn">molecular_simulations.build</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExplicitSolvent</span>
-<span class="linenos"> 2</span><span class="kn">from</span><span class="w"> </span><span class="nn">molecular_simulations.simulate</span><span class="w"> </span><span class="kn">import</span> <span class="n">Simulator</span>
-<span class="linenos"> 3</span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
-<span class="linenos"> 4</span>
-<span class="linenos"> 5</span><span class="n">input_pdb</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;protein.pdb&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
-<span class="linenos"> 6</span><span class="n">builder</span> <span class="o">=</span> <span class="n">ExplicitSolvent</span><span class="p">(</span><span class="n">input_pdb</span><span class="p">)</span>
-<span class="linenos"> 7</span><span class="n">builder</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
-<span class="linenos"> 8</span>
-<span class="linenos"> 9</span><span class="n">sim</span> <span class="o">=</span> <span class="n">Simulator</span><span class="p">(</span><span class="n">builder</span><span class="o">.</span><span class="n">out</span><span class="p">,</span> <span class="n">builder</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s1">&#39;.inpcrd&#39;</span><span class="p">))</span>
-<span class="linenos">10</span><span class="n">sim</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<section id="example">
+<h2>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">molecular_simulations.build</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExplicitSolvent</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">molecular_simulations.simulate</span><span class="w"> </span><span class="kn">import</span> <span class="n">Simulator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="n">pdb_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;/path/to/file.pdb&#39;</span><span class="p">)</span>
+<span class="n">out_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;/path/to/sim_inputs&#39;</span><span class="p">)</span>
+<span class="n">builder</span> <span class="o">=</span> <span class="n">ExplicitSolvent</span><span class="p">(</span><span class="n">out_path</span><span class="p">,</span> <span class="n">pdb_file</span><span class="p">)</span>
+<span class="n">builder</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+
+<span class="n">sim</span> <span class="o">=</span> <span class="n">Simulator</span><span class="p">(</span><span class="n">builder</span><span class="o">.</span><span class="n">out</span><span class="p">,</span> <span class="n">builder</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s1">&#39;inpcrd&#39;</span><span class="p">))</span>
+<span class="n">sim</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
@@ -108,7 +107,7 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="index.html" class="btn btn-neutral float-left" title="molecular-simulations documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="api.html" class="btn btn-neutral float-right" title="API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="api/modules.html" class="btn btn-neutral float-right" title="molecular_simulations" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

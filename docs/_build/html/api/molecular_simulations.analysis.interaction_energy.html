@@ -1,0 +1,426 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>molecular_simulations.analysis.interaction_energy module &mdash; molecular-simulations 2025 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=cb975c41"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="molecular_simulations.analysis.ipSAE module" href="molecular_simulations.analysis.ipSAE.html" />
+    <link rel="prev" title="molecular_simulations.analysis.fingerprinter module" href="molecular_simulations.analysis.fingerprinter.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            molecular-simulations
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">molecular_simulations</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="molecular_simulations.html">molecular_simulations package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="molecular_simulations.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="molecular_simulations.analysis.html">molecular_simulations.analysis package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.build.html">molecular_simulations.build package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.simulate.html">molecular_simulations.simulate package</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">molecular-simulations</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">molecular_simulations</a></li>
+          <li class="breadcrumb-item"><a href="molecular_simulations.html">molecular_simulations package</a></li>
+          <li class="breadcrumb-item"><a href="molecular_simulations.analysis.html">molecular_simulations.analysis package</a></li>
+      <li class="breadcrumb-item active">molecular_simulations.analysis.interaction_energy module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/molecular_simulations.analysis.interaction_energy.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-molecular_simulations.analysis.interaction_energy">
+<span id="molecular-simulations-analysis-interaction-energy-module"></span><h1>molecular_simulations.analysis.interaction_energy module<a class="headerlink" href="#module-molecular_simulations.analysis.interaction_energy" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.interaction_energy.DynamicInteractionEnergy">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.interaction_energy.</span></span><span class="sig-name descname"><span class="pre">DynamicInteractionEnergy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">top</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">traj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'A'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">platform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'CUDA'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_residue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_residue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress_bar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.interaction_energy.DynamicInteractionEnergy" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class for obtaining interaction energies of a trajectory. Utilizes the
+InteractionEnergyFrame child class to run per-frame energy calculations
+and orchestrates the trajectory operations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>top</strong> (<em>PathLike</em>) – Path to prmtop topology file.</p></li>
+<li><p><strong>traj</strong> (<em>PathLike</em>) – Path to DCD trajectory file.</p></li>
+<li><p><strong>stride</strong> (<em>int</em>) – Defaults to 1. The stride with which to move through the trajectory.</p></li>
+<li><p><strong>chain</strong> (<em>str</em>) – Defaults to A. The chain for which to compute the energy between.
+Computes energy between this chain and all other components in PDB file.
+Set to a whitespace if there are no chains in your PDB.</p></li>
+<li><p><strong>platform</strong> (<em>str</em>) – Defaults to CUDA. Supports running on GPU for speed.</p></li>
+<li><p><strong>first_residue</strong> (<em>int</em><em> | </em><em>None</em>) – Defaults to None. If set, will restrict the
+calculation to residues beginning with resid <cite>first_residue</cite>.</p></li>
+<li><p><strong>last_residue</strong> (<em>int</em><em> | </em><em>None</em>) – Defaults to None. If set, will restrict the
+calculation to residues ending with resid <cite>last_residue</cite>.</p></li>
+<li><p><strong>progress_bar</strong> (<em>bool</em>) – Defaults to False. If True a tqdm progress bar will
+display progress.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.interaction_energy.DynamicInteractionEnergy.build_system">
+<span class="sig-name descname"><span class="pre">build_system</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">top</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.interaction_energy.DynamicInteractionEnergy.build_system" title="Link to this definition"></a></dt>
+<dd><p>Builds OpenMM system for both pdb and prmtop topology files.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>top</strong> (<em>PathLike</em>) – Path to topology file.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>OpenMM system object.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(System)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.interaction_energy.DynamicInteractionEnergy.compute_energies">
+<span class="sig-name descname"><span class="pre">compute_energies</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.interaction_energy.DynamicInteractionEnergy.compute_energies" title="Link to this definition"></a></dt>
+<dd><p>Computes the energy for each frame in trajectory, storing internally.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.interaction_energy.DynamicInteractionEnergy.load_traj">
+<span class="sig-name descname"><span class="pre">load_traj</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">top</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">traj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.interaction_energy.DynamicInteractionEnergy.load_traj" title="Link to this definition"></a></dt>
+<dd><p>Loads trajectory into mdtraj and extracts full coordinate array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>top</strong> (<em>PathLike</em>) – Path to topology file.</p></li>
+<li><p><strong>traj</strong> (<em>PathLike</em>) – Path to trajectory file.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Coordinate array of shape (n_frames, n_atoms, 3)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(np.ndarray)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.interaction_energy.DynamicInteractionEnergy.setup_pbar">
+<span class="sig-name descname"><span class="pre">setup_pbar</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.interaction_energy.DynamicInteractionEnergy.setup_pbar" title="Link to this definition"></a></dt>
+<dd><p>Builds tqdm progress bar.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.interaction_energy.InteractionEnergy">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.interaction_energy.</span></span><span class="sig-name descname"><span class="pre">InteractionEnergy</span></span><a class="headerlink" href="#molecular_simulations.analysis.interaction_energy.InteractionEnergy" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.interaction_energy.InteractionEnergy.compute">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compute</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.interaction_energy.InteractionEnergy.compute" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.interaction_energy.InteractionEnergy.energy">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">energy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.interaction_energy.InteractionEnergy.energy" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.interaction_energy.InteractionEnergy.get_selection">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_selection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.interaction_energy.InteractionEnergy.get_selection" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.interaction_energy.InteractionEnergyFrame">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.interaction_energy.</span></span><span class="sig-name descname"><span class="pre">InteractionEnergyFrame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">system</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'A'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">platform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'CUDA'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_residue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_residue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.interaction_energy.InteractionEnergyFrame" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#molecular_simulations.analysis.interaction_energy.StaticInteractionEnergy" title="molecular_simulations.analysis.interaction_energy.StaticInteractionEnergy"><code class="xref py py-class docutils literal notranslate"><span class="pre">StaticInteractionEnergy</span></code></a></p>
+<p>Inherits from StaticInteractionEnergy and overloads <cite>get_system</cite> to allow for
+more easily running this analysis on a trajectory of frames. Requires the
+OpenMM system and topology to be built externally and passed in rather than
+beginning from a PDB file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>system</strong> (<em>System</em>) – OpenMM system object.</p></li>
+<li><p><strong>top</strong> (<em>Topology</em>) – OpenMM topology object.</p></li>
+<li><p><strong>chain</strong> (<em>str</em>) – Defaults to A. The chain for which to compute the energy between.
+Computes energy between this chain and all other components in PDB file.
+Set to a whitespace if there are no chains in your PDB.</p></li>
+<li><p><strong>platform</strong> (<em>str</em>) – Defaults to CUDA. Supports running on GPU for speed.</p></li>
+<li><p><strong>first_residue</strong> (<em>int</em><em> | </em><em>None</em>) – Defaults to None. If set, will restrict the
+calculation to residues beginning with resid <cite>first_residue</cite>.</p></li>
+<li><p><strong>last_residue</strong> (<em>int</em><em> | </em><em>None</em>) – Defaults to None. If set, will restrict the
+calculation to residues ending with resid <cite>last_residue</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.interaction_energy.InteractionEnergyFrame.get_system">
+<span class="sig-name descname"><span class="pre">get_system</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.interaction_energy.InteractionEnergyFrame.get_system" title="Link to this definition"></a></dt>
+<dd><p>Sets self.selection via self.get_selection and returns existing OpenMM
+system object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>OpenMM system object.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(System)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.interaction_energy.StaticInteractionEnergy">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.interaction_energy.</span></span><span class="sig-name descname"><span class="pre">StaticInteractionEnergy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'A'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">platform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'CUDA'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_residue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_residue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.interaction_energy.StaticInteractionEnergy" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#molecular_simulations.analysis.interaction_energy.InteractionEnergy" title="molecular_simulations.analysis.interaction_energy.InteractionEnergy"><code class="xref py py-class docutils literal notranslate"><span class="pre">InteractionEnergy</span></code></a></p>
+<p>Computes the linear interaction energy between specified chain and other simulation
+components. Can specify a range of residues in chain to limit calculation to. Works on
+a static model but can be adapted to run on dynamics data.</p>
+<dl>
+<dt>Inputs:</dt><dd><p>pdb (str): Path to input PDB file
+chain (str): Defaults to A. The chain for which to compute the energy between.</p>
+<blockquote>
+<div><p>Computes energy between this chain and all other components in PDB file.
+Set to a whitespace if there are no chains in your PDB.</p>
+</div></blockquote>
+<p>platform (str): Defaults to CUDA. Supports running on GPU for speed.
+first_residue (int | None): Defaults to None. If set, will restrict the</p>
+<blockquote>
+<div><p>calculation to residues beginning with resid <cite>first_residue</cite>.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>last_residue (int | None): Defaults to None. If set, will restrict the</dt><dd><p>calculation to residues ending with resid <cite>last_residue</cite>.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pdb</strong> (<em>str</em>)</p></li>
+<li><p><strong>chain</strong> (<em>str</em>)</p></li>
+<li><p><strong>platform</strong> (<em>str</em>)</p></li>
+<li><p><strong>first_residue</strong> (<em>int</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>last_residue</strong> (<em>int</em><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.interaction_energy.StaticInteractionEnergy.compute">
+<span class="sig-name descname"><span class="pre">compute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">positions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.interaction_energy.StaticInteractionEnergy.compute" title="Link to this definition"></a></dt>
+<dd><p>Compute interaction energy of system. Can optionally provide atomic
+positions such that this operation can be scaled onto a trajectory of
+frames rather than a static model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>positions</strong> (<em>np.ndarray</em><em> | </em><em>None</em>) – Defaults to None. If provided, inject
+the positions into the OpenMM context.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.interaction_energy.StaticInteractionEnergy.energy">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solute_coulomb_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solute_lj_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solvent_coulomb_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solvent_lj_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.interaction_energy.StaticInteractionEnergy.energy" title="Link to this definition"></a></dt>
+<dd><p>Computes the potential energy for provided context object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>context</strong> (<em>Context</em>) – OpenMM context object.</p></li>
+<li><p><strong>solute_coulomb_scale</strong> (<em>int</em>) – Defaults to 0. If 1 we will consider solute
+contributions to coulombic non-bonded energy.</p></li>
+<li><p><strong>solute_lj_scale</strong> (<em>int</em>) – Defaults to 0. If 1 we will consider solute
+contributions to LJ non-bonded energy.</p></li>
+<li><p><strong>solvent_coulomb_scale</strong> (<em>int</em>) – Defaults to 0. If 1 we will consider solvent
+contributions to coulombic non-bonded energy.</p></li>
+<li><p><strong>solvent_lj_scale</strong> (<em>int</em>) – Defaults to 0. If 1 we will consider solvent
+contributions to LJ non-bonded energy.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Computed energy term.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.interaction_energy.StaticInteractionEnergy.fix_pdb">
+<span class="sig-name descname"><span class="pre">fix_pdb</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.interaction_energy.StaticInteractionEnergy.fix_pdb" title="Link to this definition"></a></dt>
+<dd><p>Using the OpenMM adjacent tool, PDBFixer, repair input PDB by adding
+hydrogens, and missing atoms such that we can actually construct an
+OpenMM system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.interaction_energy.StaticInteractionEnergy.get_selection">
+<span class="sig-name descname"><span class="pre">get_selection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">topology</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.interaction_energy.StaticInteractionEnergy.get_selection" title="Link to this definition"></a></dt>
+<dd><p>Using the poorly documented OpenMM selection language, get indices of
+atoms that we want to isolate for pairwise interaction energy calculation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>topology</strong> (<em>Topology</em>) – OpenMM topology object.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.interaction_energy.StaticInteractionEnergy.get_system">
+<span class="sig-name descname"><span class="pre">get_system</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.interaction_energy.StaticInteractionEnergy.get_system" title="Link to this definition"></a></dt>
+<dd><p>Builds implicit solvent OpenMM system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>OpenMM system object.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(System)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.interaction_energy.StaticInteractionEnergy.interactions">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">interactions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#molecular_simulations.analysis.interaction_energy.StaticInteractionEnergy.interactions" title="Link to this definition"></a></dt>
+<dd><p>Places the LJ and coulombic energies into an array of shape (1, 2).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Energy array.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(np.ndarray)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="molecular_simulations.analysis.fingerprinter.html" class="btn btn-neutral float-left" title="molecular_simulations.analysis.fingerprinter module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="molecular_simulations.analysis.ipSAE.html" class="btn btn-neutral float-right" title="molecular_simulations.analysis.ipSAE module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Matt Sinclair.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

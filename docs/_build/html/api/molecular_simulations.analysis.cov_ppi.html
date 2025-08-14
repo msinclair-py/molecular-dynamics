@@ -1,0 +1,484 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>molecular_simulations.analysis.cov_ppi module &mdash; molecular-simulations 2025 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=cb975c41"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="molecular_simulations.analysis.fingerprinter module" href="molecular_simulations.analysis.fingerprinter.html" />
+    <link rel="prev" title="molecular_simulations.analysis.autocluster module" href="molecular_simulations.analysis.autocluster.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            molecular-simulations
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">molecular_simulations</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="molecular_simulations.html">molecular_simulations package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="molecular_simulations.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="molecular_simulations.analysis.html">molecular_simulations.analysis package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.build.html">molecular_simulations.build package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.simulate.html">molecular_simulations.simulate package</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">molecular-simulations</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">molecular_simulations</a></li>
+          <li class="breadcrumb-item"><a href="molecular_simulations.html">molecular_simulations package</a></li>
+          <li class="breadcrumb-item"><a href="molecular_simulations.analysis.html">molecular_simulations.analysis package</a></li>
+      <li class="breadcrumb-item active">molecular_simulations.analysis.cov_ppi module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/molecular_simulations.analysis.cov_ppi.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-molecular_simulations.analysis.cov_ppi">
+<span id="molecular-simulations-analysis-cov-ppi-module"></span><h1>molecular_simulations.analysis.cov_ppi module<a class="headerlink" href="#module-molecular_simulations.analysis.cov_ppi" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.cov_ppi.PPInteractions">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.cov_ppi.</span></span><span class="sig-name descname"><span class="pre">PPInteractions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">top</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">traj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sel1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'chainID</span> <span class="pre">A'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sel2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'chainID</span> <span class="pre">B'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cov_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(11.0,</span> <span class="pre">13.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sb_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hbond_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hbond_angle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hydrophobic_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.cov_ppi.PPInteractions" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="simple">
+<dt>Code herein adapted from:</dt><dd><p><a class="reference external" href="https://www.biorxiv.org/content/10.1101/2025.03.24.644990v1.full.pdf">https://www.biorxiv.org/content/10.1101/2025.03.24.644990v1.full.pdf</a></p>
+</dd>
+</dl>
+<p>Takes an input topology file and trajectory file, and highlights relevant
+interactions between two selections. To this end we first compute the
+covariance matrix between the two selections, filter out all interactions
+which occur too far apart (11Å for positive covariance, 13Å for negative
+covariance), and examines each based on a variety of distance and angle
+cutoffs defined in the literature.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>top</strong> (<em>PathLike</em>) – Path to topology file.</p></li>
+<li><p><strong>traj</strong> (<em>PathLike</em>) – Path to trajectory file.</p></li>
+<li><p><strong>out</strong> (<em>PathLike</em>) – Path to outputs.</p></li>
+<li><p><strong>sel1</strong> (<em>str</em>) – Defaults to ‘chainID A’. MDAnalysis selection string for the
+first selection.</p></li>
+<li><p><strong>sel2</strong> (<em>str</em>) – Defaults to ‘chainID B’. MDAnalysis selection string for the
+second selection.</p></li>
+<li><p><strong>cov_cutoff</strong> (<em>tuple</em><em>[</em><em>float</em><em>]</em>) – Defaults to (11., 13.). Tuple of the distance
+cutoffs to use for positive and negative covariance respectively.</p></li>
+<li><p><strong>sb_cutoff</strong> (<em>float</em>) – Defaults to 6.0Å. Distance cutoff for salt bridges.</p></li>
+<li><p><strong>hbond_cutoff</strong> (<em>float</em>) – Defaults to 3.5Å. Distance cutoff for hydrogen bonds.</p></li>
+<li><p><strong>hbond_angle</strong> (<em>float</em>) – Defaults to 30.0 degrees. Angle cutoff for hydrogen bonds.</p></li>
+<li><p><strong>hydrophobic_cutoff</strong> (<em>float</em>) – Defaults to 8.0Å. Distance cutoff for hydrophobic
+interactions.</p></li>
+<li><p><strong>plot</strong> (<em>bool</em>) – Defaults to True. Whether or not to plot results. Saves plots
+at the output directory.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.cov_ppi.PPInteractions.analyze_hbond">
+<span class="sig-name descname"><span class="pre">analyze_hbond</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.cov_ppi.PPInteractions.analyze_hbond" title="Link to this definition"></a></dt>
+<dd><p>Identifies all potential donor/acceptor atoms between two
+residues. Culls this list based on distance array across simulation
+and then evaluates each pair over the trajectory utilizing a
+distance and angle cutoff.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>res1</strong> (<em>mda.AtomGroup</em>) – AtomGroup for a residue from selection 1.</p></li>
+<li><p><strong>res2</strong> (<em>mda.AtomGroup</em>) – AtomGroup for a residue from selection 2.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Proportion of simulation time spent in hydrogen bond.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.cov_ppi.PPInteractions.analyze_hydrophobic">
+<span class="sig-name descname"><span class="pre">analyze_hydrophobic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.cov_ppi.PPInteractions.analyze_hydrophobic" title="Link to this definition"></a></dt>
+<dd><p>Uses a simple distance cutoff to highlight the occupancy of
+hydrophobic interaction between two residues. Returns the fraction of
+simulation time spent engaged in interaction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>res1</strong> (<em>mda.AtomGroup</em>) – AtomGroup for a residue from selection 1.</p></li>
+<li><p><strong>res2</strong> (<em>mda.AtomGroup</em>) – AtomGroup for a residue from selection 2.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Proportion of simulation time spent in interaction.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.cov_ppi.PPInteractions.analyze_saltbridge">
+<span class="sig-name descname"><span class="pre">analyze_saltbridge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.cov_ppi.PPInteractions.analyze_saltbridge" title="Link to this definition"></a></dt>
+<dd><p>Uses a simple distance cutoff to highlight the occupancy of
+saltbridge between two residues. Returns the fraction of
+simulation time spent engaged in saltbridge.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>res1</strong> (<em>mda.AtomGroup</em>) – AtomGroup for a residue from selection 1.</p></li>
+<li><p><strong>res2</strong> (<em>mda.AtomGroup</em>) – AtomGroup for a residue from selection 2.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Proportion of simulation time spent in salt bridge.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.cov_ppi.PPInteractions.compute_interactions">
+<span class="sig-name descname"><span class="pre">compute_interactions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.cov_ppi.PPInteractions.compute_interactions" title="Link to this definition"></a></dt>
+<dd><p>Ingests two resIDs, generates MDAnalysis AtomGroups for each, identifies
+relevant non-bonded interactions (HBonds, saltbridge, hydrophobic) and
+computes each. Returns a dict containing the proportion of simulation time
+that each interaction is engaged.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>res1</strong> (<em>int</em>) – ResID for a residue in sel1.</p></li>
+<li><p><strong>res2</strong> (<em>int</em>) – ResID for a residue in sel2.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A nested dictionary containing the results of each interaction</dt><dd><p>type.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(Results)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.cov_ppi.PPInteractions.evaluate_hbond">
+<span class="sig-name descname"><span class="pre">evaluate_hbond</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">donor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">acceptor</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.cov_ppi.PPInteractions.evaluate_hbond" title="Link to this definition"></a></dt>
+<dd><p>Evaluates whether there is a defined hydrogen bond between any
+donor and acceptor atoms in a given frame. Must pass a distance
+cutoff as well as an angle cutoff. Returns early when a legal
+HBond is detected.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>donor</strong> (<em>mda.AtomGroup</em>) – AtomGroup of HBond donor.</p></li>
+<li><p><strong>acceptor</strong> (<em>mda.AtomGroup</em>) – AtomGroup of HBond acceptor.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>1 if legal hbond found, else 0</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(int)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.cov_ppi.PPInteractions.get_covariance">
+<span class="sig-name descname"><span class="pre">get_covariance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.cov_ppi.PPInteractions.get_covariance" title="Link to this definition"></a></dt>
+<dd><p>Loop over all C-alpha atoms and compute the positional
+covariance using the functional form:</p>
+<blockquote>
+<div><p>C = &lt;(R1 - &lt;R1&gt;)(R2 - &lt;R2&gt;)T&gt;</p>
+</div></blockquote>
+<dl class="simple">
+<dt>where each element corresponds to the ensemble average movement</dt><dd><p>C_ij = &lt;deltaR_i * deltaR_j&gt;</p>
+</dd>
+</dl>
+<p>with the magnitude being the strength of correlation and the sign
+corresponding to positive and negative correlation respectively.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Covariance matrix.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(np.ndarray)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.cov_ppi.PPInteractions.identify_interaction_type">
+<span class="sig-name descname"><span class="pre">identify_interaction_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.cov_ppi.PPInteractions.identify_interaction_type" title="Link to this definition"></a></dt>
+<dd><p>Identifies what analyses to compute for a given pair of protein
+residues (i.e. hydrophobic interactions, hydrogen bonds, saltbridges).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>res1</strong> (<em>str</em>) – 3-letter code resname for a residue from selection 1.</p></li>
+<li><p><strong>res2</strong> (<em>str</em>) – 3-letter code resname for a residue from selection 2.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple containing list of function calls and list of labels.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(TaskTree)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.cov_ppi.PPInteractions.interpret_covariance">
+<span class="sig-name descname"><span class="pre">interpret_covariance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cov_mat</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.cov_ppi.PPInteractions.interpret_covariance" title="Link to this definition"></a></dt>
+<dd><p>Identify pairs of residues with positive or negative correlations.
+Returns a tuple comprised of pairs for each.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cov_mat</strong> (<em>np.ndarray</em>) – Covariance matrix.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Tuple of positively and negatively correlated</dt><dd><p>pairs of residues coming from each selection.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(tuple[tuple[int, int]])</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.cov_ppi.PPInteractions.make_plot">
+<span class="sig-name descname"><span class="pre">make_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.cov_ppi.PPInteractions.make_plot" title="Link to this definition"></a></dt>
+<dd><p>Generates a seaborn barplot from a dataframe for a specified column.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>pl.DataFrame</em>) – Polars dataframe of data.</p></li>
+<li><p><strong>column</strong> (<em>str</em>) – Label for desired column.</p></li>
+<li><p><strong>name</strong> (<em>PathLike</em>) – Path to file to save plot to.</p></li>
+<li><p><strong>fs</strong> (<em>int</em>) – Defaults to 15. Size of font for plot.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.cov_ppi.PPInteractions.parse_results">
+<span class="sig-name descname"><span class="pre">parse_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.cov_ppi.PPInteractions.parse_results" title="Link to this definition"></a></dt>
+<dd><p>Prepares results for plotting. Removes any entries which are
+all 0. and returns as a pandas DataFrame for easier plotting.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>results</strong> (<em>Results</em>) – Dictionary of results to be prepped.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Polars dataframe of results.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(pl.DataFrame)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.cov_ppi.PPInteractions.plot_results">
+<span class="sig-name descname"><span class="pre">plot_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.cov_ppi.PPInteractions.plot_results" title="Link to this definition"></a></dt>
+<dd><p>Plot results.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>results</strong> (<em>Results</em>) – Dictionary of results to be plotted.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.cov_ppi.PPInteractions.res_map">
+<span class="sig-name descname"><span class="pre">res_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ag1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ag2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.cov_ppi.PPInteractions.res_map" title="Link to this definition"></a></dt>
+<dd><p>Map covariance matrix indices to AtomGroup resIDs so that we are
+examining the correct pairs of residues.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ag1</strong> (<em>mda.AtomGroup</em>) – AtomGroup of the first selection.</p></li>
+<li><p><strong>ag2</strong> (<em>mda.AtomGroup</em>) – AtomGroup of the second selection.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.cov_ppi.PPInteractions.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.cov_ppi.PPInteractions.run" title="Link to this definition"></a></dt>
+<dd><p>Main function that runs the workflow. Obtains a covariance matrix,
+screens for close interactions, evaluates each pairwise interaction
+for each amino acid and report the contact probability of each.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.cov_ppi.PPInteractions.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.cov_ppi.PPInteractions.save" title="Link to this definition"></a></dt>
+<dd><p>Save results as a json file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>results</strong> (<em>Results</em>) – Dictionary of results to be saved.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.analysis.cov_ppi.PPInteractions.survey_donors_acceptors">
+<span class="sig-name descname"><span class="pre">survey_donors_acceptors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.cov_ppi.PPInteractions.survey_donors_acceptors" title="Link to this definition"></a></dt>
+<dd><p>First pass distance threshhold to identify potential Hydrogen bonds.
+Should be followed by querying HBond angles but this serves to reduce
+our search space and time complexity. Only returns donors/acceptors which
+are within the distance cutoff in at least a single frame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>res1</strong> (<em>mda.AtomGroup</em>) – AtomGroup for a residue from selection 1.</p></li>
+<li><p><strong>res2</strong> (<em>mda.AtomGroup</em>) – AtomGroup for a residue from selection 2.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Tuple of AtomGroups for residues which pass</dt><dd><p>crude distance cutoff for hydrogen bond donors/acceptors.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(tuple[mda.AtomGroup])</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="molecular_simulations.analysis.autocluster.html" class="btn btn-neutral float-left" title="molecular_simulations.analysis.autocluster module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="molecular_simulations.analysis.fingerprinter.html" class="btn btn-neutral float-right" title="molecular_simulations.analysis.fingerprinter module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Matt Sinclair.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -40,6 +40,8 @@ autodoc_default_options = {
     'undoc-members': True,
     'show-inheritance': True,
 }
+autoclass_content = 'both'
+autodoc_typehints = 'description'
 autodock_mock_imports = [
     'MDAnalysis',
     'openbabel',
