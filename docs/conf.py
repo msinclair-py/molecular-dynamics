@@ -46,8 +46,12 @@ autoclass_content = 'both'
 autodoc_typehints = 'description'
 
 sys.modules['openbabel'] = types.ModuleType('openbabel')
+sys.modules['openbabel.pybel'] = types.ModuleType('openbabel.pybel')
 sys.modules['parmed'] = types.ModuleType('parmed')
 sys.modules['pdbfixer'] = types.ModuleType('pdbfixer')
+sys.modules['pdbfixer.PDBFixer'] = types.ModuleType('pdbfixer.PDBFixer')
+sys.modules['pdbfixer.pdbfixer'] = types.ModuleType('pdbfixer.pdbfixer')
+sys.modules['pdbfixer.pdbfixer.Sequence'] = types.ModuleType('pdbfixer.pdbfixer.Sequence')
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
