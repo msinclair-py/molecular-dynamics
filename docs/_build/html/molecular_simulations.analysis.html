@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>analysis package &mdash; molecular-simulations 2025 documentation</title>
+  <title>molecular_simulations.analysis package &mdash; molecular-simulations 2025 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
@@ -19,8 +19,8 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="build package" href="build.html" />
-    <link rel="prev" title="molecular_simulations" href="modules.html" /> 
+    <link rel="next" title="molecular_simulations.build package" href="molecular_simulations.build.html" />
+    <link rel="prev" title="molecular_simulations package" href="molecular_simulations.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -47,58 +47,16 @@
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">molecular_simulations</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">analysis package</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-analysis.autocluster">analysis.autocluster module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#analysis.autocluster.AutoKMeans"><code class="docutils literal notranslate"><span class="pre">AutoKMeans</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#analysis.autocluster.Decomposition"><code class="docutils literal notranslate"><span class="pre">Decomposition</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#analysis.autocluster.GenericDataloader"><code class="docutils literal notranslate"><span class="pre">GenericDataloader</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#analysis.autocluster.PeriodicDataloader"><code class="docutils literal notranslate"><span class="pre">PeriodicDataloader</span></code></a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="molecular_simulations.html">molecular_simulations package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="molecular_simulations.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">molecular_simulations.analysis package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.build.html">molecular_simulations.build package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.simulate.html">molecular_simulations.simulate package</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#module-analysis.cov_ppi">analysis.cov_ppi module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#analysis.cov_ppi.PPInteractions"><code class="docutils literal notranslate"><span class="pre">PPInteractions</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="molecular_simulations.html#module-molecular_simulations">Module contents</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#module-analysis.fingerprinter">analysis.fingerprinter module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#analysis.fingerprinter.Fingerprinter"><code class="docutils literal notranslate"><span class="pre">Fingerprinter</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#analysis.fingerprinter.dist_mat"><code class="docutils literal notranslate"><span class="pre">dist_mat()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#analysis.fingerprinter.electrostatic"><code class="docutils literal notranslate"><span class="pre">electrostatic()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#analysis.fingerprinter.electrostatic_sum"><code class="docutils literal notranslate"><span class="pre">electrostatic_sum()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#analysis.fingerprinter.fingerprints"><code class="docutils literal notranslate"><span class="pre">fingerprints()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#analysis.fingerprinter.lennard_jones"><code class="docutils literal notranslate"><span class="pre">lennard_jones()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#analysis.fingerprinter.lennard_jones_sum"><code class="docutils literal notranslate"><span class="pre">lennard_jones_sum()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#analysis.fingerprinter.unravel_index"><code class="docutils literal notranslate"><span class="pre">unravel_index()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-analysis.interaction_energy">analysis.interaction_energy module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#analysis.interaction_energy.DynamicInteractionEnergy"><code class="docutils literal notranslate"><span class="pre">DynamicInteractionEnergy</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#analysis.interaction_energy.InteractionEnergy"><code class="docutils literal notranslate"><span class="pre">InteractionEnergy</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#analysis.interaction_energy.InteractionEnergyFrame"><code class="docutils literal notranslate"><span class="pre">InteractionEnergyFrame</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#analysis.interaction_energy.StaticInteractionEnergy"><code class="docutils literal notranslate"><span class="pre">StaticInteractionEnergy</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-analysis.ipSAE">analysis.ipSAE module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#analysis.ipSAE.ModelParser"><code class="docutils literal notranslate"><span class="pre">ModelParser</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#analysis.ipSAE.ScoreCalculator"><code class="docutils literal notranslate"><span class="pre">ScoreCalculator</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#analysis.ipSAE.ipSAE"><code class="docutils literal notranslate"><span class="pre">ipSAE</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-analysis.sasa">analysis.sasa module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#analysis.sasa.RelativeSASA"><code class="docutils literal notranslate"><span class="pre">RelativeSASA</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#analysis.sasa.SASA"><code class="docutils literal notranslate"><span class="pre">SASA</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-analysis.utils">analysis.utils module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#analysis.utils.EmbedData"><code class="docutils literal notranslate"><span class="pre">EmbedData</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#analysis.utils.EmbedEnergyData"><code class="docutils literal notranslate"><span class="pre">EmbedEnergyData</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-analysis">Module contents</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="build.html">build package</a></li>
-<li class="toctree-l2"><a class="reference internal" href="simulate.html">simulate package</a></li>
 </ul>
 </li>
 </ul>
@@ -118,9 +76,10 @@
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="modules.html">molecular_simulations</a></li>
-      <li class="breadcrumb-item active">analysis package</li>
+          <li class="breadcrumb-item"><a href="molecular_simulations.html">molecular_simulations package</a></li>
+      <li class="breadcrumb-item active">molecular_simulations.analysis package</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="_sources/analysis.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/molecular_simulations.analysis.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -128,19 +87,19 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="analysis-package">
-<h1>analysis package<a class="headerlink" href="#analysis-package" title="Link to this heading"></a></h1>
+  <section id="molecular-simulations-analysis-package">
+<h1>molecular_simulations.analysis package<a class="headerlink" href="#molecular-simulations-analysis-package" title="Link to this heading"></a></h1>
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
 </section>
-<section id="module-analysis.autocluster">
-<span id="analysis-autocluster-module"></span><h2>analysis.autocluster module<a class="headerlink" href="#module-analysis.autocluster" title="Link to this heading"></a></h2>
+<section id="module-molecular_simulations.analysis.autocluster">
+<span id="molecular-simulations-analysis-autocluster-module"></span><h2>molecular_simulations.analysis.autocluster module<a class="headerlink" href="#module-molecular_simulations.analysis.autocluster" title="Link to this heading"></a></h2>
 <dl class="py class">
-<dt class="sig sig-object py" id="analysis.autocluster.AutoKMeans">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">analysis.autocluster.</span></span><span class="sig-name descname"><span class="pre">AutoKMeans</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern=''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataloader=&lt;class</span> <span class="pre">'analysis.autocluster.GenericDataloader'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_clusters=10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction_algorithm='PCA'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction_kws={'n_components':</span> <span class="pre">2}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.autocluster.AutoKMeans" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.autocluster.AutoKMeans">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.autocluster.</span></span><span class="sig-name descname"><span class="pre">AutoKMeans</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern=''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataloader=&lt;class</span> <span class="pre">'molecular_simulations.analysis.autocluster.GenericDataloader'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_clusters=10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction_algorithm='PCA'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction_kws={'n_components':</span> <span class="pre">2}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.autocluster.AutoKMeans" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Performs automatic clustering using KMeans++ including dimensionality reduction
-of the feature space.</p>
+<p>Performs automatic clustering using KMeans++ including dimensionality
+reduction of the feature space.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -161,8 +120,8 @@ for supplied reduction_algorithm.</p></li>
 </dd>
 </dl>
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.autocluster.AutoKMeans.map_centers_to_frames">
-<span class="sig-name descname"><span class="pre">map_centers_to_frames</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.autocluster.AutoKMeans.map_centers_to_frames" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.autocluster.AutoKMeans.map_centers_to_frames">
+<span class="sig-name descname"><span class="pre">map_centers_to_frames</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.autocluster.AutoKMeans.map_centers_to_frames" title="Link to this definition"></a></dt>
 <dd><p>Finds and stores the data point which lies closest to the cluster center
 for each cluster.</p>
 <dl class="field-list simple">
@@ -176,8 +135,8 @@ for each cluster.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.autocluster.AutoKMeans.reduce_dimensionality">
-<span class="sig-name descname"><span class="pre">reduce_dimensionality</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.autocluster.AutoKMeans.reduce_dimensionality" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.autocluster.AutoKMeans.reduce_dimensionality">
+<span class="sig-name descname"><span class="pre">reduce_dimensionality</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.autocluster.AutoKMeans.reduce_dimensionality" title="Link to this definition"></a></dt>
 <dd><p>Performs dimensionality reduction using decomposer of choice.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -190,8 +149,8 @@ for each cluster.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.autocluster.AutoKMeans.run">
-<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.autocluster.AutoKMeans.run" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.autocluster.AutoKMeans.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.autocluster.AutoKMeans.run" title="Link to this definition"></a></dt>
 <dd><p>Runs the automated clustering workflow.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -204,8 +163,8 @@ for each cluster.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.autocluster.AutoKMeans.save_centers">
-<span class="sig-name descname"><span class="pre">save_centers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.autocluster.AutoKMeans.save_centers" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.autocluster.AutoKMeans.save_centers">
+<span class="sig-name descname"><span class="pre">save_centers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.autocluster.AutoKMeans.save_centers" title="Link to this definition"></a></dt>
 <dd><p>Saves out cluster centers as a json file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -218,8 +177,8 @@ for each cluster.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.autocluster.AutoKMeans.save_labels">
-<span class="sig-name descname"><span class="pre">save_labels</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.autocluster.AutoKMeans.save_labels" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.autocluster.AutoKMeans.save_labels">
+<span class="sig-name descname"><span class="pre">save_labels</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.autocluster.AutoKMeans.save_labels" title="Link to this definition"></a></dt>
 <dd><p>Generates a polars dataframe containing system, frame and cluster label
 assignments and saves to a parquet file.</p>
 <dl class="field-list simple">
@@ -233,8 +192,8 @@ assignments and saves to a parquet file.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.autocluster.AutoKMeans.sweep_n_clusters">
-<span class="sig-name descname"><span class="pre">sweep_n_clusters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_clusters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.autocluster.AutoKMeans.sweep_n_clusters" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.autocluster.AutoKMeans.sweep_n_clusters">
+<span class="sig-name descname"><span class="pre">sweep_n_clusters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_clusters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.autocluster.AutoKMeans.sweep_n_clusters" title="Link to this definition"></a></dt>
 <dd><p>Uses silhouette score to perform a parameter sweep over number of clusters.
 Stores the cluster centers for the best performing parameterization.</p>
 <dl class="field-list simple">
@@ -253,8 +212,8 @@ Stores the cluster centers for the best performing parameterization.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="analysis.autocluster.Decomposition">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">analysis.autocluster.</span></span><span class="sig-name descname"><span class="pre">Decomposition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">algorithm</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.autocluster.Decomposition" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.autocluster.Decomposition">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.autocluster.</span></span><span class="sig-name descname"><span class="pre">Decomposition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">algorithm</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.autocluster.Decomposition" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Thin wrapper for various dimensionality reduction algorithms. Uses scikit-learn style
 methods like <cite>fit</cite> and <cite>fit_transform</cite>.</p>
@@ -268,8 +227,8 @@ PCA is supported.</p></li>
 </dd>
 </dl>
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.autocluster.Decomposition.fit">
-<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.autocluster.Decomposition.fit" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.autocluster.Decomposition.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.autocluster.Decomposition.fit" title="Link to this definition"></a></dt>
 <dd><p>Fits the decomposer with data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -285,8 +244,8 @@ PCA is supported.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.autocluster.Decomposition.fit_transform">
-<span class="sig-name descname"><span class="pre">fit_transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.autocluster.Decomposition.fit_transform" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.autocluster.Decomposition.fit_transform">
+<span class="sig-name descname"><span class="pre">fit_transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.autocluster.Decomposition.fit_transform" title="Link to this definition"></a></dt>
 <dd><p>Fits the decomposer with data and returns the reduced dimension
 data.</p>
 <dl class="field-list simple">
@@ -303,10 +262,10 @@ data.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.autocluster.Decomposition.transform">
-<span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.autocluster.Decomposition.transform" title="Link to this definition"></a></dt>
-<dd><p>Returns the reduced dimension data from a decomposer which has already been
-fit.</p>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.autocluster.Decomposition.transform">
+<span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.autocluster.Decomposition.transform" title="Link to this definition"></a></dt>
+<dd><p>Returns the reduced dimension data from a decomposer which has
+already been fit.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>X</strong> (<em>np.ndarray</em>) – Array of input data.</p>
@@ -323,8 +282,8 @@ fit.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="analysis.autocluster.GenericDataloader">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">analysis.autocluster.</span></span><span class="sig-name descname"><span class="pre">GenericDataloader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_files</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.autocluster.GenericDataloader" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.autocluster.GenericDataloader">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.autocluster.</span></span><span class="sig-name descname"><span class="pre">GenericDataloader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_files</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.autocluster.GenericDataloader" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Loads any generic data stored in numpy arrays and stores the full
 dataset. Capable of loading data with variable row lengths but must
@@ -335,15 +294,15 @@ be consistent in the columnar dimension.</p>
 </dd>
 </dl>
 <dl class="py property">
-<dt class="sig sig-object py" id="analysis.autocluster.GenericDataloader.data">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#analysis.autocluster.GenericDataloader.data" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.autocluster.GenericDataloader.data">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#molecular_simulations.analysis.autocluster.GenericDataloader.data" title="Link to this definition"></a></dt>
 <dd><p>Returns:
 (np.ndarray): Internal data array.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.autocluster.GenericDataloader.load_data">
-<span class="sig-name descname"><span class="pre">load_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.autocluster.GenericDataloader.load_data" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.autocluster.GenericDataloader.load_data">
+<span class="sig-name descname"><span class="pre">load_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.autocluster.GenericDataloader.load_data" title="Link to this definition"></a></dt>
 <dd><p>Lumps data into one large array.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -356,8 +315,8 @@ be consistent in the columnar dimension.</p>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="analysis.autocluster.GenericDataloader.shape">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">shape</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#analysis.autocluster.GenericDataloader.shape" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.autocluster.GenericDataloader.shape">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">shape</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#molecular_simulations.analysis.autocluster.GenericDataloader.shape" title="Link to this definition"></a></dt>
 <dd><p>Returns:
 (tuple[int]): Shape of each individual data file, or if they have</p>
 <blockquote>
@@ -369,13 +328,13 @@ provided to this class.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="analysis.autocluster.PeriodicDataloader">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">analysis.autocluster.</span></span><span class="sig-name descname"><span class="pre">PeriodicDataloader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_files</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.autocluster.PeriodicDataloader" title="Link to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#analysis.autocluster.GenericDataloader" title="analysis.autocluster.GenericDataloader"><code class="xref py py-class docutils literal notranslate"><span class="pre">GenericDataloader</span></code></a></p>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.autocluster.PeriodicDataloader">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.autocluster.</span></span><span class="sig-name descname"><span class="pre">PeriodicDataloader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_files</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.autocluster.PeriodicDataloader" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#molecular_simulations.analysis.autocluster.GenericDataloader" title="molecular_simulations.analysis.autocluster.GenericDataloader"><code class="xref py py-class docutils literal notranslate"><span class="pre">GenericDataloader</span></code></a></p>
 <p>Decomposes periodic data using sin and cos, returning double the features.</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.autocluster.PeriodicDataloader.load_data">
-<span class="sig-name descname"><span class="pre">load_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.autocluster.PeriodicDataloader.load_data" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.autocluster.PeriodicDataloader.load_data">
+<span class="sig-name descname"><span class="pre">load_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.autocluster.PeriodicDataloader.load_data" title="Link to this definition"></a></dt>
 <dd><p>Loads file of input periodic data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -388,8 +347,8 @@ provided to this class.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.autocluster.PeriodicDataloader.remove_periodicity">
-<span class="sig-name descname"><span class="pre">remove_periodicity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.autocluster.PeriodicDataloader.remove_periodicity" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.autocluster.PeriodicDataloader.remove_periodicity">
+<span class="sig-name descname"><span class="pre">remove_periodicity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.autocluster.PeriodicDataloader.remove_periodicity" title="Link to this definition"></a></dt>
 <dd><p>Removes periodicity from each feature using sin and cos. Each
 column is expanded into two such that the indices become
 i -&gt; 2*i, 2*i + 1.</p>
@@ -409,11 +368,11 @@ i -&gt; 2*i, 2*i + 1.</p>
 </dd></dl>
 
 </section>
-<section id="module-analysis.cov_ppi">
-<span id="analysis-cov-ppi-module"></span><h2>analysis.cov_ppi module<a class="headerlink" href="#module-analysis.cov_ppi" title="Link to this heading"></a></h2>
+<section id="module-molecular_simulations.analysis.cov_ppi">
+<span id="molecular-simulations-analysis-cov-ppi-module"></span><h2>molecular_simulations.analysis.cov_ppi module<a class="headerlink" href="#module-molecular_simulations.analysis.cov_ppi" title="Link to this heading"></a></h2>
 <dl class="py class">
-<dt class="sig sig-object py" id="analysis.cov_ppi.PPInteractions">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">analysis.cov_ppi.</span></span><span class="sig-name descname"><span class="pre">PPInteractions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">top</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">traj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sel1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'chainID</span> <span class="pre">A'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sel2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'chainID</span> <span class="pre">B'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cov_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(11.0,</span> <span class="pre">13.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sb_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hbond_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hbond_angle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hydrophobic_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.cov_ppi.PPInteractions" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.cov_ppi.PPInteractions">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.cov_ppi.</span></span><span class="sig-name descname"><span class="pre">PPInteractions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">top</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">traj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sel1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'chainID</span> <span class="pre">A'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sel2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'chainID</span> <span class="pre">B'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cov_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(11.0,</span> <span class="pre">13.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sb_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hbond_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hbond_angle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hydrophobic_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.cov_ppi.PPInteractions" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="simple">
 <dt>Code herein adapted from:</dt><dd><p><a class="reference external" href="https://www.biorxiv.org/content/10.1101/2025.03.24.644990v1.full.pdf">https://www.biorxiv.org/content/10.1101/2025.03.24.644990v1.full.pdf</a></p>
@@ -448,8 +407,8 @@ at the output directory.</p></li>
 </dd>
 </dl>
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.cov_ppi.PPInteractions.analyze_hbond">
-<span class="sig-name descname"><span class="pre">analyze_hbond</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.cov_ppi.PPInteractions.analyze_hbond" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.cov_ppi.PPInteractions.analyze_hbond">
+<span class="sig-name descname"><span class="pre">analyze_hbond</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.cov_ppi.PPInteractions.analyze_hbond" title="Link to this definition"></a></dt>
 <dd><p>Identifies all potential donor/acceptor atoms between two
 residues. Culls this list based on distance array across simulation
 and then evaluates each pair over the trajectory utilizing a
@@ -471,8 +430,8 @@ distance and angle cutoff.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.cov_ppi.PPInteractions.analyze_hydrophobic">
-<span class="sig-name descname"><span class="pre">analyze_hydrophobic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.cov_ppi.PPInteractions.analyze_hydrophobic" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.cov_ppi.PPInteractions.analyze_hydrophobic">
+<span class="sig-name descname"><span class="pre">analyze_hydrophobic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.cov_ppi.PPInteractions.analyze_hydrophobic" title="Link to this definition"></a></dt>
 <dd><p>Uses a simple distance cutoff to highlight the occupancy of
 hydrophobic interaction between two residues. Returns the fraction of
 simulation time spent engaged in interaction.</p>
@@ -493,8 +452,8 @@ simulation time spent engaged in interaction.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.cov_ppi.PPInteractions.analyze_saltbridge">
-<span class="sig-name descname"><span class="pre">analyze_saltbridge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.cov_ppi.PPInteractions.analyze_saltbridge" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.cov_ppi.PPInteractions.analyze_saltbridge">
+<span class="sig-name descname"><span class="pre">analyze_saltbridge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.cov_ppi.PPInteractions.analyze_saltbridge" title="Link to this definition"></a></dt>
 <dd><p>Uses a simple distance cutoff to highlight the occupancy of
 saltbridge between two residues. Returns the fraction of
 simulation time spent engaged in saltbridge.</p>
@@ -515,8 +474,8 @@ simulation time spent engaged in saltbridge.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.cov_ppi.PPInteractions.compute_interactions">
-<span class="sig-name descname"><span class="pre">compute_interactions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.cov_ppi.PPInteractions.compute_interactions" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.cov_ppi.PPInteractions.compute_interactions">
+<span class="sig-name descname"><span class="pre">compute_interactions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.cov_ppi.PPInteractions.compute_interactions" title="Link to this definition"></a></dt>
 <dd><p>Ingests two resIDs, generates MDAnalysis AtomGroups for each, identifies
 relevant non-bonded interactions (HBonds, saltbridge, hydrophobic) and
 computes each. Returns a dict containing the proportion of simulation time
@@ -542,8 +501,8 @@ that each interaction is engaged.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.cov_ppi.PPInteractions.evaluate_hbond">
-<span class="sig-name descname"><span class="pre">evaluate_hbond</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">donor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">acceptor</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.cov_ppi.PPInteractions.evaluate_hbond" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.cov_ppi.PPInteractions.evaluate_hbond">
+<span class="sig-name descname"><span class="pre">evaluate_hbond</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">donor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">acceptor</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.cov_ppi.PPInteractions.evaluate_hbond" title="Link to this definition"></a></dt>
 <dd><p>Evaluates whether there is a defined hydrogen bond between any
 donor and acceptor atoms in a given frame. Must pass a distance
 cutoff as well as an angle cutoff. Returns early when a legal
@@ -565,8 +524,8 @@ HBond is detected.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.cov_ppi.PPInteractions.get_covariance">
-<span class="sig-name descname"><span class="pre">get_covariance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.cov_ppi.PPInteractions.get_covariance" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.cov_ppi.PPInteractions.get_covariance">
+<span class="sig-name descname"><span class="pre">get_covariance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.cov_ppi.PPInteractions.get_covariance" title="Link to this definition"></a></dt>
 <dd><p>Loop over all C-alpha atoms and compute the positional
 covariance using the functional form:</p>
 <blockquote>
@@ -589,8 +548,8 @@ corresponding to positive and negative correlation respectively.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.cov_ppi.PPInteractions.identify_interaction_type">
-<span class="sig-name descname"><span class="pre">identify_interaction_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.cov_ppi.PPInteractions.identify_interaction_type" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.cov_ppi.PPInteractions.identify_interaction_type">
+<span class="sig-name descname"><span class="pre">identify_interaction_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.cov_ppi.PPInteractions.identify_interaction_type" title="Link to this definition"></a></dt>
 <dd><p>Identifies what analyses to compute for a given pair of protein
 residues (i.e. hydrophobic interactions, hydrogen bonds, saltbridges).</p>
 <dl class="field-list simple">
@@ -610,8 +569,8 @@ residues (i.e. hydrophobic interactions, hydrogen bonds, saltbridges).</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.cov_ppi.PPInteractions.interpret_covariance">
-<span class="sig-name descname"><span class="pre">interpret_covariance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cov_mat</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.cov_ppi.PPInteractions.interpret_covariance" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.cov_ppi.PPInteractions.interpret_covariance">
+<span class="sig-name descname"><span class="pre">interpret_covariance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cov_mat</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.cov_ppi.PPInteractions.interpret_covariance" title="Link to this definition"></a></dt>
 <dd><p>Identify pairs of residues with positive or negative correlations.
 Returns a tuple comprised of pairs for each.</p>
 <dl class="field-list simple">
@@ -632,8 +591,8 @@ Returns a tuple comprised of pairs for each.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.cov_ppi.PPInteractions.make_plot">
-<span class="sig-name descname"><span class="pre">make_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.cov_ppi.PPInteractions.make_plot" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.cov_ppi.PPInteractions.make_plot">
+<span class="sig-name descname"><span class="pre">make_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.cov_ppi.PPInteractions.make_plot" title="Link to this definition"></a></dt>
 <dd><p>Generates a seaborn barplot from a dataframe for a specified column.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -654,8 +613,8 @@ Returns a tuple comprised of pairs for each.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.cov_ppi.PPInteractions.parse_results">
-<span class="sig-name descname"><span class="pre">parse_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.cov_ppi.PPInteractions.parse_results" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.cov_ppi.PPInteractions.parse_results">
+<span class="sig-name descname"><span class="pre">parse_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.cov_ppi.PPInteractions.parse_results" title="Link to this definition"></a></dt>
 <dd><p>Prepares results for plotting. Removes any entries which are
 all 0. and returns as a pandas DataFrame for easier plotting.</p>
 <dl class="field-list simple">
@@ -672,8 +631,8 @@ all 0. and returns as a pandas DataFrame for easier plotting.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.cov_ppi.PPInteractions.plot_results">
-<span class="sig-name descname"><span class="pre">plot_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.cov_ppi.PPInteractions.plot_results" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.cov_ppi.PPInteractions.plot_results">
+<span class="sig-name descname"><span class="pre">plot_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.cov_ppi.PPInteractions.plot_results" title="Link to this definition"></a></dt>
 <dd><p>Plot results.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -689,8 +648,8 @@ all 0. and returns as a pandas DataFrame for easier plotting.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.cov_ppi.PPInteractions.res_map">
-<span class="sig-name descname"><span class="pre">res_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ag1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ag2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.cov_ppi.PPInteractions.res_map" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.cov_ppi.PPInteractions.res_map">
+<span class="sig-name descname"><span class="pre">res_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ag1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ag2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.cov_ppi.PPInteractions.res_map" title="Link to this definition"></a></dt>
 <dd><p>Map covariance matrix indices to AtomGroup resIDs so that we are
 examining the correct pairs of residues.</p>
 <dl class="field-list simple">
@@ -710,8 +669,8 @@ examining the correct pairs of residues.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.cov_ppi.PPInteractions.run">
-<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.cov_ppi.PPInteractions.run" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.cov_ppi.PPInteractions.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.cov_ppi.PPInteractions.run" title="Link to this definition"></a></dt>
 <dd><p>Main function that runs the workflow. Obtains a covariance matrix,
 screens for close interactions, evaluates each pairwise interaction
 for each amino acid and report the contact probability of each.</p>
@@ -726,8 +685,8 @@ for each amino acid and report the contact probability of each.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.cov_ppi.PPInteractions.save">
-<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.cov_ppi.PPInteractions.save" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.cov_ppi.PPInteractions.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.cov_ppi.PPInteractions.save" title="Link to this definition"></a></dt>
 <dd><p>Save results as a json file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -743,8 +702,8 @@ for each amino acid and report the contact probability of each.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.cov_ppi.PPInteractions.survey_donors_acceptors">
-<span class="sig-name descname"><span class="pre">survey_donors_acceptors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.cov_ppi.PPInteractions.survey_donors_acceptors" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.cov_ppi.PPInteractions.survey_donors_acceptors">
+<span class="sig-name descname"><span class="pre">survey_donors_acceptors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.cov_ppi.PPInteractions.survey_donors_acceptors" title="Link to this definition"></a></dt>
 <dd><p>First pass distance threshhold to identify potential Hydrogen bonds.
 Should be followed by querying HBond angles but this serves to reduce
 our search space and time complexity. Only returns donors/acceptors which
@@ -772,11 +731,11 @@ are within the distance cutoff in at least a single frame.</p>
 </dd></dl>
 
 </section>
-<section id="module-analysis.fingerprinter">
-<span id="analysis-fingerprinter-module"></span><h2>analysis.fingerprinter module<a class="headerlink" href="#module-analysis.fingerprinter" title="Link to this heading"></a></h2>
+<section id="module-molecular_simulations.analysis.fingerprinter">
+<span id="molecular-simulations-analysis-fingerprinter-module"></span><h2>molecular_simulations.analysis.fingerprinter module<a class="headerlink" href="#module-molecular_simulations.analysis.fingerprinter" title="Link to this heading"></a></h2>
 <dl class="py class">
-<dt class="sig sig-object py" id="analysis.fingerprinter.Fingerprinter">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">analysis.fingerprinter.</span></span><span class="sig-name descname"><span class="pre">Fingerprinter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">topology</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trajectory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_selection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'segid</span> <span class="pre">A'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binder_selection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.fingerprinter.Fingerprinter" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.fingerprinter.Fingerprinter">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.fingerprinter.</span></span><span class="sig-name descname"><span class="pre">Fingerprinter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">topology</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trajectory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_selection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'segid</span> <span class="pre">A'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binder_selection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.fingerprinter.Fingerprinter" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Calculates interaction energy fingerprint between target and binder chains.</p>
 <dl class="field-list simple">
@@ -804,8 +763,8 @@ m.save()</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.fingerprinter.Fingerprinter.assign_nonbonded_params">
-<span class="sig-name descname"><span class="pre">assign_nonbonded_params</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.fingerprinter.Fingerprinter.assign_nonbonded_params" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.fingerprinter.Fingerprinter.assign_nonbonded_params">
+<span class="sig-name descname"><span class="pre">assign_nonbonded_params</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.fingerprinter.Fingerprinter.assign_nonbonded_params" title="Link to this definition"></a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
@@ -814,8 +773,8 @@ m.save()</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.fingerprinter.Fingerprinter.assign_residue_mapping">
-<span class="sig-name descname"><span class="pre">assign_residue_mapping</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.fingerprinter.Fingerprinter.assign_residue_mapping" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.fingerprinter.Fingerprinter.assign_residue_mapping">
+<span class="sig-name descname"><span class="pre">assign_residue_mapping</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.fingerprinter.Fingerprinter.assign_residue_mapping" title="Link to this definition"></a></dt>
 <dd><p>Map each residue index (1-based) to corresponding atom indices.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -828,8 +787,8 @@ m.save()</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.fingerprinter.Fingerprinter.calculate_fingerprints">
-<span class="sig-name descname"><span class="pre">calculate_fingerprints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame_index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.fingerprinter.Fingerprinter.calculate_fingerprints" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.fingerprinter.Fingerprinter.calculate_fingerprints">
+<span class="sig-name descname"><span class="pre">calculate_fingerprints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame_index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.fingerprinter.Fingerprinter.calculate_fingerprints" title="Link to this definition"></a></dt>
 <dd><p>Calculates fingerprints for a given frame of the trajectory.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -846,8 +805,8 @@ discontinuous.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.fingerprinter.Fingerprinter.iterate_frames">
-<span class="sig-name descname"><span class="pre">iterate_frames</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.fingerprinter.Fingerprinter.iterate_frames" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.fingerprinter.Fingerprinter.iterate_frames">
+<span class="sig-name descname"><span class="pre">iterate_frames</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.fingerprinter.Fingerprinter.iterate_frames" title="Link to this definition"></a></dt>
 <dd><p>Runs calculations over each frame.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -860,8 +819,8 @@ discontinuous.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.fingerprinter.Fingerprinter.load_pdb">
-<span class="sig-name descname"><span class="pre">load_pdb</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.fingerprinter.Fingerprinter.load_pdb" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.fingerprinter.Fingerprinter.load_pdb">
+<span class="sig-name descname"><span class="pre">load_pdb</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.fingerprinter.Fingerprinter.load_pdb" title="Link to this definition"></a></dt>
 <dd><p>Loads topology into MDAnalysis universe object. Can take either a PDB
 or an AMBER prmtop. If trajectory was not specified, will look for either
 inpcrd or rst7 with the same path and stem as the topology file.</p>
@@ -876,8 +835,8 @@ inpcrd or rst7 with the same path and stem as the topology file.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.fingerprinter.Fingerprinter.run">
-<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.fingerprinter.Fingerprinter.run" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.fingerprinter.Fingerprinter.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.fingerprinter.Fingerprinter.run" title="Link to this definition"></a></dt>
 <dd><p>Main logic. Obtains parameters, loads PDB and then
 iterates through trajectory to obtain fingerprints.</p>
 <dl class="field-list simple">
@@ -891,8 +850,8 @@ iterates through trajectory to obtain fingerprints.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.fingerprinter.Fingerprinter.save">
-<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.fingerprinter.Fingerprinter.save" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.fingerprinter.Fingerprinter.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.fingerprinter.Fingerprinter.save" title="Link to this definition"></a></dt>
 <dd><p>Saves data to an npz stack.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -907,8 +866,8 @@ iterates through trajectory to obtain fingerprints.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="analysis.fingerprinter.dist_mat">
-<span class="sig-prename descclassname"><span class="pre">analysis.fingerprinter.</span></span><span class="sig-name descname"><span class="pre">dist_mat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xyz1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xyz2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.fingerprinter.dist_mat" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.fingerprinter.dist_mat">
+<span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.fingerprinter.</span></span><span class="sig-name descname"><span class="pre">dist_mat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xyz1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xyz2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.fingerprinter.dist_mat" title="Link to this definition"></a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span></p>
@@ -917,8 +876,8 @@ iterates through trajectory to obtain fingerprints.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="analysis.fingerprinter.electrostatic">
-<span class="sig-prename descclassname"><span class="pre">analysis.fingerprinter.</span></span><span class="sig-name descname"><span class="pre">electrostatic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge_i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge_j</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.fingerprinter.electrostatic" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.fingerprinter.electrostatic">
+<span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.fingerprinter.</span></span><span class="sig-name descname"><span class="pre">electrostatic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge_i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge_j</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.fingerprinter.electrostatic" title="Link to this definition"></a></dt>
 <dd><p>Calculate electrostatic energy between two particles.
 Cutoff at 12 Angstrom without switching.</p>
 <dl class="field-list simple">
@@ -939,8 +898,8 @@ Cutoff at 12 Angstrom without switching.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="analysis.fingerprinter.electrostatic_sum">
-<span class="sig-prename descclassname"><span class="pre">analysis.fingerprinter.</span></span><span class="sig-name descname"><span class="pre">electrostatic_sum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distances</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge_is</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge_js</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.fingerprinter.electrostatic_sum" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.fingerprinter.electrostatic_sum">
+<span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.fingerprinter.</span></span><span class="sig-name descname"><span class="pre">electrostatic_sum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distances</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge_is</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge_js</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.fingerprinter.electrostatic_sum" title="Link to this definition"></a></dt>
 <dd><p>Calculate sum of all electrostatic interactions between two
 sets of particles.</p>
 <dl class="field-list simple">
@@ -956,8 +915,8 @@ shape: (len(charge_is),len(charge_js))</p></li>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="analysis.fingerprinter.fingerprints">
-<span class="sig-prename descclassname"><span class="pre">analysis.fingerprinter.</span></span><span class="sig-name descname"><span class="pre">fingerprints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xyzs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charges</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigmas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_resmap</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binder_inds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.fingerprinter.fingerprints" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.fingerprinter.fingerprints">
+<span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.fingerprinter.</span></span><span class="sig-name descname"><span class="pre">fingerprints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xyzs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charges</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigmas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_resmap</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binder_inds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.fingerprinter.fingerprints" title="Link to this definition"></a></dt>
 <dd><p>Calculates electrostatic fingerprint.
 ES energy between each target residue and all binder residues.</p>
 <dl class="field-list simple">
@@ -975,8 +934,8 @@ ES energy between each target residue and all binder residues.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="analysis.fingerprinter.lennard_jones">
-<span class="sig-prename descclassname"><span class="pre">analysis.fingerprinter.</span></span><span class="sig-name descname"><span class="pre">lennard_jones</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_j</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon_i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon_j</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.fingerprinter.lennard_jones" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.fingerprinter.lennard_jones">
+<span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.fingerprinter.</span></span><span class="sig-name descname"><span class="pre">lennard_jones</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_j</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon_i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon_j</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.fingerprinter.lennard_jones" title="Link to this definition"></a></dt>
 <dd><p>Calculate LJ energy between two particles.
 Cutoff at 12 Angstrom without switching.</p>
 <dl class="field-list simple">
@@ -994,8 +953,8 @@ Cutoff at 12 Angstrom without switching.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="analysis.fingerprinter.lennard_jones_sum">
-<span class="sig-prename descclassname"><span class="pre">analysis.fingerprinter.</span></span><span class="sig-name descname"><span class="pre">lennard_jones_sum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distances</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_is</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_js</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon_is</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon_js</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.fingerprinter.lennard_jones_sum" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.fingerprinter.lennard_jones_sum">
+<span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.fingerprinter.</span></span><span class="sig-name descname"><span class="pre">lennard_jones_sum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distances</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_is</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_js</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon_is</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon_js</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.fingerprinter.lennard_jones_sum" title="Link to this definition"></a></dt>
 <dd><p>Calculate sum of all LJ interactions between two sets of
 particles.</p>
 <dl class="field-list simple">
@@ -1013,8 +972,8 @@ shape: (len(sigma_is),len(sigma_js))</p></li>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="analysis.fingerprinter.unravel_index">
-<span class="sig-prename descclassname"><span class="pre">analysis.fingerprinter.</span></span><span class="sig-name descname"><span class="pre">unravel_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.fingerprinter.unravel_index" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.fingerprinter.unravel_index">
+<span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.fingerprinter.</span></span><span class="sig-name descname"><span class="pre">unravel_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.fingerprinter.unravel_index" title="Link to this definition"></a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]</span></p>
@@ -1023,11 +982,11 @@ shape: (len(sigma_is),len(sigma_js))</p></li>
 </dd></dl>
 
 </section>
-<section id="module-analysis.interaction_energy">
-<span id="analysis-interaction-energy-module"></span><h2>analysis.interaction_energy module<a class="headerlink" href="#module-analysis.interaction_energy" title="Link to this heading"></a></h2>
+<section id="module-molecular_simulations.analysis.interaction_energy">
+<span id="molecular-simulations-analysis-interaction-energy-module"></span><h2>molecular_simulations.analysis.interaction_energy module<a class="headerlink" href="#module-molecular_simulations.analysis.interaction_energy" title="Link to this heading"></a></h2>
 <dl class="py class">
-<dt class="sig sig-object py" id="analysis.interaction_energy.DynamicInteractionEnergy">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">analysis.interaction_energy.</span></span><span class="sig-name descname"><span class="pre">DynamicInteractionEnergy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">top</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">traj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'A'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">platform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'CUDA'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_residue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_residue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress_bar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.interaction_energy.DynamicInteractionEnergy" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.interaction_energy.DynamicInteractionEnergy">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.interaction_energy.</span></span><span class="sig-name descname"><span class="pre">DynamicInteractionEnergy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">top</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">traj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'A'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">platform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'CUDA'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_residue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_residue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress_bar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.interaction_energy.DynamicInteractionEnergy" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Class for obtaining interaction energies of a trajectory. Utilizes the
 InteractionEnergyFrame child class to run per-frame energy calculations
@@ -1052,8 +1011,8 @@ display progress.</p></li>
 </dd>
 </dl>
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.interaction_energy.DynamicInteractionEnergy.build_system">
-<span class="sig-name descname"><span class="pre">build_system</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">top</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.interaction_energy.DynamicInteractionEnergy.build_system" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.interaction_energy.DynamicInteractionEnergy.build_system">
+<span class="sig-name descname"><span class="pre">build_system</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">top</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.interaction_energy.DynamicInteractionEnergy.build_system" title="Link to this definition"></a></dt>
 <dd><p>Builds OpenMM system for both pdb and prmtop topology files.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1069,8 +1028,8 @@ display progress.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.interaction_energy.DynamicInteractionEnergy.compute_energies">
-<span class="sig-name descname"><span class="pre">compute_energies</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.interaction_energy.DynamicInteractionEnergy.compute_energies" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.interaction_energy.DynamicInteractionEnergy.compute_energies">
+<span class="sig-name descname"><span class="pre">compute_energies</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.interaction_energy.DynamicInteractionEnergy.compute_energies" title="Link to this definition"></a></dt>
 <dd><p>Computes the energy for each frame in trajectory, storing internally.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -1083,8 +1042,8 @@ display progress.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.interaction_energy.DynamicInteractionEnergy.load_traj">
-<span class="sig-name descname"><span class="pre">load_traj</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">top</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">traj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.interaction_energy.DynamicInteractionEnergy.load_traj" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.interaction_energy.DynamicInteractionEnergy.load_traj">
+<span class="sig-name descname"><span class="pre">load_traj</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">top</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">traj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.interaction_energy.DynamicInteractionEnergy.load_traj" title="Link to this definition"></a></dt>
 <dd><p>Loads trajectory into mdtraj and extracts full coordinate array.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1103,8 +1062,8 @@ display progress.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.interaction_energy.DynamicInteractionEnergy.setup_pbar">
-<span class="sig-name descname"><span class="pre">setup_pbar</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.interaction_energy.DynamicInteractionEnergy.setup_pbar" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.interaction_energy.DynamicInteractionEnergy.setup_pbar">
+<span class="sig-name descname"><span class="pre">setup_pbar</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.interaction_energy.DynamicInteractionEnergy.setup_pbar" title="Link to this definition"></a></dt>
 <dd><p>Builds tqdm progress bar.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -1119,30 +1078,30 @@ display progress.</p></li>
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="analysis.interaction_energy.InteractionEnergy">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">analysis.interaction_energy.</span></span><span class="sig-name descname"><span class="pre">InteractionEnergy</span></span><a class="headerlink" href="#analysis.interaction_energy.InteractionEnergy" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.interaction_energy.InteractionEnergy">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.interaction_energy.</span></span><span class="sig-name descname"><span class="pre">InteractionEnergy</span></span><a class="headerlink" href="#molecular_simulations.analysis.interaction_energy.InteractionEnergy" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.interaction_energy.InteractionEnergy.compute">
-<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compute</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.interaction_energy.InteractionEnergy.compute" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.interaction_energy.InteractionEnergy.compute">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compute</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.interaction_energy.InteractionEnergy.compute" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.interaction_energy.InteractionEnergy.energy">
-<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">energy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.interaction_energy.InteractionEnergy.energy" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.interaction_energy.InteractionEnergy.energy">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">energy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.interaction_energy.InteractionEnergy.energy" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.interaction_energy.InteractionEnergy.get_selection">
-<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_selection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.interaction_energy.InteractionEnergy.get_selection" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.interaction_energy.InteractionEnergy.get_selection">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_selection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.interaction_energy.InteractionEnergy.get_selection" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="analysis.interaction_energy.InteractionEnergyFrame">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">analysis.interaction_energy.</span></span><span class="sig-name descname"><span class="pre">InteractionEnergyFrame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">system</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'A'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">platform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'CUDA'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_residue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_residue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.interaction_energy.InteractionEnergyFrame" title="Link to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#analysis.interaction_energy.StaticInteractionEnergy" title="analysis.interaction_energy.StaticInteractionEnergy"><code class="xref py py-class docutils literal notranslate"><span class="pre">StaticInteractionEnergy</span></code></a></p>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.interaction_energy.InteractionEnergyFrame">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.interaction_energy.</span></span><span class="sig-name descname"><span class="pre">InteractionEnergyFrame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">system</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'A'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">platform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'CUDA'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_residue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_residue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.interaction_energy.InteractionEnergyFrame" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#molecular_simulations.analysis.interaction_energy.StaticInteractionEnergy" title="molecular_simulations.analysis.interaction_energy.StaticInteractionEnergy"><code class="xref py py-class docutils literal notranslate"><span class="pre">StaticInteractionEnergy</span></code></a></p>
 <p>Inherits from StaticInteractionEnergy and overloads <cite>get_system</cite> to allow for
 more easily running this analysis on a trajectory of frames. Requires the
 OpenMM system and topology to be built externally and passed in rather than
@@ -1164,8 +1123,8 @@ calculation to residues ending with resid <cite>last_residue</cite>.</p></li>
 </dd>
 </dl>
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.interaction_energy.InteractionEnergyFrame.get_system">
-<span class="sig-name descname"><span class="pre">get_system</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.interaction_energy.InteractionEnergyFrame.get_system" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.interaction_energy.InteractionEnergyFrame.get_system">
+<span class="sig-name descname"><span class="pre">get_system</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.interaction_energy.InteractionEnergyFrame.get_system" title="Link to this definition"></a></dt>
 <dd><p>Sets self.selection via self.get_selection and returns existing OpenMM
 system object.</p>
 <dl class="field-list simple">
@@ -1181,9 +1140,9 @@ system object.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="analysis.interaction_energy.StaticInteractionEnergy">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">analysis.interaction_energy.</span></span><span class="sig-name descname"><span class="pre">StaticInteractionEnergy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'A'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">platform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'CUDA'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_residue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_residue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.interaction_energy.StaticInteractionEnergy" title="Link to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#analysis.interaction_energy.InteractionEnergy" title="analysis.interaction_energy.InteractionEnergy"><code class="xref py py-class docutils literal notranslate"><span class="pre">InteractionEnergy</span></code></a></p>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.interaction_energy.StaticInteractionEnergy">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.interaction_energy.</span></span><span class="sig-name descname"><span class="pre">StaticInteractionEnergy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'A'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">platform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'CUDA'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_residue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_residue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.interaction_energy.StaticInteractionEnergy" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#molecular_simulations.analysis.interaction_energy.InteractionEnergy" title="molecular_simulations.analysis.interaction_energy.InteractionEnergy"><code class="xref py py-class docutils literal notranslate"><span class="pre">InteractionEnergy</span></code></a></p>
 <p>Computes the linear interaction energy between specified chain and other simulation
 components. Can specify a range of residues in chain to limit calculation to. Works on
 a static model but can be adapted to run on dynamics data.</p>
@@ -1206,8 +1165,8 @@ first_residue (int | None): Defaults to None. If set, will restrict the</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.interaction_energy.StaticInteractionEnergy.compute">
-<span class="sig-name descname"><span class="pre">compute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">positions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.interaction_energy.StaticInteractionEnergy.compute" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.interaction_energy.StaticInteractionEnergy.compute">
+<span class="sig-name descname"><span class="pre">compute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">positions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.interaction_energy.StaticInteractionEnergy.compute" title="Link to this definition"></a></dt>
 <dd><p>Compute interaction energy of system. Can optionally provide atomic
 positions such that this operation can be scaled onto a trajectory of
 frames rather than a static model.</p>
@@ -1226,8 +1185,8 @@ the positions into the OpenMM context.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.interaction_energy.StaticInteractionEnergy.energy">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solute_coulomb_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solute_lj_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solvent_coulomb_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solvent_lj_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.interaction_energy.StaticInteractionEnergy.energy" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.interaction_energy.StaticInteractionEnergy.energy">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solute_coulomb_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solute_lj_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solvent_coulomb_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solvent_lj_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.interaction_energy.StaticInteractionEnergy.energy" title="Link to this definition"></a></dt>
 <dd><p>Computes the potential energy for provided context object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1253,8 +1212,8 @@ contributions to LJ non-bonded energy.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.interaction_energy.StaticInteractionEnergy.fix_pdb">
-<span class="sig-name descname"><span class="pre">fix_pdb</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.interaction_energy.StaticInteractionEnergy.fix_pdb" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.interaction_energy.StaticInteractionEnergy.fix_pdb">
+<span class="sig-name descname"><span class="pre">fix_pdb</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.interaction_energy.StaticInteractionEnergy.fix_pdb" title="Link to this definition"></a></dt>
 <dd><p>Using the OpenMM adjacent tool, PDBFixer, repair input PDB by adding
 hydrogens, and missing atoms such that we can actually construct an
 OpenMM system.</p>
@@ -1269,8 +1228,8 @@ OpenMM system.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.interaction_energy.StaticInteractionEnergy.get_selection">
-<span class="sig-name descname"><span class="pre">get_selection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">topology</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.interaction_energy.StaticInteractionEnergy.get_selection" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.interaction_energy.StaticInteractionEnergy.get_selection">
+<span class="sig-name descname"><span class="pre">get_selection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">topology</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.interaction_energy.StaticInteractionEnergy.get_selection" title="Link to this definition"></a></dt>
 <dd><p>Using the poorly documented OpenMM selection language, get indices of
 atoms that we want to isolate for pairwise interaction energy calculation.</p>
 <dl class="field-list simple">
@@ -1287,8 +1246,8 @@ atoms that we want to isolate for pairwise interaction energy calculation.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.interaction_energy.StaticInteractionEnergy.get_system">
-<span class="sig-name descname"><span class="pre">get_system</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.interaction_energy.StaticInteractionEnergy.get_system" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.interaction_energy.StaticInteractionEnergy.get_system">
+<span class="sig-name descname"><span class="pre">get_system</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.interaction_energy.StaticInteractionEnergy.get_system" title="Link to this definition"></a></dt>
 <dd><p>Builds implicit solvent OpenMM system.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1301,8 +1260,8 @@ atoms that we want to isolate for pairwise interaction energy calculation.</p>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="analysis.interaction_energy.StaticInteractionEnergy.interactions">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">interactions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#analysis.interaction_energy.StaticInteractionEnergy.interactions" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.interaction_energy.StaticInteractionEnergy.interactions">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">interactions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#molecular_simulations.analysis.interaction_energy.StaticInteractionEnergy.interactions" title="Link to this definition"></a></dt>
 <dd><p>Places the LJ and coulombic energies into an array of shape (1, 2).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1317,11 +1276,11 @@ atoms that we want to isolate for pairwise interaction energy calculation.</p>
 </dd></dl>
 
 </section>
-<section id="module-analysis.ipSAE">
-<span id="analysis-ipsae-module"></span><h2>analysis.ipSAE module<a class="headerlink" href="#module-analysis.ipSAE" title="Link to this heading"></a></h2>
+<section id="module-molecular_simulations.analysis.ipSAE">
+<span id="molecular-simulations-analysis-ipsae-module"></span><h2>molecular_simulations.analysis.ipSAE module<a class="headerlink" href="#module-molecular_simulations.analysis.ipSAE" title="Link to this heading"></a></h2>
 <dl class="py class">
-<dt class="sig sig-object py" id="analysis.ipSAE.ModelParser">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">analysis.ipSAE.</span></span><span class="sig-name descname"><span class="pre">ModelParser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ModelParser" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ModelParser">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.ipSAE.</span></span><span class="sig-name descname"><span class="pre">ModelParser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ModelParser" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Helper class to read in and process a structure file for downstream
 scoring tasks. Capable of reading both PDB and CIF formats.</p>
@@ -1331,8 +1290,8 @@ scoring tasks. Capable of reading both PDB and CIF formats.</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.ipSAE.ModelParser.classify_chains">
-<span class="sig-name descname"><span class="pre">classify_chains</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ModelParser.classify_chains" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ModelParser.classify_chains">
+<span class="sig-name descname"><span class="pre">classify_chains</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ModelParser.classify_chains" title="Link to this definition"></a></dt>
 <dd><p>Reads through residue data to assign the identity of each chain as
 either protein (by default) or nucleic acid if an NA residue is detected.</p>
 <dl class="field-list simple">
@@ -1346,8 +1305,8 @@ either protein (by default) or nucleic acid if an NA residue is detected.</p>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="analysis.ipSAE.ModelParser.nucleic_acids">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">nucleic_acids</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#analysis.ipSAE.ModelParser.nucleic_acids" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ModelParser.nucleic_acids">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">nucleic_acids</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ModelParser.nucleic_acids" title="Link to this definition"></a></dt>
 <dd><p>Stores the canonical resnames for RNA and DNA residues.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1360,8 +1319,8 @@ either protein (by default) or nucleic acid if an NA residue is detected.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.ipSAE.ModelParser.package_line">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">package_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atom_num</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atom_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">residue_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">residue_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ModelParser.package_line" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ModelParser.package_line">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">package_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atom_num</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atom_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">residue_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">residue_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ModelParser.package_line" title="Link to this definition"></a></dt>
 <dd><p>Packs various information from a single line of a structure file into
 a dictionary to maintain consistency.</p>
 <dl class="field-list simple">
@@ -1387,8 +1346,8 @@ a dictionary to maintain consistency.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.ipSAE.ModelParser.parse_cif_line">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parse_cif_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fields</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ModelParser.parse_cif_line" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ModelParser.parse_cif_line">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parse_cif_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fields</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ModelParser.parse_cif_line" title="Link to this definition"></a></dt>
 <dd><p>Parses a single line of a CIF file, extracting atom and residue information.
 Processes this into a dictionary and returns the dict.</p>
 <dl class="field-list simple">
@@ -1408,8 +1367,8 @@ Processes this into a dictionary and returns the dict.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.ipSAE.ModelParser.parse_pdb_line">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parse_pdb_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ModelParser.parse_pdb_line" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ModelParser.parse_pdb_line">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parse_pdb_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ModelParser.parse_pdb_line" title="Link to this definition"></a></dt>
 <dd><p>Parses a single line of a PDB file, extracting atom and residue information.
 Processes this into a dictionary and returns the dict.</p>
 <dl class="field-list simple">
@@ -1429,8 +1388,8 @@ Processes this into a dictionary and returns the dict.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.ipSAE.ModelParser.parse_structure_file">
-<span class="sig-name descname"><span class="pre">parse_structure_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ModelParser.parse_structure_file" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ModelParser.parse_structure_file">
+<span class="sig-name descname"><span class="pre">parse_structure_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ModelParser.parse_structure_file" title="Link to this definition"></a></dt>
 <dd><p>Identify filetype, and parses line by line, storing relevant data
 for all C-alpha, C-beta and C1, C3 atoms for proteins and nucleic
 acids alike.</p>
@@ -1447,8 +1406,8 @@ acids alike.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="analysis.ipSAE.ScoreCalculator">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">analysis.ipSAE.</span></span><span class="sig-name descname"><span class="pre">ScoreCalculator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chains</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain_pair_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_residues</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdockq_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pae_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">12.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ScoreCalculator" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ScoreCalculator">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.ipSAE.</span></span><span class="sig-name descname"><span class="pre">ScoreCalculator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chains</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain_pair_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_residues</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdockq_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pae_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">12.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ScoreCalculator" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Computes various model quality scores including: pDockQ, pDockQ2, LIS, ipTM and
 the ipSAE score.</p>
@@ -1465,8 +1424,8 @@ the ipSAE score.</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.ipSAE.ScoreCalculator.compute_LIS">
-<span class="sig-name descname"><span class="pre">compute_LIS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chain1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ScoreCalculator.compute_LIS" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ScoreCalculator.compute_LIS">
+<span class="sig-name descname"><span class="pre">compute_LIS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chain1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ScoreCalculator.compute_LIS" title="Link to this definition"></a></dt>
 <dd><p>Computes Local Interaction Score (LIS) which is based on a subset of the
 predicted aligned error using a cutoff of 12. Values range in the interval
 (0, 1] and can be interpreted as how accurate a fold is within the error
@@ -1490,8 +1449,8 @@ Adapted from: <a class="reference external" href="https://doi.org/10.1101/2024.0
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.ipSAE.ScoreCalculator.compute_d0">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compute_d0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">L</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pair_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ScoreCalculator.compute_d0" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ScoreCalculator.compute_d0">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compute_d0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">L</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pair_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ScoreCalculator.compute_d0" title="Link to this definition"></a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span></p>
@@ -1513,8 +1472,8 @@ pair_type (str): Whether or not chain is a nucleic acid.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.ipSAE.ScoreCalculator.compute_ipTM_ipSAE">
-<span class="sig-name descname"><span class="pre">compute_ipTM_ipSAE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chain1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ScoreCalculator.compute_ipTM_ipSAE" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ScoreCalculator.compute_ipTM_ipSAE">
+<span class="sig-name descname"><span class="pre">compute_ipTM_ipSAE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chain1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ScoreCalculator.compute_ipTM_ipSAE" title="Link to this definition"></a></dt>
 <dd><p>Computes the ipTM and ipSAE scores for a given pair of chains. These operations
 are combined since they rely on very similar processing of the data.</p>
 <dl class="field-list simple">
@@ -1534,8 +1493,8 @@ are combined since they rely on very similar processing of the data.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.ipSAE.ScoreCalculator.compute_pDockQ_scores">
-<span class="sig-name descname"><span class="pre">compute_pDockQ_scores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chain1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ScoreCalculator.compute_pDockQ_scores" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ScoreCalculator.compute_pDockQ_scores">
+<span class="sig-name descname"><span class="pre">compute_pDockQ_scores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chain1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ScoreCalculator.compute_pDockQ_scores" title="Link to this definition"></a></dt>
 <dd><p>Computes both the pDockQ and pDockQ2 scores for the interface between two chains.
 pDockQ is dependent solely on the pLDDT matrix while pDockQ2 is dependent on both
 pLDDT and the PAE matrix.</p>
@@ -1556,13 +1515,13 @@ pLDDT and the PAE matrix.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="analysis.ipSAE.ScoreCalculator.compute_pTM">
-<span class="sig-name descname"><span class="pre">compute_pTM</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;numpy.vectorize</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#analysis.ipSAE.ScoreCalculator.compute_pTM" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ScoreCalculator.compute_pTM">
+<span class="sig-name descname"><span class="pre">compute_pTM</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;numpy.vectorize</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ScoreCalculator.compute_pTM" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.ipSAE.ScoreCalculator.compute_scores">
-<span class="sig-name descname"><span class="pre">compute_scores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distances</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pLDDT</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">PAE</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ScoreCalculator.compute_scores" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ScoreCalculator.compute_scores">
+<span class="sig-name descname"><span class="pre">compute_scores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distances</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pLDDT</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">PAE</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ScoreCalculator.compute_scores" title="Link to this definition"></a></dt>
 <dd><p>Based on the input distance, pLDDT and PAE matrices, compute the pairwise pDockQ, pDockQ2,
 LIS, ipTM and ipSAE scores.</p>
 <dl class="field-list simple">
@@ -1576,8 +1535,8 @@ LIS, ipTM and ipSAE scores.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.ipSAE.ScoreCalculator.get_max_values">
-<span class="sig-name descname"><span class="pre">get_max_values</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ScoreCalculator.get_max_values" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ScoreCalculator.get_max_values">
+<span class="sig-name descname"><span class="pre">get_max_values</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ScoreCalculator.get_max_values" title="Link to this definition"></a></dt>
 <dd><p>Because some scores like ipSAE are not symmetric, meaning A-&gt;B != B-&gt;A, we
 take the maximal score for either direction to be the undirected score.
 Here we scrape through the internal dataframe and keeps only the rows with
@@ -1593,8 +1552,8 @@ the maximal values.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.ipSAE.ScoreCalculator.pDockQ2_score">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pDockQ2_score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ScoreCalculator.pDockQ2_score" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ScoreCalculator.pDockQ2_score">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pDockQ2_score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ScoreCalculator.pDockQ2_score" title="Link to this definition"></a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span></p>
@@ -1616,8 +1575,8 @@ $pDockQ =</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.ipSAE.ScoreCalculator.pDockQ_score">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pDockQ_score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ScoreCalculator.pDockQ_score" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ScoreCalculator.pDockQ_score">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pDockQ_score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ScoreCalculator.pDockQ_score" title="Link to this definition"></a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span></p>
@@ -1642,8 +1601,8 @@ $pDockQ =</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.ipSAE.ScoreCalculator.permute_chains">
-<span class="sig-name descname"><span class="pre">permute_chains</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ScoreCalculator.permute_chains" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ScoreCalculator.permute_chains">
+<span class="sig-name descname"><span class="pre">permute_chains</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ScoreCalculator.permute_chains" title="Link to this definition"></a></dt>
 <dd><p>Helper function that gives all permutations of chainID except
 the pair (self, self) for each chainID. This also ensures that
 if we have (A, B) we do not also store (B, A).</p>
@@ -1660,8 +1619,8 @@ if we have (A, B) we do not also store (B, A).</p>
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="analysis.ipSAE.ipSAE">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">analysis.ipSAE.</span></span><span class="sig-name descname"><span class="pre">ipSAE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plddt_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pae_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ipSAE" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ipSAE">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.ipSAE.</span></span><span class="sig-name descname"><span class="pre">ipSAE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plddt_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pae_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ipSAE" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Compute the interaction prediction Score from Aligned Errors for a model.
 Adapted from <a class="reference external" href="https://doi.org/10.1101/2025.02.10.637595">https://doi.org/10.1101/2025.02.10.637595</a>. Currently supports
@@ -1679,8 +1638,8 @@ will use the parent path from the plddt file.</p></li>
 </dd>
 </dl>
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.ipSAE.ipSAE.load_PAE_file">
-<span class="sig-name descname"><span class="pre">load_PAE_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ipSAE.load_PAE_file" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ipSAE.load_PAE_file">
+<span class="sig-name descname"><span class="pre">load_PAE_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ipSAE.load_PAE_file" title="Link to this definition"></a></dt>
 <dd><p>Loads PAE file and returns data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1693,8 +1652,8 @@ will use the parent path from the plddt file.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.ipSAE.ipSAE.load_pLDDT_file">
-<span class="sig-name descname"><span class="pre">load_pLDDT_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ipSAE.load_pLDDT_file" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ipSAE.load_pLDDT_file">
+<span class="sig-name descname"><span class="pre">load_pLDDT_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ipSAE.load_pLDDT_file" title="Link to this definition"></a></dt>
 <dd><p>Loads pLDDT file and scales data by 100.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1707,8 +1666,8 @@ will use the parent path from the plddt file.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.ipSAE.ipSAE.parse_structure_file">
-<span class="sig-name descname"><span class="pre">parse_structure_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ipSAE.parse_structure_file" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ipSAE.parse_structure_file">
+<span class="sig-name descname"><span class="pre">parse_structure_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ipSAE.parse_structure_file" title="Link to this definition"></a></dt>
 <dd><p>Runs parser to read in structure file and extract relevant details.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -1721,8 +1680,8 @@ will use the parent path from the plddt file.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.ipSAE.ipSAE.prepare_scorer">
-<span class="sig-name descname"><span class="pre">prepare_scorer</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ipSAE.prepare_scorer" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ipSAE.prepare_scorer">
+<span class="sig-name descname"><span class="pre">prepare_scorer</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ipSAE.prepare_scorer" title="Link to this definition"></a></dt>
 <dd><p>Prepares scorer for computing various scores.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -1735,8 +1694,8 @@ will use the parent path from the plddt file.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.ipSAE.ipSAE.run">
-<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ipSAE.run" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ipSAE.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ipSAE.run" title="Link to this definition"></a></dt>
 <dd><p>Main logic of class. Parses structure file, computes distogram, unpacks
 pLDDT and PAE, feeds data to scorer and saves out scores.</p>
 <dl class="field-list simple">
@@ -1750,8 +1709,8 @@ pLDDT and PAE, feeds data to scorer and saves out scores.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.ipSAE.ipSAE.save_scores">
-<span class="sig-name descname"><span class="pre">save_scores</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.ipSAE.ipSAE.save_scores" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.ipSAE.ipSAE.save_scores">
+<span class="sig-name descname"><span class="pre">save_scores</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.ipSAE.ipSAE.save_scores" title="Link to this definition"></a></dt>
 <dd><p>Saves scores dataframe to a parquet file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -1766,12 +1725,12 @@ pLDDT and PAE, feeds data to scorer and saves out scores.</p>
 </dd></dl>
 
 </section>
-<section id="module-analysis.sasa">
-<span id="analysis-sasa-module"></span><h2>analysis.sasa module<a class="headerlink" href="#module-analysis.sasa" title="Link to this heading"></a></h2>
+<section id="module-molecular_simulations.analysis.sasa">
+<span id="molecular-simulations-analysis-sasa-module"></span><h2>molecular_simulations.analysis.sasa module<a class="headerlink" href="#module-molecular_simulations.analysis.sasa" title="Link to this heading"></a></h2>
 <dl class="py class">
-<dt class="sig sig-object py" id="analysis.sasa.RelativeSASA">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">analysis.sasa.</span></span><span class="sig-name descname"><span class="pre">RelativeSASA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ag</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">probe_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.sasa.RelativeSASA" title="Link to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#analysis.sasa.SASA" title="analysis.sasa.SASA"><code class="xref py py-class docutils literal notranslate"><span class="pre">SASA</span></code></a></p>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.sasa.RelativeSASA">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.sasa.</span></span><span class="sig-name descname"><span class="pre">RelativeSASA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ag</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">probe_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.sasa.RelativeSASA" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#molecular_simulations.analysis.sasa.SASA" title="molecular_simulations.analysis.sasa.SASA"><code class="xref py py-class docutils literal notranslate"><span class="pre">SASA</span></code></a></p>
 <p>Computese Relative SASA for a specified atomgroup. Relative SASA is defined
 by the measured SASA divided by the maximum accessible surface area and for
 proteins we define this as within a tripeptide context so as to not overestimate
@@ -1790,8 +1749,8 @@ a higher number is more costly but accurate.</p></li>
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="analysis.sasa.SASA">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">analysis.sasa.</span></span><span class="sig-name descname"><span class="pre">SASA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ag</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">probe_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.sasa.SASA" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.sasa.SASA">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.sasa.</span></span><span class="sig-name descname"><span class="pre">SASA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ag</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">probe_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.sasa.SASA" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">AnalysisBase</span></code></p>
 <p>Computes solvent-accessible surface area using the Shrake-Rupley algorithm.
 Code is adapted from the biopython and mdtraj implementations as well as an
@@ -1809,8 +1768,8 @@ a higher number is more costly but accurate.</p></li>
 </dd>
 </dl>
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.sasa.SASA.get_sphere">
-<span class="sig-name descname"><span class="pre">get_sphere</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.sasa.SASA.get_sphere" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.sasa.SASA.get_sphere">
+<span class="sig-name descname"><span class="pre">get_sphere</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.sasa.SASA.get_sphere" title="Link to this definition"></a></dt>
 <dd><p>Returns a fibonacci unit sphere for a given number of points.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1823,8 +1782,8 @@ a higher number is more costly but accurate.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.sasa.SASA.measure_sasa">
-<span class="sig-name descname"><span class="pre">measure_sasa</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ag</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.sasa.SASA.measure_sasa" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.sasa.SASA.measure_sasa">
+<span class="sig-name descname"><span class="pre">measure_sasa</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ag</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.sasa.SASA.measure_sasa" title="Link to this definition"></a></dt>
 <dd><p>Measures the SASA of input atomgroup.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1842,11 +1801,11 @@ a higher number is more costly but accurate.</p></li>
 </dd></dl>
 
 </section>
-<section id="module-analysis.utils">
-<span id="analysis-utils-module"></span><h2>analysis.utils module<a class="headerlink" href="#module-analysis.utils" title="Link to this heading"></a></h2>
+<section id="module-molecular_simulations.analysis.utils">
+<span id="molecular-simulations-analysis-utils-module"></span><h2>molecular_simulations.analysis.utils module<a class="headerlink" href="#module-molecular_simulations.analysis.utils" title="Link to this heading"></a></h2>
 <dl class="py class">
-<dt class="sig sig-object py" id="analysis.utils.EmbedData">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">analysis.utils.</span></span><span class="sig-name descname"><span class="pre">EmbedData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embedding_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.utils.EmbedData" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.utils.EmbedData">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.utils.</span></span><span class="sig-name descname"><span class="pre">EmbedData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embedding_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.utils.EmbedData" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Embeds given data into the beta-factor column of PDB. Writes out to same
 path as input PDB and backs up old PDB file, unless an output path is
@@ -1866,8 +1825,8 @@ output PDB.</p></li>
 </dd>
 </dl>
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.utils.EmbedData.embed">
-<span class="sig-name descname"><span class="pre">embed</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.utils.EmbedData.embed" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.utils.EmbedData.embed">
+<span class="sig-name descname"><span class="pre">embed</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.utils.EmbedData.embed" title="Link to this definition"></a></dt>
 <dd><p>Unpacks embedding dictionary, embeds data and writes out new PDB.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -1880,8 +1839,8 @@ output PDB.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.utils.EmbedData.embed_selection">
-<span class="sig-name descname"><span class="pre">embed_selection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">selection</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.utils.EmbedData.embed_selection" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.utils.EmbedData.embed_selection">
+<span class="sig-name descname"><span class="pre">embed_selection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">selection</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.utils.EmbedData.embed_selection" title="Link to this definition"></a></dt>
 <dd><p>Embeds data into given selection in the beta column for each residue.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1901,8 +1860,8 @@ be (n_residues_in_selection, 1).</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.utils.EmbedData.write_new_pdb">
-<span class="sig-name descname"><span class="pre">write_new_pdb</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.utils.EmbedData.write_new_pdb" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.utils.EmbedData.write_new_pdb">
+<span class="sig-name descname"><span class="pre">write_new_pdb</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.utils.EmbedData.write_new_pdb" title="Link to this definition"></a></dt>
 <dd><p>Writes out PDB file. If an output was not designated, backs up original
 PDB with the extension .orig.pdb. If this backup already exists, do not
 back up the PDB as that may occur if you run this twice and to do so would
@@ -1920,9 +1879,9 @@ mean losing the actual original PDB.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="analysis.utils.EmbedEnergyData">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">analysis.utils.</span></span><span class="sig-name descname"><span class="pre">EmbedEnergyData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embedding_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.utils.EmbedEnergyData" title="Link to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#analysis.utils.EmbedData" title="analysis.utils.EmbedData"><code class="xref py py-class docutils literal notranslate"><span class="pre">EmbedData</span></code></a></p>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.utils.EmbedEnergyData">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.utils.</span></span><span class="sig-name descname"><span class="pre">EmbedEnergyData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embedding_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.utils.EmbedEnergyData" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#molecular_simulations.analysis.utils.EmbedData" title="molecular_simulations.analysis.utils.EmbedData"><code class="xref py py-class docutils literal notranslate"><span class="pre">EmbedData</span></code></a></p>
 <p>Special instance of EmbedData in which the data stored in embedding_dict is
 non-bonded energy data with both LJ and coulombic terms. In this case we need
 to obtain the total energy by summing these and rescale it as many softwares
@@ -1940,8 +1899,8 @@ output PDB.</p></li>
 </dd>
 </dl>
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.utils.EmbedEnergyData.preprocess">
-<span class="sig-name descname"><span class="pre">preprocess</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#analysis.utils.EmbedEnergyData.preprocess" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.utils.EmbedEnergyData.preprocess">
+<span class="sig-name descname"><span class="pre">preprocess</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.utils.EmbedEnergyData.preprocess" title="Link to this definition"></a></dt>
 <dd><p>Processes embeddings data so that it can be fed through parent methods.
 This requires the embeddings data contain values of one-dimensional arrays,
 and that the data be rescaled such that there are no negative values while
@@ -1957,8 +1916,8 @@ preserving the distance between values.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="analysis.utils.EmbedEnergyData.sanitize_data">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sanitize_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#analysis.utils.EmbedEnergyData.sanitize_data" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="molecular_simulations.analysis.utils.EmbedEnergyData.sanitize_data">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sanitize_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.utils.EmbedEnergyData.sanitize_data" title="Link to this definition"></a></dt>
 <dd><p>Takes in data of shape (n_frames, n_residues, n_terms) and
 returns one-dimensional array of shape (n_residues,) by
 first averaging in the first dimension and then summing in
@@ -1979,8 +1938,8 @@ the new second dimension - originally the third dimension.</p>
 </dd></dl>
 
 </section>
-<section id="module-analysis">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-analysis" title="Link to this heading"></a></h2>
+<section id="module-molecular_simulations.analysis">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-molecular_simulations.analysis" title="Link to this heading"></a></h2>
 </section>
 </section>
 
@@ -1988,8 +1947,8 @@ the new second dimension - originally the third dimension.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="modules.html" class="btn btn-neutral float-left" title="molecular_simulations" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="build.html" class="btn btn-neutral float-right" title="build package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="molecular_simulations.html" class="btn btn-neutral float-left" title="molecular_simulations package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="molecular_simulations.build.html" class="btn btn-neutral float-right" title="molecular_simulations.build package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

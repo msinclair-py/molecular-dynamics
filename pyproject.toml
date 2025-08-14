@@ -27,8 +27,12 @@ Issues = "https://github.com/msinclair-py/molecular-dynamics/issues"
 [project.optional-dependencies]
 sim = [
     "openmm>=8.2",
-    "parsl==2024.1.29",
-    "cudatoolkit==11.8",
+    "parsl==2024.1.29"
+]
+docutils = [
+    "sphinx",
+    "sphinx-rtd-theme",
+    "docutils"
 ]
 
 [tool.hatch.build.targets.wheel]

@@ -1,0 +1,12 @@
+docutils
+mdtraj
+natsort
+openmm
+parsl
+pdbfixer
+polars
+pyyaml
+pydantic
+scikit-learn
+sphinx
+sphinx-rtd-theme

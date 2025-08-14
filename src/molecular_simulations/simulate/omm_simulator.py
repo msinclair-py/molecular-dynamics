@@ -210,7 +210,7 @@ class Simulator:
         simulation = self.attach_reporters(simulation,
                                            self.dcd,
                                            log_file,
-                                           self.restart,
+                                           str(self.restart),
                                            restart=restart)
     
         self._production(simulation)

@@ -1,0 +1,776 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>molecular_simulations.build package &mdash; molecular-simulations 2025 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=cb975c41"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="molecular_simulations.simulate package" href="molecular_simulations.simulate.html" />
+    <link rel="prev" title="molecular_simulations.analysis package" href="molecular_simulations.analysis.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            molecular-simulations
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">molecular_simulations</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="molecular_simulations.html">molecular_simulations package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="molecular_simulations.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.analysis.html">molecular_simulations.analysis package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">molecular_simulations.build package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.simulate.html">molecular_simulations.simulate package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="molecular_simulations.html#module-molecular_simulations">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">molecular-simulations</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">molecular_simulations</a></li>
+          <li class="breadcrumb-item"><a href="molecular_simulations.html">molecular_simulations package</a></li>
+      <li class="breadcrumb-item active">molecular_simulations.build package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/molecular_simulations.build.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="molecular-simulations-build-package">
+<h1>molecular_simulations.build package<a class="headerlink" href="#molecular-simulations-build-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-molecular_simulations.build.build_amber">
+<span id="molecular-simulations-build-build-amber-module"></span><h2>molecular_simulations.build.build_amber module<a class="headerlink" href="#module-molecular_simulations.build.build_amber" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_amber.ExplicitSolvent">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.build.build_amber.</span></span><span class="sig-name descname"><span class="pre">ExplicitSolvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">protein</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rna</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dna</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phos_protein</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod_protein</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polarizable</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_amber.ExplicitSolvent" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#molecular_simulations.build.build_amber.ImplicitSolvent" title="molecular_simulations.build.build_amber.ImplicitSolvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImplicitSolvent</span></code></a></p>
+<p>Class for building a system using ambertools. Produces explicit solvent cubic box
+with user-specified padding which has been neutralized and ionized with 150mM NaCl.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_amber.ExplicitSolvent.assemble_system">
+<span class="sig-name descname"><span class="pre">assemble_system</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_ions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_amber.ExplicitSolvent.assemble_system" title="Link to this definition"></a></dt>
+<dd><p>Build system in tleap.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dim</strong> (<em>float</em>) – Longest dimension in Angstrom.</p></li>
+<li><p><strong>num_ions</strong> (<em>int</em>) – Explicit number of ions to achieve 150mM.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_amber.ExplicitSolvent.build">
+<span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_amber.ExplicitSolvent.build" title="Link to this definition"></a></dt>
+<dd><p>Orchestrate the various things that need to happen in order
+to produce an explicit solvent system. This includes running
+<cite>pdb4amber</cite>, computing the periodic box size, number of ions
+needed and running <cite>tleap</cite> to make the final system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_amber.ExplicitSolvent.clean_up_directory">
+<span class="sig-name descname"><span class="pre">clean_up_directory</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_amber.ExplicitSolvent.clean_up_directory" title="Link to this definition"></a></dt>
+<dd><p>Remove leap log. This is placed wherever the script calling it
+runs and likely will throw errors if multiple systems are
+being iteratively built.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_amber.ExplicitSolvent.get_ion_numbers">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_ion_numbers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volume</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_amber.ExplicitSolvent.get_ion_numbers" title="Link to this definition"></a></dt>
+<dd><p>Returns the number of Chloride? ions required to achieve 150mM
+concentration for a given volume. The number of Sodium counter
+ions should be equivalent.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>volume</strong> (<em>float</em>) – Volume of box in cubic Angstrom.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Number of ions for 150mM NaCl.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(int)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_amber.ExplicitSolvent.get_pdb_extent">
+<span class="sig-name descname"><span class="pre">get_pdb_extent</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_amber.ExplicitSolvent.get_pdb_extent" title="Link to this definition"></a></dt>
+<dd><p>Identifies the longest axis of the protein in terms of X/Y/Z
+projection. Not super accurate but likely good enough for determining
+PBC box size. Returns longest axis length + 2 times the padding
+to account for +/- padding.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Longest dimension with 2 times padding in Angstrom.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(int)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_amber.ExplicitSolvent.prep_pdb">
+<span class="sig-name descname"><span class="pre">prep_pdb</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_amber.ExplicitSolvent.prep_pdb" title="Link to this definition"></a></dt>
+<dd><p>Runs input PDB through <cite>pdb4amber</cite> to ensure it is compliant enough
+that tleap won’t freak out on us later. Removes any explicit hydrogens
+from the input structure to avoid name mismatches.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_amber.ImplicitSolvent">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.build.build_amber.</span></span><span class="sig-name descname"><span class="pre">ImplicitSolvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">protein</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rna</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dna</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phos_protein</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod_protein</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_amber</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_amber.ImplicitSolvent" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class for building a system using ambertools. Produces explicit solvent cubic box
+with user-specified padding which has been neutralized and ionized with 150mM NaCl.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_amber.ImplicitSolvent.build">
+<span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_amber.ImplicitSolvent.build" title="Link to this definition"></a></dt>
+<dd><p>Orchestrate the various things that need to happen in order
+to produce an explicit solvent system. This includes running
+<cite>pdb4amber</cite>, computing the periodic box size, number of ions
+needed and running <cite>tleap</cite> to make the final system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_amber.ImplicitSolvent.pdbfix_it">
+<span class="sig-name descname"><span class="pre">pdbfix_it</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_amber.ImplicitSolvent.pdbfix_it" title="Link to this definition"></a></dt>
+<dd><p>Using PDBFixer, add hydrogens and missing atoms and if a SEQ record
+exists (i.e. PDB is from RCSB) add missing residues. This is somewhat
+unstable so take care to make sure the outputs are ok.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_amber.ImplicitSolvent.temp_tleap">
+<span class="sig-name descname"><span class="pre">temp_tleap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_amber.ImplicitSolvent.temp_tleap" title="Link to this definition"></a></dt>
+<dd><p>Writes a temporary file for tleap and then runs tleap. This
+makes handling parallel tleap runs much simpler as we are avoiding
+the different workers overwriting tleap inputs and getting confused.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>inp</strong> (<em>str</em>) – The tleap input file contents as a single string.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_amber.ImplicitSolvent.tleap_it">
+<span class="sig-name descname"><span class="pre">tleap_it</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_amber.ImplicitSolvent.tleap_it" title="Link to this definition"></a></dt>
+<dd><p>While more painful, tleap is more stable for system building.
+Runs the input PDB through tleap with the FF19SB protein forcefield
+and whichever other forcefields were turned on.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_amber.ImplicitSolvent.write_leap">
+<span class="sig-name descname"><span class="pre">write_leap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_amber.ImplicitSolvent.write_leap" title="Link to this definition"></a></dt>
+<dd><p>Writes out a tleap input file and returns the path
+to the file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Path to tleap input file.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(Path)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-molecular_simulations.build.build_interface">
+<span id="molecular-simulations-build-build-interface-module"></span><h2>molecular_simulations.build.build_interface module<a class="headerlink" href="#module-molecular_simulations.build.build_interface" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_interface.InterfaceBuilder">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.build.build_interface.</span></span><span class="sig-name descname"><span class="pre">InterfaceBuilder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interfaces</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">protein</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rna</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dna</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polarizable</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_interface.InterfaceBuilder" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#molecular_simulations.build.build_amber.ExplicitSolvent" title="molecular_simulations.build.build_amber.ExplicitSolvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExplicitSolvent</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_interface.InterfaceBuilder.build_all">
+<span class="sig-name descname"><span class="pre">build_all</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_interface.InterfaceBuilder.build_all" title="Link to this definition"></a></dt>
+<dd><p>Iterates through each interface site for a given target and
+builds the corresponding system for the supplied miniprotein
+binder.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_interface.InterfaceBuilder.merge_proteins">
+<span class="sig-name descname"><span class="pre">merge_proteins</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">binder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_interface.InterfaceBuilder.merge_proteins" title="Link to this definition"></a></dt>
+<dd><p>Merges the target and binder AtomGroups and writes out
+a unified PDB at <cite>self.pdb</cite> so as to leverage the existing
+pipeline for building explicit solvent systems.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_interface.InterfaceBuilder.parse_interface">
+<span class="sig-name descname"><span class="pre">parse_interface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">site</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'site0'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_interface.InterfaceBuilder.parse_interface" title="Link to this definition"></a></dt>
+<dd><p>Returns the relevant data for the current interface site.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_interface.InterfaceBuilder.place_binder">
+<span class="sig-name descname"><span class="pre">place_binder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">com</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_interface.InterfaceBuilder.place_binder" title="Link to this definition"></a></dt>
+<dd><p>Move binder nearby to the interface as defined by <cite>vector</cite>. Returns
+an MDAnalysis AtomGroup for the binder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_interface.InterfaceBuilder.write_cvae_yaml">
+<span class="sig-name descname"><span class="pre">write_cvae_yaml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_shape</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_interface.InterfaceBuilder.write_cvae_yaml" title="Link to this definition"></a></dt>
+<dd><p>Writes the CVAE options yaml for a DeepDriveMD
+simulation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_interface.InterfaceBuilder.write_ddmd_yaml">
+<span class="sig-name descname"><span class="pre">write_ddmd_yaml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contact_selection</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_selection</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_interface.InterfaceBuilder.write_ddmd_yaml" title="Link to this definition"></a></dt>
+<dd><p>Writes the simulation options yaml for a DeepDriveMD
+simulation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-molecular_simulations.build.build_ligand">
+<span id="molecular-simulations-build-build-ligand-module"></span><h2>molecular_simulations.build.build_ligand module<a class="headerlink" href="#module-molecular_simulations.build.build_ligand" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.ComplexBuilder">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.build.build_ligand.</span></span><span class="sig-name descname"><span class="pre">ComplexBuilder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lig_param_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.ComplexBuilder" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#molecular_simulations.build.build_amber.ExplicitSolvent" title="molecular_simulations.build.build_amber.ExplicitSolvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExplicitSolvent</span></code></a></p>
+<p>Builds complexes consisting of a biomolecule pdb and small molecule ligand.
+Runs antechamber workflow to generate gaff2 parameters. Can optionally
+supply precomputed frcmod/lib files by their path + suffix in the
+lig_param_prefix argument (e.g. /path/to/lig.mol2 or /path/to/lig)</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.ComplexBuilder.add_ion_to_pdb">
+<span class="sig-name descname"><span class="pre">add_ion_to_pdb</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.ComplexBuilder.add_ion_to_pdb" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.ComplexBuilder.assemble_system">
+<span class="sig-name descname"><span class="pre">assemble_system</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_ions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.ComplexBuilder.assemble_system" title="Link to this definition"></a></dt>
+<dd><p>Slightly modified from the parent class, now we have to add
+the ligand parameters and assemble a complex rather than just
+placing a biomolecule in the water box.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.ComplexBuilder.build">
+<span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.ComplexBuilder.build" title="Link to this definition"></a></dt>
+<dd><p>Orchestrate the various things that need to happen in order
+to produce an explicit solvent system. This includes running
+<cite>pdb4amber</cite>, computing the periodic box size, number of ions
+needed and running <cite>tleap</cite> to make the final system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.ComplexBuilder.process_ligand">
+<span class="sig-name descname"><span class="pre">process_ligand</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.ComplexBuilder.process_ligand" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.LigandBuilder">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.build.build_ligand.</span></span><span class="sig-name descname"><span class="pre">LigandBuilder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lig_number</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.LigandBuilder" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Parameterizes a ligand molecule and generates all relevant force field files for
+running tleap.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.LigandBuilder.check_sqm">
+<span class="sig-name descname"><span class="pre">check_sqm</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.LigandBuilder.check_sqm" title="Link to this definition"></a></dt>
+<dd><p>Checks for evidence that antechamber calculations exited
+successfully. This is always on the second to last line,
+and if not present, indicates that we failed to produce
+sane parameters for this molecule. In that case, I wish
+you good luck.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.LigandBuilder.convert_to_mol2">
+<span class="sig-name descname"><span class="pre">convert_to_mol2</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.LigandBuilder.convert_to_mol2" title="Link to this definition"></a></dt>
+<dd><p>Converts an sdf file to mol2 format using obabel.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.LigandBuilder.move_antechamber_outputs">
+<span class="sig-name descname"><span class="pre">move_antechamber_outputs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.LigandBuilder.move_antechamber_outputs" title="Link to this definition"></a></dt>
+<dd><p>Remove unneccessary outputs from antechamber. Keep the
+sqm.out file as proof that antechamber did not fail.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.LigandBuilder.parameterize_ligand">
+<span class="sig-name descname"><span class="pre">parameterize_ligand</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.LigandBuilder.parameterize_ligand" title="Link to this definition"></a></dt>
+<dd><p>Ensures consistent treatment of all ligand sdf files, generating
+GAFF2 parameters in the form of .frcmod and .lib files. Produces
+a mol2 file for coordinates and connectivity and ensures that
+antechamber did not fail. Hydrogens are added in rdkit which
+generally does a good job of this.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.LigandBuilder.process_pdb">
+<span class="sig-name descname"><span class="pre">process_pdb</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.LigandBuilder.process_pdb" title="Link to this definition"></a></dt>
+<dd><p>Ingests a PDB file of a small molecule, adds hydrogens and writes out to
+an SDF file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.LigandBuilder.process_sdf">
+<span class="sig-name descname"><span class="pre">process_sdf</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.LigandBuilder.process_sdf" title="Link to this definition"></a></dt>
+<dd><p>Add hydrogens in rdkit. Atom hybridization is taken from the
+input sdf file and if this is incorrect, hydrogens will be wrong
+too.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.LigandBuilder.write_leap">
+<span class="sig-name descname"><span class="pre">write_leap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.LigandBuilder.write_leap" title="Link to this definition"></a></dt>
+<dd><p>Writes out a tleap input file and returns the path
+to the file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.LigandError">
+<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.build.build_ligand.</span></span><span class="sig-name descname"><span class="pre">LigandError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'This</span> <span class="pre">system</span> <span class="pre">contains</span> <span class="pre">ligands</span> <span class="pre">which</span> <span class="pre">we</span> <span class="pre">cannot</span> <span class="pre">model!'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.LigandError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Custom Ligand exception to catch parameterization errors.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.PLINDERBuilder">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.build.build_ligand.</span></span><span class="sig-name descname"><span class="pre">PLINDERBuilder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.PLINDERBuilder" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#molecular_simulations.build.build_amber.ImplicitSolvent" title="molecular_simulations.build.build_amber.ImplicitSolvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImplicitSolvent</span></code></a></p>
+<p>Builds complexes consisting of a biomolecule pdb and small molecule ligand.
+Runs antechamber workflow to generate gaff2 parameters.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.PLINDERBuilder.anion_list">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">anion_list</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#molecular_simulations.build.build_ligand.PLINDERBuilder.anion_list" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.PLINDERBuilder.assemble_system">
+<span class="sig-name descname"><span class="pre">assemble_system</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.PLINDERBuilder.assemble_system" title="Link to this definition"></a></dt>
+<dd><p>Slightly modified from the parent class, now we have to add
+the ligand parameters and assemble a complex rather than just
+placing a biomolecule in the water box.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.PLINDERBuilder.build">
+<span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.PLINDERBuilder.build" title="Link to this definition"></a></dt>
+<dd><p>Orchestrate the various things that need to happen in order
+to produce an explicit solvent system. This includes running
+<cite>pdb4amber</cite>, computing the periodic box size, number of ions
+needed and running <cite>tleap</cite> to make the final system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.PLINDERBuilder.cation_list">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">cation_list</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#molecular_simulations.build.build_ligand.PLINDERBuilder.cation_list" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.PLINDERBuilder.check_ligand">
+<span class="sig-name descname"><span class="pre">check_ligand</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ligand</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.PLINDERBuilder.check_ligand" title="Link to this definition"></a></dt>
+<dd><p>Check ligand for ions and other weird stuff. We need to take care not
+to assume all species containing formal charges are ions, nor that all
+species containing atoms in the cation/anion lists are ions. Good example
+is the multitude of small molecule drugs containing bonded halogens.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.PLINDERBuilder.check_ptms">
+<span class="sig-name descname"><span class="pre">check_ptms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequence</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain_residues</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.PLINDERBuilder.check_ptms" title="Link to this definition"></a></dt>
+<dd><p>Check the full sequence (from fasta) against the potentially partial
+sequence from the structural model stored in <cite>chain_residues</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.PLINDERBuilder.inject_fasta">
+<span class="sig-name descname"><span class="pre">inject_fasta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chain_map</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.PLINDERBuilder.inject_fasta" title="Link to this definition"></a></dt>
+<dd><p>Checks fasta against actual sequence. Modifies sequence so that
+it correctly matches in the case of non-canonical residues such
+as phosphorylations (i.e. SER -&gt; SEP).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.PLINDERBuilder.ligand_handler">
+<span class="sig-name descname"><span class="pre">ligand_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ligs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.PLINDERBuilder.ligand_handler" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code>]]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.PLINDERBuilder.migrate_files">
+<span class="sig-name descname"><span class="pre">migrate_files</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.PLINDERBuilder.migrate_files" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.PLINDERBuilder.place_ions">
+<span class="sig-name descname"><span class="pre">place_ions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.PLINDERBuilder.place_ions" title="Link to this definition"></a></dt>
+<dd><p>This is horrible and I apologize profusely if you find yourself
+having to go through the following. Good luck.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.PLINDERBuilder.prep_protein">
+<span class="sig-name descname"><span class="pre">prep_protein</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.PLINDERBuilder.prep_protein" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.PLINDERBuilder.triage_pdb">
+<span class="sig-name descname"><span class="pre">triage_pdb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">broken_pdb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repaired_pdb</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.PLINDERBuilder.triage_pdb" title="Link to this definition"></a></dt>
+<dd><p>Runs PDBFixer to repair missing loops and ensure structure is
+in good shape. Runs a check against the sequence provided by
+PLINDER and ensures that any non-canonical residues are represented
+in the sequence properly.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-molecular_simulations.build">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-molecular_simulations.build" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="molecular_simulations.build.add_chains">
+<span class="sig-prename descclassname"><span class="pre">molecular_simulations.build.</span></span><span class="sig-name descname"><span class="pre">add_chains</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_res</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_res</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.add_chains" title="Link to this definition"></a></dt>
+<dd><p>Helper function to add chain IDs to a model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="molecular_simulations.build.convert_cif_with_biopython">
+<span class="sig-prename descclassname"><span class="pre">molecular_simulations.build.</span></span><span class="sig-name descname"><span class="pre">convert_cif_with_biopython</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cif</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.convert_cif_with_biopython" title="Link to this definition"></a></dt>
+<dd><p>Helper function to convert a cif file to a pdb file using biopython.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="molecular_simulations.build.convert_cif_with_gemmi">
+<span class="sig-prename descclassname"><span class="pre">molecular_simulations.build.</span></span><span class="sig-name descname"><span class="pre">convert_cif_with_gemmi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cif</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.convert_cif_with_gemmi" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="molecular_simulations.analysis.html" class="btn btn-neutral float-left" title="molecular_simulations.analysis package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="molecular_simulations.simulate.html" class="btn btn-neutral float-right" title="molecular_simulations.simulate package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Matt Sinclair.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

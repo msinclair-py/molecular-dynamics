@@ -20,12 +20,13 @@ release = '2025'
 # here.
 
 # make sure sphinx always uses the current branch
-import sys
 import os
 import sphinx_rtd_theme
+import sys
 
-sys.path.insert(0, os.path.abspath("../src/molecular_simulations"))
+sys.path.insert(0, os.path.abspath('../src'))
 
+# add sphinx extensions and autodoc configuration
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
@@ -39,8 +40,12 @@ autodoc_default_options = {
     'undoc-members': True,
     'show-inheritance': True,
 }
-
-autodoc_mock_imports = ['MDAnalysis', 'openmm', 'pdbfixer', 'rdkit']
+autodock_mock_imports = [
+    'MDAnalysis',
+    'openbabel',
+    'parmed',
+    'rdkit',
+]
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output

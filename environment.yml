@@ -1,6 +1,7 @@
 name: molecular_simulations
 channels:
   - conda-forge
+  - defaults
 dependencies:
   - mdtraj
   - numba

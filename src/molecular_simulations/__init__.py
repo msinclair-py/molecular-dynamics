@@ -1,3 +1,1 @@
-import .analysis
-import .build
-import .simulate
+from . import analysis, build, simulate
