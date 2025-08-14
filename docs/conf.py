@@ -31,6 +31,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
     'sphinx.ext.napoleon',
+    'sphinx.ext.intersphinx',
     'sphinx_autodoc_typehints',
 ]
 
@@ -43,7 +44,7 @@ autodoc_default_options = {
 autoclass_content = 'both'
 autodoc_typehints = 'description'
 autodock_mock_imports = [
-    'MDAnalysis',
+    'mdanalysis',
     'openbabel',
     'parmed',
     'pdbfixer',
@@ -55,3 +56,18 @@ autodock_mock_imports = [
 
 html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
+
+# Configuration for intersphinx
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3/", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
+    "maplotlib": ("https://matplotlib.org/stable/", None),
+    "networkx": ("https://networkx.org/documentation/stable/", None),
+    "numpy": ("https://numpy.org/doc/stable/", None),
+    "openmm": ("https://docs.openmm.org/latest/userguide/", None),
+    "parsl": ("https://parsl.readthedocs.io/en/stable", None),
+    "polars": ("https://docs.pola.rs", None),
+    "parmed": ("https://parmed.github.io/ParmEd/html/", None),
+    "rdkit": ("https://rdkit.org/docs/", None),
+    "dask": ("https://docs.dask.org/en/stable/", None),
+}
