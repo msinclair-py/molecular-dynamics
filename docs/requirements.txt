@@ -1,6 +1,7 @@
 MDAnalysis
 mdtraj
 natsort
+numba
 openmm
 polars
 pyyaml
