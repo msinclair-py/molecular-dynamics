@@ -1,11 +1,8 @@
-#!/usr/bin/env python
-from molecular_simulations.build.build_amber import ExplicitSolvent
+from molecular_simulations.build import ExplicitSolvent
+from pathlib import Path
 
-path = '.'
+pdb = Path('/path/to/input.pdb')
+out_path = Path('/path/to/simulation/inputs')
 
-for m in range(4):
-    mpath = f'{path}/test_sim/model{m}'
-    pdb = f'{path}/test_build/chai-model.pdb'
-
-    builder = ExplicitSolvent(mpath, pdb, protein=True)
-    builder.build()
+builder = ExplicitSolvent(out_path, pdb)
+builder.build()

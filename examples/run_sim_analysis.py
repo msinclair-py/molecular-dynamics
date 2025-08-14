@@ -1,16 +1,19 @@
-#!/usr/bin/env python
-from glob import glob
-import MDAnalysis as mda
 from natsort import natsorted
-import os
-from .analysis.analyzer import SimulationAnalyzer
+from molecular_simulations.analysis import Fingerprinter
+from pathlib import Path
 from tqdm import tqdm
 
-path = '/eagle/projects/FoundEpidem/avasan/IDEAL/MiniBinderSims/complexes/sims/tasks'
-sim_list = natsorted(list(glob(f'{path}/*')))
+path = Path('/path/to/simulation/dirs')
+for sim_path in tqdm(natsorted(path.glob('*'))):
+    topology = sim_path / 'system.prmtop'
+    trajectory = sim_path / 'prod.dcd'
+    target_selection = 'segid A' # MDAnalysis selection language
 
-for syst in tqdm(sim_list):
-    p, s = os.path.split(syst)
-    A = SimulationAnalyzer(p, s)
-    if isinstance(A.u, mda.Universe) and A.length > 1:
-        A.analyze()
+    fingerprinter = Fingerprinter(
+        topology,
+        trajectory=trajectory,
+        target_selection=target_selection,
+    )
+
+    fingerprinter.run()
+    fingerprinter.save()
