@@ -23,6 +23,7 @@ release = '2025'
 import os
 import sphinx_rtd_theme
 import sys
+import types
 
 sys.path.insert(0, os.path.abspath('../src'))
 
@@ -43,12 +44,14 @@ autodoc_default_options = {
 }
 autoclass_content = 'both'
 autodoc_typehints = 'description'
-autodock_mock_imports = [
-    'openbabel',
-    'parmed',
-    'pdbfixer',
-    'rdkit',
-]
+
+sys.modules['openbabel'] = types.ModuleType('openbabel')
+sys.modules['parmed'] = types.ModuleType('parmed')
+sys.modules['pdbfixer'] = types.ModuleType('pdbfixer')
+sys.modules['rdkit'] = types.ModuleType('rdkit')
+
+sys.modules['rdkit.Chem'] = types.ModuleType('rdkit.Chem') 
+sys.modules['rdkit.Chem.AllChem'] = types.ModuleType('rdkit.Chem.AllChem') 
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
