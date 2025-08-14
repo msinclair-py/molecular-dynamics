@@ -44,7 +44,6 @@ autodoc_default_options = {
 autoclass_content = 'both'
 autodoc_typehints = 'description'
 autodock_mock_imports = [
-    'mdanalysis',
     'openbabel',
     'parmed',
     'pdbfixer',
