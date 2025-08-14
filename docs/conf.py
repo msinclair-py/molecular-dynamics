@@ -45,6 +45,8 @@ autodoc_default_options = {
 autoclass_content = 'both'
 autodoc_typehints = 'description'
 
+sys.modules['numba'] = types.ModuleType('numba')
+sys.modules['numba.njit'] = types.ModuleType('numba.njit')
 sys.modules['openbabel'] = types.ModuleType('openbabel')
 sys.modules['openbabel.pybel'] = types.ModuleType('openbabel.pybel')
 sys.modules['parmed'] = types.ModuleType('parmed')

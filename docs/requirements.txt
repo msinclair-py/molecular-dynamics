@@ -1,13 +1,14 @@
 MDAnalysis
 mdtraj
 natsort
-numba
 openmm
+parsl
 polars
 pyyaml
 pydantic
 rdkit
 scikit-learn
+seaborn
 sphinx
 sphinx-autodoc-typehints
 sphinx-rtd-theme
