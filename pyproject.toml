@@ -1,42 +1,67 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ['hatchling']
+build-backend = 'hatchling.build'
 
 [project]
-name = "molecular_simulations"
-version = "0.3.7"
+name = 'molecular_simulations'
+version = '0.3.8'
 authors = [
-  { name="Matt Sinclair", email="msinclair@anl.gov" },
+  { name='Matt Sinclair', email='msinclair@anl.gov' },
 ]
-description = """
+description = '''
 A small package for building molecular systems using the AMBER \
 force field and deploying OpenMM simulations on HPC clusters using Parsl.
-"""
-readme = "README.md"
-requires-python = ">= 3.10"
+'''
+readme = 'README.md'
+requires-python = '>= 3.10'
 classifiers = [
-    "Programming Language :: Python :: 3",
+    'Programming Language :: Python :: 3',
 ]
-license = "MIT"
-license-files = ["LICEN[CS]E*"]
+license = 'MIT'
+license-files = ['LICEN[CS]E*']
 dependencies = [
-
+    'MDAnalysis>=2.7',
+    'mdtraj',
+    'natsort',
+    'numba',
+    'openmm>=8.0',
+    'parmed',
+    'parsl>=2024.1.29',
+    'pdbfixer @ git+https://github.com/openmm/pdbfixer',
+    'polars',
+    'pydantic',
+    'scikit-learn',
+    'seaborn'
 ]
 
 [project.urls]
-Homepage = "https://github.com/msinclair-py/molecular-dynamics"
-Issues = "https://github.com/msinclair-py/molecular-dynamics/issues"
+Homepage = 'https://github.com/msinclair-py/molecular-dynamics'
+Issues = 'https://github.com/msinclair-py/molecular-dynamics/issues'
 
 [project.optional-dependencies]
-sim = [
-    "openmm>=8.2",
-    "parsl==2024.1.29"
+ligand = [
+    'openbabel',
+    'rdkit'
 ]
 docutils = [
-    "sphinx",
-    "sphinx-rtd-theme",
-    "docutils"
+    'sphinx',
+    'sphinx-rtd-theme',
+    'docutils'
+]
+dev = [
+    'pytest>=7.0',
+    'pytest-cov',
+    'numpy>=1.22'
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/molecular_simulations"]
+packages = ['src/molecular_simulations']
+
+[tool.pytest.ini_options]
+addopts = '-q --disable-warnings --maxfail=1'
+testpaths = ['tests']
+markers = [
+    'slow: potentially long-running test',
+    'requires_openmm: needs OpenMM runtime',
+    'requires_amber: needs AmberTools/tleap',
+]

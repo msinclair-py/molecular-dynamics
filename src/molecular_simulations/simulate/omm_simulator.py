@@ -5,9 +5,8 @@ from openmm import *
 from openmm.app import *
 from openmm.unit import *
 from openmm.app.internal.singleton import Singleton
-import os
 from pathlib import Path
-from typing import Union
+from typing import Optional, Union
 
 PathLike = Union[Path, str]
 OptPath = Union[Path, str, None]
@@ -19,6 +18,7 @@ class Simulator:
 
     Arguments:
         path (PathLike): Path to simulation inputs, same as output path.
+        ff (str): Switch for whether or not to utilize AMBER or CHARMM ff.
         equil_steps (int): Defaults to 1,250,000 (2.5 ns). Number of simulation timesteps to
             perform equilibration for (2fs timestep).
         prod_steps (int): Defaults to 250,000,000 (1 µs). Number of simulation timesteps to
@@ -38,20 +38,25 @@ class Simulator:
         force_constant (float): Defaults to 10.0 kcal/mol*Å^2. Force constant to use for 
             harmonic restraints during equilibration. Currently restraints are only applied
             to protein backbone atoms.
+        params (Optional[str]): Optional list of CHARMM parameter files for loading from 
+            psf/pdb file using CHARMM36m forcefield.
     """
     def __init__(self, 
                  path: PathLike, 
+                 ff: str='amber',
                  equil_steps: int=1_250_000, 
                  prod_steps: int=250_000_000, 
                  n_equil_cycles: int=3,
                  reporter_frequency: int=1_000,
                  platform: str='CUDA',
                  device_ids: list[int]=[0],
-                 force_constant: float=10.):
+                 force_constant: float=10.,
+                 params: Optional[str]=None,
+                 membrane: bool=False):
         self.path = Path(path) # enforce path object
-        # input files
-        self.prmtop = path / 'system.prmtop'
-        self.inpcrd = path / 'system.inpcrd'
+        self.ff = ff.lower()
+        self.params = params # for charmm parameter sets
+        self.setup_barostat(membrane)
 
         # logging/checkpointing stuff
         self.eq_state = path / 'eq.state'
@@ -78,33 +83,99 @@ class Simulator:
 
         if platform == 'CPU':
             self.properties = {}
+            
+    def setup_barostat(self,
+                       is_membrane_system: bool) -> None:
+        """Chooses the correct barostat for the system based on whether or not there is
+        a membrane present.
 
-    def load_amber_files(self) -> System:
+        Args:
+            is_membrane_system (bool): True if this is a membrane-containing system.
+            
+        Returns:
+            None
         """
-        Builds an OpenMM system using the prmtop/inpcrd files. PME is utilized for
+        self.barostat = MonteCarloBarostat
+        self.barostat_kwargs = {
+            'defaultPressure': 1 * bar,
+            'temperature': 300 * kelvin,
+        }
+        
+        if is_membrane_system:
+            self.barostat = MonteCarloMembraneBarostat
+            self.barostat_kwargs.update({
+                'xymode': MonteCarloMembraneBarostat.XYIsotropic,
+                'zmode': MonteCarloMembraneBarostat.ZFree
+            })
+
+    def load_system(self) -> System:
+        """Loads correct set of files based on which forcefield we have specified.
+
+        Raises:
+            AttributeError: If a non-valid choice of forcefield is made (not amber or charmm).
+
+        Returns:
+            System: OpenMM system loaded from correct files/forcefield.
+        """
+        if self.ff == 'amber':
+            return self.load_amber_files()
+        elif self.ff == 'charmm':
+            return self.load_charmm_files()
+        else:
+            raise AttributeError(f'self.ff must be a valid MD forcefield [amber, charmm]!')
+        
+    def load_amber_files(self) -> System:
+        """Builds an OpenMM system using the prmtop/inpcrd files. PME is utilized for
         electrostatics and a 1 nm non-bonded cutoff is used as well as 1.5 amu HMR.
 
         Returns:
             (System): OpenMM system
         """
-        if isinstance(self.inpcrd, Path | str):
-            self.inpcrd = AmberInpcrdFile(str(self.inpcrd))
-            self.prmtop = AmberPrmtopFile(str(self.prmtop), 
-                                          periodicBoxVectors=self.inpcrd.boxVectors)
+        if not hasattr(self, coordinate):
+            self.coordinate = AmberInpcrdFile(str(self.path / 'system.inpcrd'))
+            self.topology = AmberPrmtopFile(str(self.path / 'system.prmtop'), 
+                                            periodicBoxVectors=self.coordinate.boxVectors)
 
-        system = self.prmtop.createSystem(nonbondedMethod=PME,
-                                          removeCMMotion=False,
-                                          nonbondedCutoff=1. * nanometer,
-                                          constraints=HBonds,
-                                          hydrogenMass=1.5 * amu)
+        system = self.topology.createSystem(nonbondedMethod=PME,
+                                            removeCMMotion=False,
+                                            nonbondedCutoff=1. * nanometer,
+                                            constraints=HBonds,
+                                            hydrogenMass=1.5 * amu)
     
+        return system
+    
+    def load_charmm_files(self) -> System:
+        """Builds an OpenMM system using the psf/pdb files. PME is utilized for 
+        electrostatics and a 1 nm non-bonded cutoff is used as well as 1.5 amu HMR.
+
+        Returns:
+            (System): OpenMM system
+        """
+        if not hasattr(self, coordinate):
+            self.coordinate = PDBFile(str(self.path / 'system.pdb'))
+            self.topology = CharmmPsfFile(str(self.path / 'system.psf'), 
+                                          periodicBoxVectors=self.coordinate.topology.getPeriodicBoxVectors())
+        if not hasattr(self, parameter_set) and self.params is not None:
+            self.parameter_set = CharmmParameterSet(*self.params)
+        
+        if self.params is None:
+            self.forcefield = ForceField('charmm36_2024.xml', 'charmm36/water.xml')
+            system = self.forcefield.createSystem(self.coordinate.topology,
+                                                  nonbondedMethod=PME,
+                                                  nonbondedCutoff=1.2 * nanometer,
+                                                  constraints=HBonds)
+        else:
+            system = self.topology.createSystem(self.parameter_set, 
+                                                nonbondedMethod=PME, 
+                                                nonbondedCutoff=1.2 * nanometer,
+                                                constraints=HBonds)
+        
         return system
     
     def setup_sim(self, 
                   system: System, 
                   dt: float) -> tuple[Simulation, Integrator]:
-        """
-        Builds OpenMM Integrator and Simulation objects utilizing a provided
+        """Builds OpenMM Integrator and Simulation objects utilizing a provided
         OpenMM System object and integration timestep, dt.
 
         Arguments:
@@ -157,7 +228,7 @@ class Simulator:
         Returns:
             (Simulation): OpenMM simulation object.
         """
-        system = self.add_backbone_posres(self.load_amber_files(), 
+        system = self.add_backbone_posres(self.load_system(), 
                                           self.inpcrd.positions, 
                                           self.prmtop.topology.atoms(), 
                                           self.indices,
@@ -195,10 +266,10 @@ class Simulator:
             restart (bool): Defaults to False. Flag to ensure we log the full simulation
                 to reporter log. Otherwise restarts will overwrite the original log file.
         """
-        system = self.load_amber_files()
-        simulation, integrator = self.setup_sim(system, dt=0.004)
+        system = self.load_system()
+        simulation, _ = self.setup_sim(system, dt=0.004)
         
-        system.addForce(MonteCarloBarostat(1*atmosphere, 300*kelvin))
+        system.addForce(self.barostat(**self.barostat_kwargs))
         simulation.context.reinitialize(True)
 
         if restart:
@@ -213,7 +284,7 @@ class Simulator:
                                            str(self.restart),
                                            restart=restart)
     
-        self._production(simulation)
+        self.simulation = self._production(simulation) # save simulation object
     
     def load_checkpoint(self, 
                         simulation: Simulation, 
@@ -356,7 +427,7 @@ class Simulator:
         simulation.context.setParameter('k', 0)
         simulation.step(eq_steps)
     
-        simulation.system.addForce(MonteCarloBarostat(1*atmosphere, 300*kelvin))
+        simulation.system.addForce(self.barostat(**self.barostat_kwargs))
         simulation.step(self.equil_cycles * eq_steps)
 
         simulation.saveState(str(self.eq_state))

@@ -104,6 +104,7 @@ class ImplicitSolvent:
         tleap_in = f"""
         {ffs}
         prot = loadpdb {self.pdb}
+        set default pbradii mbondi3
         savepdb prot {self.out}
         saveamberparm prot {self.out.with_suffix('.prmtop')} {self.out.with_suffix('.inpcrd')}
         quit
