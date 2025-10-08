@@ -4,7 +4,7 @@ build-backend = 'hatchling.build'
 
 [project]
 name = 'molecular_simulations'
-version = '0.3.8'
+version = '0.3.9'
 authors = [
   { name='Matt Sinclair', email='msinclair@anl.gov' },
 ]
@@ -27,7 +27,6 @@ dependencies = [
     'openmm>=8.0',
     'parmed',
     'parsl>=2024.1.29',
-    'pdbfixer @ git+https://github.com/openmm/pdbfixer',
     'polars',
     'pydantic',
     'scikit-learn',
@@ -53,6 +52,9 @@ dev = [
     'pytest-cov',
     'numpy>=1.22'
 ]
+
+[tool.hatch.metadata]
+allow-direct-references=true
 
 [tool.hatch.build.targets.wheel]
 packages = ['src/molecular_simulations']

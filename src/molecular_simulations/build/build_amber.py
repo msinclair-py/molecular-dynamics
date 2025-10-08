@@ -2,7 +2,6 @@
 from openmm.app import PDBFile
 import os
 from pathlib import Path
-from pdbfixer import PDBFixer
 import tempfile
 from typing import Dict, List, Union
 
@@ -68,28 +67,7 @@ class ImplicitSolvent:
         Returns:
             None
         """
-        if self.use_amber:
-            self.tleap_it()
-        else:
-            self.pdbfix_it()
-
-    def pdbfix_it(self) -> None:
-        """
-        Using PDBFixer, add hydrogens and missing atoms and if a SEQ record
-        exists (i.e. PDB is from RCSB) add missing residues. This is somewhat
-        unstable so take care to make sure the outputs are ok.
-
-        Returns:
-            None
-        """
-        fixer = PDBFixer(filename=str(self.path / self.pdb))
-        fixer.findMissingResidues()
-        fixer.findMissingAtoms()
-        fixer.addMissingAtoms()
-        fixer.addMissingHydrogens()
-        
-        with open(str(self.out), 'w') as f:
-            PDBFile.writeFile(fixer.topology, fixer.positions, f)
+        self.tleap_it()
 
     def tleap_it(self) -> None:
         """
