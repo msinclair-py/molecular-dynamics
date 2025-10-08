@@ -284,11 +284,7 @@ class Simulator:
                                            str(self.restart),
                                            restart=restart)
     
-<<<<<<< Updated upstream
         self.simulation = self._production(simulation) # save simulation object
-=======
-        self.simulation = self._production(simulation)
->>>>>>> Stashed changes
     
     def load_checkpoint(self, 
                         simulation: Simulation, 
