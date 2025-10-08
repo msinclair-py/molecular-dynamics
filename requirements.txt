@@ -2,10 +2,8 @@ MDAnalysis
 mdtraj
 natsort
 openmm
-openbabel
 parmed
 parsl
-pdbfixer
 rdkit
 polars
 pyyaml
