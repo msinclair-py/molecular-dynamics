@@ -655,8 +655,8 @@ class ImplicitSimulator(Simulator):
         state = simulation.context.getState(getEnergy=True)
         print(f'Energy after minimization: {state.getPotentialEnergy()}')
         
-        simulation.reporters.append(StateDataReporter(self.eq_log, 
-                                                      self.eq_freq, 
+        simulation.reporters.append(StateDataReporter(str(self.eq_log), 
+                                                      str(self.eq_freq), 
                                                       step=True,
                                                       potentialEnergy=True,
                                                       speed=True,
@@ -667,6 +667,39 @@ class ImplicitSimulator(Simulator):
         simulation = self._equilibrate(simulation)
         
         return simulation
+    
+    def production(self, 
+                   chkpt: PathLike, 
+                   restart: bool=False) -> None:
+        """
+        Performs production MD. Loads a new system, integrator and simulation object
+        and loads equilibration or past production checkpoint to allow either the
+        continuation of a past simulation or to inherit the outputs of equilibration.
+
+        Arguments:
+            chkpt (PathLike): The checkpoint file to load. Should be either the equilibration
+                checkpoint or a past production checkpoint.
+            restart (bool): Defaults to False. Flag to ensure we log the full simulation
+                to reporter log. Otherwise restarts will overwrite the original log file.
+        """
+        system = self.load_system()
+        simulation, _ = self.setup_sim(system, dt=0.004)
+        
+        simulation.context.reinitialize(True)
+
+        if restart:
+            log_file = open(str(self.prod_log), 'a')
+        else:
+            log_file = str(self.prod_log)
+
+        simulation = self.load_checkpoint(simulation, chkpt)
+        simulation = self.attach_reporters(simulation,
+                                           self.dcd,
+                                           log_file,
+                                           str(self.restart),
+                                           restart=restart)
+    
+        self.simulation = self._production(simulation) # save simulation object
 
 class CustomForcesSimulator(Simulator):
     """
