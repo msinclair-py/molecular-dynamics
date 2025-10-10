@@ -16,7 +16,7 @@ class ImplicitSolvent:
     def __init__(self, path: OptPath, pdb: str, protein: bool=True,
                  rna: bool=False, dna: bool=False, phos_protein: bool=False,
                  mod_protein: bool=False, out: OptPath=None,
-                 use_amber: bool=False, **kwargs):
+                 amberhome: str='', **kwargs):
         if path is None:
             self.path = Path(pdb).parent
         elif isinstance(path, str):
@@ -36,7 +36,7 @@ class ImplicitSolvent:
 
         self.out = self.out.resolve()
 
-        self.use_amber = use_amber
+        self.amberhome = amberhomd
 
         switches = [protein, rna, dna, phos_protein, mod_protein]
         ffs = [
@@ -132,9 +132,9 @@ class ExplicitSolvent(ImplicitSolvent):
     """
     def __init__(self, path: PathLike, pdb: PathLike, padding: float=10., protein: bool=True,
                  rna: bool=False, dna: bool=False, phos_protein: bool=False,
-                 mod_protein: bool=False, polarizable: bool=False, **kwargs):
+                 mod_protein: bool=False, polarizable: bool=False, amberhome: str='', **kwargs):
         super().__init__(path, pdb, protein, rna, dna, phos_protein, 
-                         mod_protein, None, False, **kwargs)
+                         mod_protein, None, amberhome, **kwargs)
         
         self.out = self.path / 'system'
         self.pad = padding
@@ -171,7 +171,7 @@ class ExplicitSolvent(ImplicitSolvent):
         Returns:
             None
         """
-        os.system(f'pdb4amber -i {self.pdb} -o {self.path}/protein.pdb -y')
+        os.system(f'{self.amberhome}pdb4amber -i {self.pdb} -o {self.path}/protein.pdb -y')
         self.pdb = f'{self.path}/protein.pdb'
         
     def assemble_system(self, dim: float, num_ions: int) -> None:
@@ -204,7 +204,7 @@ class ExplicitSolvent(ImplicitSolvent):
         """
         
         leap_file = self.write_leap(tleap_complex)
-        tleap = f'tleap -f {leap_file}'
+        tleap = f'{self.amberhome}tleap -f {leap_file}'
         os.system(tleap) 
 
     def get_pdb_extent(self) -> int:

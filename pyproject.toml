@@ -4,11 +4,7 @@ build-backend = 'hatchling.build'
 
 [project]
 name = 'molecular_simulations'
-<<<<<<< Updated upstream
-version = '0.3.9'
-=======
-version = '0.3.8'
->>>>>>> Stashed changes
+version = '0.3.10'
 authors = [
   { name='Matt Sinclair', email='msinclair@anl.gov' },
 ]
@@ -31,10 +27,6 @@ dependencies = [
     'openmm>=8.0',
     'parmed',
     'parsl>=2024.1.29',
-<<<<<<< Updated upstream
-=======
-    'pdbfixer @ git+https://github.com/openmm/pdbfixer',
->>>>>>> Stashed changes
     'polars',
     'pydantic',
     'scikit-learn',
@@ -62,11 +54,7 @@ dev = [
 ]
 
 [tool.hatch.metadata]
-<<<<<<< Updated upstream
-allow-direct-references=true
-=======
 allow-direct-references = true
->>>>>>> Stashed changes
 
 [tool.hatch.build.targets.wheel]
 packages = ['src/molecular_simulations']
@@ -79,7 +67,3 @@ markers = [
     'requires_openmm: needs OpenMM runtime',
     'requires_amber: needs AmberTools/tleap',
 ]
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
