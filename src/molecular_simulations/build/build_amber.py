@@ -36,7 +36,7 @@ class ImplicitSolvent:
 
         self.out = self.out.resolve()
 
-        self.amberhome = amberhomd
+        self.amberhome = amberhome
 
         switches = [protein, rna, dna, phos_protein, mod_protein]
         ffs = [
