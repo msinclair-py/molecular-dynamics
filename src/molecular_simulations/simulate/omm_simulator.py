@@ -602,6 +602,7 @@ class ImplicitSimulator(Simulator):
     """
     def __init__(self, 
                  path: str, 
+                 ff: str = 'amber',
                  equil_steps: int=1_250_000, 
                  prod_steps: int=250_000_000, 
                  n_equil_cycles: int=3,
@@ -612,7 +613,7 @@ class ImplicitSimulator(Simulator):
                  implicit_solvent: Singleton=GBn2,
                  solute_dielectric: float=1.,
                  solvent_dielectric: float=78.5):
-        super().__init__(path, equil_steps, prod_steps, n_equil_cycles,
+        super().__init__(path, ff, equil_steps, prod_steps, n_equil_cycles,
                          reporter_frequency, platform, device_ids, 
                          force_constant)
         self.solvent = implicit_solvent
@@ -656,7 +657,7 @@ class ImplicitSimulator(Simulator):
         Returns:
             (Simulation): OpenMM simulation object.
         """
-        system = self.load_amber_files()
+        system = self.load_system()
         system = self.add_backbone_posres(system, 
                                           self.coordinate.positions, 
                                           self.topology.atoms(), 
@@ -775,11 +776,11 @@ class CustomForcesSimulator(Simulator):
             self.topology = AmberPrmtopFile(str(self.top_file), 
                                             periodicBoxVectors=self.coordinate.boxVectors)
 
-        system = self.prmtop.createSystem(nonbondedMethod=PME,
-                                          removeCMMotion=False,
-                                          nonbondedCutoff=1. * nanometer,
-                                          constraints=HBonds,
-                                          hydrogenMass=1.5 * amu)
+        system = self.topology.createSystem(nonbondedMethod=PME,
+                                            removeCMMotion=False,
+                                            nonbondedCutoff=1. * nanometer,
+                                            constraints=HBonds,
+                                            hydrogenMass=1.5 * amu)
 
         system = self.add_forces(system)
 
