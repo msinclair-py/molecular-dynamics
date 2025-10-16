@@ -768,9 +768,12 @@ class CustomForcesSimulator(Simulator):
         Returns:
             (System): OpenMM system object with custom forces.
         """
-        if isinstance(self.inpcrd, str):
-            self.inpcrd = AmberInpcrdFile(self.inpcrd)
-            self.prmtop = AmberPrmtopFile(self.prmtop, periodicBoxVectors=self.inpcrd.boxVectors)
+        if not hasattr(self, 'coordinate'):
+            self.coor_file = self.path / 'system.inpcrd'
+            self.top_file = self.path / 'system.prmtop'
+            self.coordinate = AmberInpcrdFile(str(self.coor_file))
+            self.topology = AmberPrmtopFile(str(self.top_file), 
+                                            periodicBoxVectors=self.coordinate.boxVectors)
 
         system = self.prmtop.createSystem(nonbondedMethod=PME,
                                           removeCMMotion=False,
