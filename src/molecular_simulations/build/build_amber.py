@@ -55,7 +55,7 @@ class ImplicitSolvent:
             setattr(self, key, val)
         
         if not hasattr(self, 'tleap'):
-            self.tleap = 'tleap'
+            self.tleap = f'{self.amberhome}tleap'
 
     def build(self) -> None:
         """
@@ -221,10 +221,9 @@ class ExplicitSolvent(ImplicitSolvent):
         xs, ys, zs = [], [], []
         
         for line in lines:
-            x, y, z = [float(i.strip()) for i in line[26:54].split()]
-            xs.append(x)
-            ys.append(y)
-            zs.append(z)
+            xs.append(float(line[30:38].strip()))
+            ys.append(float(line[38:46].strip()))
+            zs.append(float(line[46:54].strip()))
         
         xtent = (max(xs) - min(xs))
         ytent = (max(ys) - min(ys))

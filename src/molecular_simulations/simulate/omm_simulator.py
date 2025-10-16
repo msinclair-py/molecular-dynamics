@@ -72,7 +72,6 @@ class Simulator:
         self.prod_freq = self.eq_freq * 10
 
         # simulation details
-        self.indices = self.get_restraint_indices()
         self.equil_cycles = n_equil_cycles
         self.equil_steps = equil_steps
         self.prod_steps = prod_steps
@@ -118,11 +117,16 @@ class Simulator:
             System: OpenMM system loaded from correct files/forcefield.
         """
         if self.ff == 'amber':
-            return self.load_amber_files()
+            system = self.load_amber_files()
         elif self.ff == 'charmm':
-            return self.load_charmm_files()
+            system = self.load_charmm_files()
         else:
             raise AttributeError(f'self.ff must be a valid MD forcefield [amber, charmm]!')
+
+        if not hasattr(self, 'indices'):
+            self.indices = self.get_restraint_indices()
+
+        return system
         
     def load_amber_files(self) -> System:
         """Builds an OpenMM system using the prmtop/inpcrd files. PME is utilized for
@@ -131,9 +135,11 @@ class Simulator:
         Returns:
             (System): OpenMM system
         """
-        if not hasattr(self, coordinate):
-            self.coordinate = AmberInpcrdFile(str(self.path / 'system.inpcrd'))
-            self.topology = AmberPrmtopFile(str(self.path / 'system.prmtop'), 
+        if not hasattr(self, 'coordinate'):
+            self.coor_file = self.path / 'system.inpcrd'
+            self.top_file = self.path / 'system.prmtop'
+            self.coordinate = AmberInpcrdFile(str(self.coor_file))
+            self.topology = AmberPrmtopFile(str(self.top_file), 
                                             periodicBoxVectors=self.coordinate.boxVectors)
 
         system = self.topology.createSystem(nonbondedMethod=PME,
@@ -141,6 +147,8 @@ class Simulator:
                                             nonbondedCutoff=1. * nanometer,
                                             constraints=HBonds,
                                             hydrogenMass=1.5 * amu)
+
+        self.topology = self.topology.topology
     
         return system
     
@@ -151,9 +159,11 @@ class Simulator:
         Returns:
             (System): OpenMM system
         """
-        if not hasattr(self, coordinate):
-            self.coordinate = PDBFile(str(self.path / 'system.pdb'))
-            self.topology = CharmmPsfFile(str(self.path / 'system.psf'), 
+        if not hasattr(self, 'coordinate'):
+            self.coor_file = self.path / 'system.pdb'
+            self.top_file = self.path / 'system.psf'
+            self.coordinate = PDBFile(str(self.coor_file))
+            self.topology = CharmmPsfFile(str(self.top_file), 
                                           periodicBoxVectors=self.coordinate.topology.getPeriodicBoxVectors())
         if not hasattr(self, parameter_set) and self.params is not None:
             self.parameter_set = CharmmParameterSet(*self.params)
@@ -170,6 +180,7 @@ class Simulator:
                                                 nonbondedCutoff=1.2 * nanometer,
                                                 constraints=HBonds)
         
+        self.topology = self.topology.topology
         return system
     
     def setup_sim(self, 
@@ -189,7 +200,7 @@ class Simulator:
         integrator = LangevinMiddleIntegrator(300*kelvin, 
                                               1/picosecond, 
                                               dt*picoseconds)
-        simulation = Simulation(self.prmtop.topology, 
+        simulation = Simulation(self.topology, 
                                 system, 
                                 integrator, 
                                 self.platform, 
@@ -228,15 +239,16 @@ class Simulator:
         Returns:
             (Simulation): OpenMM simulation object.
         """
-        system = self.add_backbone_posres(self.load_system(), 
-                                          self.inpcrd.positions, 
-                                          self.prmtop.topology.atoms(), 
+        system = self.load_system()
+        system = self.add_backbone_posres(system, 
+                                          self.coordinate.positions, 
+                                          self.topology.atoms(), 
                                           self.indices,
                                           self.k)
     
         simulation, integrator = self.setup_sim(system, dt=0.002)
         
-        simulation.context.setPositions(self.inpcrd.positions)
+        simulation.context.setPositions(self.coordinate.positions)
         simulation.minimizeEnergy()
         
         simulation.reporters.append(StateDataReporter(str(self.eq_log), 
@@ -382,10 +394,11 @@ class Simulator:
         
         integrator.setTemperature(T * kelvin)
         mdsteps = 100000
-        length = mdsteps // 1000
+        heat_steps = 1000
+        length = mdsteps // heat_steps
         tstep = (300 - T) / length
         for i in range(length):
-          simulation.step(mdsteps//60)
+          simulation.step(heat_steps)
           temp = T + tstep * (1 + i)
           
           if temp > 300:
@@ -469,7 +482,7 @@ class Simulator:
         Returns:
             (list[int]): List of atomic indices for atoms to be restrained.
         """
-        u = mda.Universe(str(self.prmtop), str(self.inpcrd))
+        u = mda.Universe(str(self.top_file), str(self.coor_file))
         if addtl_selection:
             sel = u.select_atoms(f'backbone or nucleicbackbone or {addtl_selection}')
         else:
@@ -616,19 +629,22 @@ class ImplicitSimulator(Simulator):
         Returns:
             (System): OpenMM system object.
         """
-        if isinstance(self.inpcrd, Path | str):
-            self.inpcrd = AmberInpcrdFile(self.inpcrd)
-            self.prmtop = AmberPrmtopFile(self.prmtop)
+        if not hasattr(self, 'coordinate'):
+            self.coor_file = self.path / 'system.inpcrd'
+            self.top_file = self.path / 'system.prmtop'
+            self.coordinate = AmberInpcrdFile(str(self.coor_file))
+            topology = AmberPrmtopFile(str(self.top_file))
 
-        system = self.prmtop.createSystem(nonbondedMethod=NoCutoff,
-                                          removeCMMotion=False,
-                                          constraints=HBonds,
-                                          hydrogenMass=1.5 * amu,
-                                          implicitSolvent=self.solvent,
-                                          soluteDielectric=self.solute_dielectric,
-                                          solventDielectric=self.solvent_dielectric,
-                                          implicitSolventKappa=self.kappa/nanometer)
+        system = topology.createSystem(nonbondedMethod=NoCutoff,
+                                       removeCMMotion=False,
+                                       constraints=HBonds,
+                                       hydrogenMass=1.5 * amu,
+                                       implicitSolvent=self.solvent,
+                                       soluteDielectric=self.solute_dielectric,
+                                       solventDielectric=self.solvent_dielectric,
+                                       implicitSolventKappa=self.kappa/nanometer)
     
+        self.topology = topology.topology
         return system
         
     def equilibrate(self) -> Simulation:
@@ -640,15 +656,16 @@ class ImplicitSimulator(Simulator):
         Returns:
             (Simulation): OpenMM simulation object.
         """
-        system = self.add_backbone_posres(self.load_amber_files(), 
-                                          self.inpcrd.positions, 
-                                          self.prmtop.topology.atoms(), 
+        system = self.load_amber_files()
+        system = self.add_backbone_posres(system, 
+                                          self.coordinate.positions, 
+                                          self.topology.atoms(), 
                                           self.indices,
                                           self.k)
     
         simulation, integrator = self.setup_sim(system, dt=0.002)
         
-        simulation.context.setPositions(self.inpcrd.positions)
+        simulation.context.setPositions(self.coordinate.positions)
         state = simulation.context.getState(getEnergy=True)
         print(f'Energy before minimization: {state.getPotentialEnergy()}')
         simulation.minimizeEnergy()
@@ -661,7 +678,7 @@ class ImplicitSimulator(Simulator):
                                                       potentialEnergy=True,
                                                       speed=True,
                                                       temperature=True))
-        simulation.reporters.append(DCDReporter(f'{self.path}/eq.dcd', self.eq_freq))
+        simulation.reporters.append(DCDReporter(str(self.path/ 'eq.dcd'), self.eq_freq))
 
         simulation, integrator = self._heating(simulation, integrator)
         simulation = self._equilibrate(simulation)
