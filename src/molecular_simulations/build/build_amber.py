@@ -32,7 +32,7 @@ class ImplicitSolvent:
         if out is not None:
             self.out = self.path / out
         else:
-            self.out = self.path / 'protein.pdb' 
+            self.out = self.path / 'system.pdb' 
 
         self.out = self.out.resolve()
 
