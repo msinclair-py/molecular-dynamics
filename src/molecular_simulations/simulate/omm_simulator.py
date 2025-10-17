@@ -674,7 +674,7 @@ class ImplicitSimulator(Simulator):
         print(f'Energy after minimization: {state.getPotentialEnergy()}')
         
         simulation.reporters.append(StateDataReporter(str(self.eq_log), 
-                                                      str(self.eq_freq), 
+                                                      self.eq_freq, 
                                                       step=True,
                                                       potentialEnergy=True,
                                                       speed=True,
