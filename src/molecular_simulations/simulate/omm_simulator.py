@@ -94,17 +94,22 @@ class Simulator:
         Returns:
             None
         """
-        self.barostat = MonteCarloBarostat
-        self.barostat_kwargs = {
+        self.barostat_args = {
             'defaultPressure': 1 * bar,
-            'temperature': 300 * kelvin,
         }
         
         if is_membrane_system:
             self.barostat = MonteCarloMembraneBarostat
-            self.barostat_kwargs.update({
+            self.barostat_args.update({
+                'defaultSurfaceTension': 0 * bar * nm,
+                'defaultTemperature': 300 * kelvin,
                 'xymode': MonteCarloMembraneBarostat.XYIsotropic,
                 'zmode': MonteCarloMembraneBarostat.ZFree
+            })
+        else:
+            self.barostat = MonteCarloBarostat
+            self.barostat_args.update({
+                'temperature': 300 * kelvin
             })
 
     def load_system(self) -> System:
@@ -281,7 +286,7 @@ class Simulator:
         system = self.load_system()
         simulation, _ = self.setup_sim(system, dt=0.004)
         
-        system.addForce(self.barostat(**self.barostat_kwargs))
+        system.addForce(self.barostat(*self.barostat_args.values()))
         simulation.context.reinitialize(True)
 
         if restart:
@@ -440,7 +445,7 @@ class Simulator:
         simulation.context.setParameter('k', 0)
         simulation.step(eq_steps)
     
-        simulation.system.addForce(self.barostat(**self.barostat_kwargs))
+        simulation.system.addForce(self.barostat(*self.barostat_args.values()))
         simulation.step(self.equil_cycles * eq_steps)
 
         simulation.saveState(str(self.eq_state))
@@ -634,18 +639,18 @@ class ImplicitSimulator(Simulator):
             self.coor_file = self.path / 'system.inpcrd'
             self.top_file = self.path / 'system.prmtop'
             self.coordinate = AmberInpcrdFile(str(self.coor_file))
-            topology = AmberPrmtopFile(str(self.top_file))
+            self.topology = AmberPrmtopFile(str(self.top_file))
 
-        system = topology.createSystem(nonbondedMethod=NoCutoff,
-                                       removeCMMotion=False,
-                                       constraints=HBonds,
-                                       hydrogenMass=1.5 * amu,
-                                       implicitSolvent=self.solvent,
-                                       soluteDielectric=self.solute_dielectric,
-                                       solventDielectric=self.solvent_dielectric,
-                                       implicitSolventKappa=self.kappa/nanometer)
+        system = self.topology.createSystem(nonbondedMethod=NoCutoff,
+                                            removeCMMotion=False,
+                                            constraints=HBonds,
+                                            hydrogenMass=1.5 * amu,
+                                            implicitSolvent=self.solvent,
+                                            soluteDielectric=self.solute_dielectric,
+                                            solventDielectric=self.solvent_dielectric,
+                                            implicitSolventKappa=self.kappa/nanometer)
     
-        self.topology = topology.topology
+        self.topology = self.topology.topology
         return system
         
     def equilibrate(self) -> Simulation:

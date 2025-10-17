@@ -4,14 +4,14 @@ from calvados import sim
 from .omm_simulator import ImplicitSimulator, Simulator
 from cg2all.script.convert_cg2all import main as convert
 import openmm
-from openmm import *
 from openmm.app import *
 from openmm.unit import *
+from dataclasses import dataclass
 import parmed as pmd
 import pip._vendor.tomli as tomllib # for 3.10
 from pathlib import Path
 import os
-from typing import Union, TypeVar
+from typing import Union, Type, TypeVar
 
 _T = TypeVar('_T')
 OptPath = Union[Path, str, None]
@@ -78,7 +78,7 @@ class MultiResolutionSimulator:
         convert(convert_args)
 
     @staticmethod
-    def strip_solvent(simulation: openmm.app.simulation.Simulation,
+    def strip_solvent(simulation: Simulation,
                       output_pdb: PathLike = 'strip.pdb'):
         """
         Use parmed to strip solvent from an openmm simulation and writes out pdb
@@ -110,9 +110,9 @@ class MultiResolutionSimulator:
             aa_path.mkdir()
 
             if r == 0:
-                input_pdb = str(self.path / self.input_pdb)
+                input_pdb = str((self.path / self.input_pdb).resolve())
             else:
-                input_pdb = str(self.path / f'cg_round{r-1}/last_frame.pdb')
+                input_pdb = str((self.path / f'cg_round{r-1}/last_frame.pdb').resolve())
 
 
             match self.aa_params['solvation_scheme']:
@@ -138,8 +138,9 @@ class MultiResolutionSimulator:
 
             aa_simulator = _aa_simulator(
                 aa_path,
-                equil_steps = self.aa_params['equilibration_steps'],
-                prod_steps = self.aa_params['production_steps'],
+                ff = 'amber',
+                equil_steps = int(self.aa_params['equilibration_steps']),
+                prod_steps = int(self.aa_params['production_steps']),
                 n_equil_cycles = 1,
                 device_ids = self.aa_params['device_ids'])
 
