@@ -2,6 +2,7 @@
 from openmm.app import PDBFile
 import os
 from pathlib import Path
+import subprocess
 import tempfile
 from typing import Dict, List, Union
 
@@ -32,11 +33,16 @@ class ImplicitSolvent:
         if out is not None:
             self.out = self.path / out
         else:
-            self.out = self.path / 'system.pdb' 
+            self.out = self.path / 'protein.pdb' 
 
         self.out = self.out.resolve()
 
-        self.amberhome = amberhome
+        if amberhome:
+            self.tleap = str(Path(amberhome) / 'tleap')
+            self.pdb4amber = str(Path(amberhome) / 'pdb4amber')
+        else:
+            self.tleap = 'tleap'
+            self.pdb4amber = 'pdb4amber'
 
         switches = [protein, rna, dna, phos_protein, mod_protein]
         ffs = [
@@ -53,9 +59,6 @@ class ImplicitSolvent:
         
         for key, val in kwargs.items():
             setattr(self, key, val)
-        
-        if not hasattr(self, 'tleap'):
-            self.tleap = f'{self.amberhome}tleap'
 
     def build(self) -> None:
         """
@@ -118,12 +121,13 @@ class ImplicitSolvent:
         Returns:
             None
         """
-        with tempfile.NamedTemporaryFile(mode='w+', suffix='.in') as temp_file:
+        with tempfile.NamedTemporaryFile(mode='w+', suffix='.in', dir=str(self.path)) as temp_file:
             temp_file.write(inp)
             temp_file.flush()
             tleap_command = f'{self.tleap} -f {temp_file.name}'
             print(tleap_command)
-            os.system(tleap_command)
+            subprocess.run(tleap_command, shell=True, cwd=str(self.path), check=True,
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     
 class ExplicitSolvent(ImplicitSolvent):
     """
@@ -171,7 +175,7 @@ class ExplicitSolvent(ImplicitSolvent):
         Returns:
             None
         """
-        os.system(f'{self.amberhome}pdb4amber -i {self.pdb} -o {self.path}/protein.pdb -y')
+        os.system(f'{self.pdb4amber} -i {self.pdb} -o {self.path}/protein.pdb -y')
         self.pdb = f'{self.path}/protein.pdb'
         
     def assemble_system(self, dim: float, num_ions: int) -> None:
@@ -203,9 +207,7 @@ class ExplicitSolvent(ImplicitSolvent):
         quit
         """
         
-        leap_file = self.write_leap(tleap_complex)
-        tleap = f'{self.amberhome}tleap -f {leap_file}'
-        os.system(tleap) 
+        self.temp_tleap(tleap_complex)
 
     def get_pdb_extent(self) -> int:
         """

@@ -153,8 +153,6 @@ class Simulator:
                                             constraints=HBonds,
                                             hydrogenMass=1.5 * amu)
 
-        self.topology = self.topology.topology
-    
         return system
     
     def load_charmm_files(self) -> System:
@@ -185,7 +183,6 @@ class Simulator:
                                                 nonbondedCutoff=1.2 * nanometer,
                                                 constraints=HBonds)
         
-        self.topology = self.topology.topology
         return system
     
     def setup_sim(self, 
@@ -205,7 +202,7 @@ class Simulator:
         integrator = LangevinMiddleIntegrator(300*kelvin, 
                                               1/picosecond, 
                                               dt*picoseconds)
-        simulation = Simulation(self.topology, 
+        simulation = Simulation(self.topology.topology, 
                                 system, 
                                 integrator, 
                                 self.platform, 
@@ -247,7 +244,7 @@ class Simulator:
         system = self.load_system()
         system = self.add_backbone_posres(system, 
                                           self.coordinate.positions, 
-                                          self.topology.atoms(), 
+                                          self.topology.topology.atoms(), 
                                           self.indices,
                                           self.k)
     
@@ -650,7 +647,6 @@ class ImplicitSimulator(Simulator):
                                             solventDielectric=self.solvent_dielectric,
                                             implicitSolventKappa=self.kappa/nanometer)
     
-        self.topology = self.topology.topology
         return system
         
     def equilibrate(self) -> Simulation:
@@ -665,7 +661,7 @@ class ImplicitSimulator(Simulator):
         system = self.load_system()
         system = self.add_backbone_posres(system, 
                                           self.coordinate.positions, 
-                                          self.topology.atoms(), 
+                                          self.topology.topology.atoms(), 
                                           self.indices,
                                           self.k)
     
