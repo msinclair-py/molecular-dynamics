@@ -6,7 +6,7 @@ from cg2all.script.convert_cg2all import main as convert
 import openmm
 from openmm.app import *
 from openmm.unit import *
-from dataclasses import dataclass
+import subprocess
 import parmed as pmd
 import pip._vendor.tomli as tomllib # for 3.10
 from pathlib import Path
@@ -16,13 +16,6 @@ from typing import Union, Type, TypeVar
 _T = TypeVar('_T')
 OptPath = Union[Path, str, None]
 PathLike = Union[Path, str]
-
-@dataclass
-class cg2all_defaults:
-    standard_names: bool = True
-    cg_model: str = 'ResidueBasedModel'
-    device: str = 'cuda'
-    n_proc: int = 1 # necessary for some reason
 
 class MultiResolutionSimulator:
     """
@@ -36,6 +29,7 @@ class MultiResolutionSimulator:
                  n_rounds: int,
                  cg_params: dict, 
                  aa_params: dict,
+                 cg2all_bin: PathLike = 'convert_cg2all',
                  cg2all_ckpt: OptPath = None):
         self.path = Path(path)
         self.input_pdb = input_pdb
@@ -51,11 +45,15 @@ class MultiResolutionSimulator:
         with open(config, 'rb') as f:
             cfg = tomllib.load(f)
         settings = cfg['settings']
-        cg_params = cfg['cg_params']
+        cg_params = cfg['cg_params'][0] # nested toml needs this?
         aa_params = cfg['aa_params']
         path = settings['path']
         input_pdb = settings['input_pdb']
         n_rounds = settings['n_rounds']
+        if 'cg2all_bin' in settings:
+            cg2all_bin = settings['cg2all_bin']
+        else:
+            cg2all_bin = 'convert_cg2all'
         if 'cg2all_ckpt' in settings:
             cg2all_ckpt = settings['cg2all_ckpt']
         else:
@@ -66,6 +64,7 @@ class MultiResolutionSimulator:
                    n_rounds, 
                    cg_params, 
                    aa_params, 
+                   cg2all_bin = cg2all_bin,
                    cg2all_ckpt = cg2all_ckpt)
 
     @staticmethod
@@ -79,7 +78,7 @@ class MultiResolutionSimulator:
 
     @staticmethod
     def strip_solvent(simulation: Simulation,
-                      output_pdb: PathLike = 'strip.pdb'):
+                      output_pdb: PathLike = 'protein.pdb'):
         """
         Use parmed to strip solvent from an openmm simulation and writes out pdb
         """
@@ -132,7 +131,8 @@ class MultiResolutionSimulator:
                 rna = self.aa_params['rna'],
                 dna = self.aa_params['dna'],
                 phos_protein = self.aa_params['phos_protein'],
-                use_amber = self.aa_params['use_amber'])
+                use_amber = self.aa_params['use_amber'],
+                out = self.aa_params['out'])
             
             aa_builder.build()
 
@@ -148,31 +148,37 @@ class MultiResolutionSimulator:
 
             # strip solvent and output AA structure for next step (CG)
             self.strip_solvent(aa_simulator.simulation, 
-                               str(aa_path / 'strip.pdb'))
+                               str(aa_path / 'protein.pdb'))
 
             # build CG
             cg_path = self.path / f'cg_round{r}'
             cg_path.mkdir()
             cg_params = self.cg_params
-            cg_params['path'] = str(cg_path)
-            cg_params['input_pdb'] = str(aa_path / 'strip.pdb')
+            cg_params['config']['path'] = str(cg_path)
+            cg_params['config']['input_pdb'] = str(aa_path / 'protein.pdb')
 
             cg_builder = CGBuilder.from_dict(cg_params)
             cg_builder.build() # writes config and components yamls
 
             # run CG
             sim.run(path = str(cg_path), 
-                    fconfig = str(cg_path / 'config.yaml'),
-                    fcomponents = str(cg_path / 'components.yaml'))
+                    fconfig = 'config.yaml',
+                    fcomponents = 'components.yaml')
         
             # convert CG to AA for next round
-            cg2all_args = cg2all_defaults
+            command = [self.settings["cg2all_bin"],
+                       '-p', str(cg_path / 'top.pdb'),
+                       '-d', str(cg_path / 'protein.dcd'),
+                       '-o', str(cg_path / 'traj_aa.dcd'),
+                       '-opdb', str(cg_path / 'last_frame.pdb'),
+                       '--cg', 'ResidueBasedModel',
+                       '--standard-name',
+                       '--device', 'cuda',
+                       '--proc', '1']
             if self.cg2all_ckpt is not None:
-                cg2all_args.ckpt_fn = str(Path(self.cg2all_ckpt).resolve())
-            cg2all_args.in_pdb_fn = str(cg_path / 'top.pdb') 
-            cg2all_args.in_dcd_fn = str(cg_path / 'system.dcd')
-            cg2all_args.out_fn = str(cg_path / 'traj_aa.dcd')
-            cg2all_args.outpdb_fn = str(cg_path / 'last_frame.pdb')
+                command += ['-ckpt', self.cg2all_ckpt]
 
-
+            result = subprocess.run(command, shell=False, capture_output=True, text=True)
+            if result.returncode != 0:
+                raise RuntimeError(f'cg2all error: {result.stdout}')
 
