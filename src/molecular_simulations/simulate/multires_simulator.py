@@ -45,7 +45,8 @@ class MultiResolutionSimulator:
                  cg_params: dict, 
                  aa_params: dict,
                  cg2all_bin: str = 'convert_cg2all',
-                 cg2all_ckpt: OptPath = None):
+                 cg2all_ckpt: OptPath = None,
+                 pdb4amber_bin: str = 'pdb4amber'):
         self.path = Path(path)
         self.input_pdb = input_pdb
         self.n_rounds = n_rounds
@@ -53,6 +54,7 @@ class MultiResolutionSimulator:
         self.aa_params = aa_params
         self.cg2all_bin = cg2all_bin
         self.cg2all_ckpt = cg2all_ckpt
+        self.pdb4amber_bin = pdb4amber_bin
 
     @classmethod
     def from_toml(cls: Type[_T], config: PathLike) -> _T:
@@ -68,14 +70,21 @@ class MultiResolutionSimulator:
         path = settings['path']
         input_pdb = settings['input_pdb']
         n_rounds = settings['n_rounds']
+
         if 'cg2all_bin' in settings:
             cg2all_bin = settings['cg2all_bin']
         else:
             cg2all_bin = 'convert_cg2all'
+
         if 'cg2all_ckpt' in settings:
             cg2all_ckpt = settings['cg2all_ckpt']
         else:
             cg2all_ckpt = None
+
+        if 'pdb4amber_bin' in settings:
+            pdb4amber_bin = settings['pdb4amber_bin']
+        else:
+            pdb4amber_bin = 'pdb4amber_bin'
         
         return cls(path, 
                    input_pdb,
@@ -83,7 +92,8 @@ class MultiResolutionSimulator:
                    cg_params, 
                    aa_params, 
                    cg2all_bin = cg2all_bin,
-                   cg2all_ckpt = cg2all_ckpt)
+                   cg2all_ckpt = cg2all_ckpt,
+                   pdb4amber_bin = pdb4amber_bin)
 
     @staticmethod
     def strip_solvent(simulation: Simulation,
@@ -108,20 +118,18 @@ class MultiResolutionSimulator:
 
     def run_rounds(self):
         """
-        Main logic for running MultiResolutionSimulator
+        Main logic for running MultiResolutionSimulator.
+        Does not currently handle restart runs (TODO).
         """
-        # restarts:
-        #   need to check path for any half-finished runs
-        #   e.g. if AA rounds 0,1,2 and CG rounds 0,1 are done, start with CG round 2
 
         for r in range(self.n_rounds):
             aa_path = self.path / f'aa_round{r}'
             aa_path.mkdir()
 
             if r == 0:
-                input_pdb = str((self.path / self.input_pdb).resolve())
+                input_pdb = str(self.path / self.input_pdb)
             else:
-                input_pdb = str((self.path / f'cg_round{r-1}/last_frame.pdb').resolve())
+                input_pdb = str(self.path / f'cg_round{r-1}/last_frame.amber.pdb')
 
 
             match self.aa_params['solvation_scheme']:
@@ -175,7 +183,7 @@ class MultiResolutionSimulator:
                     fconfig = 'config.yaml',
                     fcomponents = 'components.yaml')
         
-            # convert CG to AA for next round
+            # convert CG to AA for next round using cg2all
             command = [self.cg2all_bin,
                        '-p', str(cg_path / 'top.pdb'),
                        '-d', str(cg_path / 'protein.dcd'),
@@ -190,5 +198,13 @@ class MultiResolutionSimulator:
 
             result = subprocess.run(command, shell=False, capture_output=True, text=True)
             if result.returncode != 0:
-                raise RuntimeError(f'cg2all error!\nstdout:{result.stdout}\nstderr:{result.stderr}')
+                raise RuntimeError(f'cg2all error!\n{result.stderr}')
 
+            # use pdb4amber to fix cg2all-generated
+            command = [self.pdb4amber, str(cg_path / 'last_frame.pdb')]
+            result = subprocess.run(command, shell=False, capture_output=True, text=True)
+            if result.returncode == 0:
+                with open(str(cg_path / 'last_frame.amber.pdb'), 'w') as f:
+                    f.write(result.stdout)
+            else:
+                raise RuntimeError(f'pdb4amber error!\n{result.stderr}')
