@@ -461,7 +461,7 @@ class ComplexBuilder(ExplicitSolvent):
         super().__init__(path, pdb, padding)
         self.lig = Path(lig) if isinstance(lig, str) else [Path(l) for l in lig]
         self.ffs.append('leaprc.gaff2')
-        self.build_dir = self.out / 'build'
+        self.build_dir = self.out.parent / 'build'
 
         if lig_param_prefix is None:
             self.lig_param_prefix = lig_param_prefix
