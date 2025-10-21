@@ -19,6 +19,21 @@ PathLike = Union[Path, str]
 
 class MultiResolutionSimulator:
     """
+    Class for performing multi-resolution simulations with switching between CG and AA 
+    representations. Utilizes CALVADOS for CG simulations and omm_simulator.py for AA
+    simulations. 
+    
+    Arguments:
+        path (PathLike): Path to simulation input files, also serves as output path.
+        input_pdb (str): Input pdb for simulations, must exist in path.
+        n_rounds (int): Number of rounds of CG/AA simulation to perform.
+        cg_params (dict): Parameters for CG simulations. Initializes CGBuilder.
+        aa_params (dict): Parameters for AA simulations. Initializes omm_simulator.
+        cg2all_bin (str): Defaults to 'convert_cg2all'. Path to cg2all binary. Must
+            be provided if cg2all is installed in a separate environment. 
+        cg2all_ckpt (OptPath): Path to cg2all checkpoint file. 
+
+
     Usage:
         sim = MultiResolutionSimulator.from_toml('config.toml')
         sim.run()
@@ -29,23 +44,26 @@ class MultiResolutionSimulator:
                  n_rounds: int,
                  cg_params: dict, 
                  aa_params: dict,
-                 cg2all_bin: PathLike = 'convert_cg2all',
+                 cg2all_bin: str = 'convert_cg2all',
                  cg2all_ckpt: OptPath = None):
         self.path = Path(path)
         self.input_pdb = input_pdb
         self.n_rounds = n_rounds
         self.cg_params = cg_params
         self.aa_params = aa_params
+        self.cg2all_bin = cg2all_bin
         self.cg2all_ckpt = cg2all_ckpt
 
     @classmethod
-    def from_toml(cls: Type[_T], config: PathLike):
+    def from_toml(cls: Type[_T], config: PathLike) -> _T:
         """
+        Constructs MultiResolutionSimulator from .toml configuration file.
+        Recommended method for instantiating MultiResolutionSimulator.
         """
         with open(config, 'rb') as f:
             cfg = tomllib.load(f)
         settings = cfg['settings']
-        cg_params = cfg['cg_params'][0] # nested toml needs this?
+        cg_params = cfg['cg_params'][0]
         aa_params = cfg['aa_params']
         path = settings['path']
         input_pdb = settings['input_pdb']
@@ -68,19 +86,10 @@ class MultiResolutionSimulator:
                    cg2all_ckpt = cg2all_ckpt)
 
     @staticmethod
-    def cg_to_aa(input_pdb: PathLike, output_pdb: PathLike):
-        """
-        """
-        convert_args = cg2all_defaults
-        convert_args.in_pdb_fn = str(input_pdb)
-        convert_args.outpdb_fn = str(output_pdb)
-        convert(convert_args)
-
-    @staticmethod
     def strip_solvent(simulation: Simulation,
                       output_pdb: PathLike = 'protein.pdb'):
         """
-        Use parmed to strip solvent from an openmm simulation and writes out pdb
+        Use parmed to strip solvent from an openmm simulation and write out pdb
         """
         struc = pmd.openmm.load_topology(
             simulation.topology,
@@ -99,6 +108,7 @@ class MultiResolutionSimulator:
 
     def run_rounds(self):
         """
+        Main logic for running MultiResolutionSimulator
         """
         # restarts:
         #   need to check path for any half-finished runs
@@ -166,7 +176,7 @@ class MultiResolutionSimulator:
                     fcomponents = 'components.yaml')
         
             # convert CG to AA for next round
-            command = [self.settings["cg2all_bin"],
+            command = [self.cg2all_bin,
                        '-p', str(cg_path / 'top.pdb'),
                        '-d', str(cg_path / 'protein.dcd'),
                        '-o', str(cg_path / 'traj_aa.dcd'),
@@ -176,9 +186,9 @@ class MultiResolutionSimulator:
                        '--device', 'cuda',
                        '--proc', '1']
             if self.cg2all_ckpt is not None:
-                command += ['-ckpt', self.cg2all_ckpt]
+                command += ['--ckpt', self.cg2all_ckpt]
 
             result = subprocess.run(command, shell=False, capture_output=True, text=True)
             if result.returncode != 0:
-                raise RuntimeError(f'cg2all error: {result.stdout}')
+                raise RuntimeError(f'cg2all error!\nstdout:{result.stdout}\nstderr:{result.stderr}')
 
