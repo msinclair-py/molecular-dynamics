@@ -68,8 +68,8 @@ class MMPBSA(MMPBSA_settings):
                  gb_surfoff: float=0.,
                  amberhome: PathLike='',
                  **kwargs):
-        super().__init__(top, dcd, selections, first_frame, last_frame, 
-                         out, solvent_probe, offset, gb_surften, gb_surfoff)
+        super().__init__(top=top, dcd=dcd, selections=selections, first_frame=first_frame, last_frame=last_frame, stride=stride, n_cpus=n_cpus,
+                         out=out, solvent_probe=solvent_probe, offset=offset, gb_surften=gb_surften, gb_surfoff=gb_surfoff)
         self.top = Path(self.top).resolve()
         self.traj = Path(self.dcd).resolve()
         self.path = self.top.parent
@@ -139,7 +139,10 @@ class MMPBSA(MMPBSA_settings):
         ]
         
         self.fh.write_file(sasa_in, sasa)
-        subprocess.call(f'{self.cpptraj} -i {sasa}', shell=True)
+
+        result = subprocess.run(f'{self.cpptraj} -i {sasa}', shell=True, capture_output=True, text=True)
+        if result.returncode != 0:
+            raise RuntimeError(f'MM-PBSA hates us:\n{result.stdout}\n{result.stderr}')
         sasa.unlink()
     
     def calculate_energy(self,
