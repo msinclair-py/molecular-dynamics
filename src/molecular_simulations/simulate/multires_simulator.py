@@ -7,15 +7,63 @@ import openmm
 from openmm.app import *
 from openmm.unit import *
 import subprocess
+import tempfile
 import parmed as pmd
 import pip._vendor.tomli as tomllib # for 3.10
 from pathlib import Path
+from dataclasses import dataclass
 import os
 from typing import Union, Type, TypeVar
 
 _T = TypeVar('_T')
 OptPath = Union[Path, str, None]
 PathLike = Union[Path, str]
+
+@dataclass
+class sander_min_defaults:
+    """
+    Dataclass with default values for sander minimization.
+    Creates the contents of a sander input file during init
+    """
+    imin=1       # Perform energy minimization
+    maxcyc=5000  # Maximum number of minimization cycles
+    ncyc=2500    # Switch from steepest descent to conjugate gradient after this many steps
+    ntb=0,       # Periodic boundary conditions (constant volume)
+    ntr=0,       # No restraints
+    cut=10.0     # Nonbonded cutoff in Angstroms
+    ntpr=10000   # Print energy every 10000 steps (don't print it)
+    wr=5000      # Write restart file every 500 steps (only once)
+    ntxo=1       # Output restart file format (ASCII)
+
+    def __init__(self):
+        self.mdin_contents = """Minimization input
+ &cntrl
+  imin={self.imin},
+  maxcyc={self.maxcyc},
+  ncyc={self.ncyc},
+  ntb={self.ntb},
+  ntr={self.ntr},
+  cut={self.cut:.1f},
+  ntpr={self.ntpr},
+  ntwr={self.ntwr},
+  ntxo={self.ntxo},
+ /"""
+
+def sander_minimize(path: Path,
+                    inpcrd_file: str,
+                    prmtop_file: str,
+                    sander_cmd: str) -> None:
+    defaults = sander_min_defaults()
+    mdin = defaults.mdin_contents
+    with tempfile.NamedTemporaryFile(mode='w+', suffix='.in', dir=str(path)) as tmp:
+        tmp.write(mdin)
+        tmp.flush()
+        outfile = Path(inpcrd_file).with_suffix('.min.inpcrd')
+        command = [sander_cmd, '-O', '-i', tmp.name, '/dev/null']
+        command += ['-p', prmtop_file, '-c', inpcrd_file, '-r', str(outfile), '-ref', inpcrd_file]
+        result = subprocess.run(command, shell=False, capture_output=True, text=True)
+        if result.returncode != 0:
+            raise RuntimeError(f'sander error!\n{result.stderr}')
 
 class MultiResolutionSimulator:
     """
@@ -46,7 +94,7 @@ class MultiResolutionSimulator:
                  aa_params: dict,
                  cg2all_bin: str = 'convert_cg2all',
                  cg2all_ckpt: OptPath = None,
-                 pdb4amber_bin: str = 'pdb4amber'):
+                 AMBERHOME: str | None = None):
         self.path = Path(path)
         self.input_pdb = input_pdb
         self.n_rounds = n_rounds
@@ -54,7 +102,7 @@ class MultiResolutionSimulator:
         self.aa_params = aa_params
         self.cg2all_bin = cg2all_bin
         self.cg2all_ckpt = cg2all_ckpt
-        self.pdb4amber_bin = pdb4amber_bin
+        self.AMBERHOME = Path(AMBERHOME)
 
     @classmethod
     def from_toml(cls: Type[_T], config: PathLike) -> _T:
@@ -81,10 +129,10 @@ class MultiResolutionSimulator:
         else:
             cg2all_ckpt = None
 
-        if 'pdb4amber_bin' in settings:
-            pdb4amber_bin = settings['pdb4amber_bin']
+        if 'AMBERHOME' in settings:
+            AMBERHOME = Path(settings['AMBERHOME'])
         else:
-            pdb4amber_bin = 'pdb4amber_bin'
+            AMBERHOME = None
         
         return cls(path, 
                    input_pdb,
@@ -93,11 +141,12 @@ class MultiResolutionSimulator:
                    aa_params, 
                    cg2all_bin = cg2all_bin,
                    cg2all_ckpt = cg2all_ckpt,
-                   pdb4amber_bin = pdb4amber_bin)
+                   AMBERHOME = AMBERHOME)
 
     @staticmethod
     def strip_solvent(simulation: Simulation,
-                      output_pdb: PathLike = 'protein.pdb'):
+                      output_pdb: PathLike = 'protein.pdb'
+                      ) -> None:
         """
         Use parmed to strip solvent from an openmm simulation and write out pdb
         """
@@ -116,7 +165,7 @@ class MultiResolutionSimulator:
         struc.strip(mask)
         struc.save(output_pdb)
 
-    def run_rounds(self):
+    def run_rounds(self) -> None:
         """
         Main logic for running MultiResolutionSimulator.
         Does not currently handle restart runs (TODO).
@@ -153,9 +202,18 @@ class MultiResolutionSimulator:
                 out = self.aa_params['out'])
             
             aa_builder.build()
+            
+            # cg2all may create clashes which OpenMM minimization does not address.
+            # Therefore, we want to minimize all cg2all-created structures with sander instead.
+            if self.AMBERHOME is None:
+                sander = 'sander'
+            else:
+                sander = str(self.AMBERHOME / 'sander')
+            sander_minimize(aa_path, 'system.inpcrd', 'system.prmtop', sander)
 
             aa_simulator = _aa_simulator(
                 aa_path,
+                coor_name = 'system.min.inpcrd',
                 ff = 'amber',
                 equil_steps = int(self.aa_params['equilibration_steps']),
                 prod_steps = int(self.aa_params['production_steps']),
@@ -200,8 +258,12 @@ class MultiResolutionSimulator:
             if result.returncode != 0:
                 raise RuntimeError(f'cg2all error!\n{result.stderr}')
 
-            # use pdb4amber to fix cg2all-generated
-            command = [self.pdb4amber, str(cg_path / 'last_frame.pdb')]
+            # use pdb4amber to fix cg2all-generated pdb
+            if self.AMBERHOME is None:
+                command = ['pdb4amber'], 
+            else:
+                command = [str(self.AMBERHOME / 'pdb4amber')]
+            command += [str(cg_path / 'last_frame.pdb'), '-y']
             result = subprocess.run(command, shell=False, capture_output=True, text=True)
             if result.returncode == 0:
                 with open(str(cg_path / 'last_frame.amber.pdb'), 'w') as f:
