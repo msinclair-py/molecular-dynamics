@@ -43,33 +43,48 @@ class Simulator:
     """
     def __init__(self, 
                  path: PathLike, 
+                 top_name: Optional[str]=None,
+                 coor_name: Optional[str]=None,
+                 out_path: Optional[Path]=None,
                  ff: str='amber',
                  equil_steps: int=1_250_000, 
                  prod_steps: int=250_000_000, 
                  n_equil_cycles: int=3,
-                 reporter_frequency: int=1_000,
+                 temperature: float=300.,
+                 eq_reporter_frequency: int=1_000,
+                 prod_reporter_frequency: int=10_000,
                  platform: str='CUDA',
                  device_ids: list[int]=[0],
                  force_constant: float=10.,
                  params: Optional[str]=None,
                  membrane: bool=False):
         self.path = Path(path) # enforce path object
+        self.top_file = self.path / top_name if top_name is not None else self.path / 'system.prmtop'
+        self.coor_file = self.path / coor_name if coor_name is not None else self.path / 'system.inpcrd'
+        self.temperature = temperature
+
         self.ff = ff.lower()
         self.params = params # for charmm parameter sets
         self.setup_barostat(membrane)
 
+        if out_path is not None:
+            p = out_path
+        else:
+            p = path
+
         # logging/checkpointing stuff
-        self.eq_state = path / 'eq.state'
-        self.eq_chkpt = path / 'eq.chk'
-        self.eq_log = path / 'eq.log'
-        self.eq_freq = reporter_frequency
+        self.eq_state = p / 'eq.state'
+        self.eq_chkpt = p / 'eq.chk'
+        self.eq_log = p / 'eq.log'
+        self.eq_dcd = p / 'eq.dcd'
+        self.eq_freq = eq_reporter_frequency
         
-        self.dcd = path / 'prod.dcd'
-        self.restart = path / 'prod.rst.chk'
-        self.state = path / 'prod.state'
-        self.chkpt = path / 'prod.chk'
-        self.prod_log = path / 'prod.log'
-        self.prod_freq = self.eq_freq * 10
+        self.dcd = p / 'prod.dcd'
+        self.restart = p / 'prod.rst.chk'
+        self.state = p / 'prod.state'
+        self.chkpt = p / 'prod.chk'
+        self.prod_log = p / 'prod.log'
+        self.prod_freq = prod_reporter_frequency
 
         # simulation details
         self.equil_cycles = n_equil_cycles
@@ -102,14 +117,14 @@ class Simulator:
             self.barostat = MonteCarloMembraneBarostat
             self.barostat_args.update({
                 'defaultSurfaceTension': 0 * bar * nm,
-                'defaultTemperature': 300 * kelvin,
+                'defaultTemperature': self.temperature * kelvin,
                 'xymode': MonteCarloMembraneBarostat.XYIsotropic,
                 'zmode': MonteCarloMembraneBarostat.ZFree
             })
         else:
             self.barostat = MonteCarloBarostat
             self.barostat_args.update({
-                'temperature': 300 * kelvin
+                'temperature': self.temperature * kelvin
             })
 
     def load_system(self) -> System:
@@ -141,8 +156,6 @@ class Simulator:
             (System): OpenMM system
         """
         if not hasattr(self, 'coordinate'):
-            self.coor_file = self.path / 'system.inpcrd'
-            self.top_file = self.path / 'system.prmtop'
             self.coordinate = AmberInpcrdFile(str(self.coor_file))
             self.topology = AmberPrmtopFile(str(self.top_file), 
                                             periodicBoxVectors=self.coordinate.boxVectors)
@@ -163,8 +176,6 @@ class Simulator:
             (System): OpenMM system
         """
         if not hasattr(self, 'coordinate'):
-            self.coor_file = self.path / 'system.pdb'
-            self.top_file = self.path / 'system.psf'
             self.coordinate = PDBFile(str(self.coor_file))
             self.topology = CharmmPsfFile(str(self.top_file), 
                                           periodicBoxVectors=self.coordinate.topology.getPeriodicBoxVectors())
@@ -199,7 +210,7 @@ class Simulator:
             (tuple[Simulation, Integrator]): A tuple containing both the Simulation
                 and Integrator objects.
         """
-        integrator = LangevinMiddleIntegrator(300*kelvin, 
+        integrator = LangevinMiddleIntegrator(self.temperature*kelvin, 
                                               1/picosecond, 
                                               dt*picoseconds)
         simulation = Simulation(self.topology.topology, 
@@ -259,7 +270,7 @@ class Simulator:
                                                       potentialEnergy=True,
                                                       speed=True,
                                                       temperature=True))
-        simulation.reporters.append(DCDReporter(str(self.path / 'eq.dcd'), self.eq_freq))
+        simulation.reporters.append(DCDReporter(str(self.eq.dcd), self.eq_freq))
 
         simulation, integrator = self._heating(simulation, integrator)
         simulation = self._equilibrate(simulation)
@@ -398,13 +409,13 @@ class Simulator:
         mdsteps = 100000
         heat_steps = 1000
         length = mdsteps // heat_steps
-        tstep = (300 - T) / length
+        tstep = (self.temperature - T) / length
         for i in range(length):
           simulation.step(heat_steps)
           temp = T + tstep * (1 + i)
           
-          if temp > 300:
-            temp = 300
+          if temp > self.temperature:
+            temp = self.temperature
           
           integrator.setTemperature(temp * kelvin)
     
@@ -604,20 +615,30 @@ class ImplicitSimulator(Simulator):
     """
     def __init__(self, 
                  path: str, 
+                 top_name: Optional[str]=None,
+                 coor_name: Optional[str]=None,
+                 out_path: Optional[Path]=None,
                  ff: str = 'amber',
                  equil_steps: int=1_250_000, 
                  prod_steps: int=250_000_000, 
                  n_equil_cycles: int=3,
-                 reporter_frequency: int=1_000,
+                 temperature: float=300.,
+                 eq_reporter_frequency: int=1_000,
+                 prod_reporter_frequency: int=10_000,
                  platform: str='CUDA',
                  device_ids: list[int]=[0],
                  force_constant: float=10.,
                  implicit_solvent: Singleton=GBn2,
                  solute_dielectric: float=1.,
                  solvent_dielectric: float=78.5):
-        super().__init__(path, ff, equil_steps, prod_steps, n_equil_cycles,
-                         reporter_frequency, platform, device_ids, 
-                         force_constant)
+        super().__init__(path=path, top_name=top_name, 
+                         ff=ff, equil_steps=equil_steps, 
+                         prod_steps=prod_steps, n_equil_cycles=n_equil_cycles,
+                         temperature=temperature,
+                         eq_reporter_frequency=eq_reporter_frequency, 
+                         prod_reporter_frequency=prod_reporter_frequency,
+                         platform=platform, device_ids=device_ids, 
+                         force_constant=force_constant)
         self.solvent = implicit_solvent
         self.solute_dielectric = solute_dielectric
         self.solvent_dielectric = solvent_dielectric
@@ -633,8 +654,6 @@ class ImplicitSimulator(Simulator):
             (System): OpenMM system object.
         """
         if not hasattr(self, 'coordinate'):
-            self.coor_file = self.path / 'system.inpcrd'
-            self.top_file = self.path / 'system.prmtop'
             self.coordinate = AmberInpcrdFile(str(self.coor_file))
             self.topology = AmberPrmtopFile(str(self.top_file))
 
@@ -680,7 +699,7 @@ class ImplicitSimulator(Simulator):
                                                       potentialEnergy=True,
                                                       speed=True,
                                                       temperature=True))
-        simulation.reporters.append(DCDReporter(str(self.path/ 'eq.dcd'), self.eq_freq))
+        simulation.reporters.append(DCDReporter(str(self.eq.dcd), self.eq_freq))
 
         simulation, integrator = self._heating(simulation, integrator)
         simulation = self._equilibrate(simulation)
