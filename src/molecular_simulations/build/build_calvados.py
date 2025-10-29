@@ -13,6 +13,37 @@ PathLike = Union[Path, str]
 class CGBuilder:
     """
     Build CALVADOS system from pdb.
+    Arguments:
+        path (PathLike): Path to directory to contain run.
+        input_pdb (PathLike): Path to input structure for simulation.
+        residues_file (PathLike): Path to CALVADOS residues forcefield file.
+        domains_file (PathLike): Path to file containing domain definitions.
+        box_dim (list[float]): Dimensions (x,y,z) for orthonormal PBC.
+        temp (float): Defaults to 310.0. Simulation temperature [K].
+        ion_conc (float): Defaults to 0.15. Ion concentration [M].
+        pH (float): Defaults to 7.4. pH.
+        topol (str): Defaults to center. Varies initial placement of protein chains.
+        dcd_freq (int): Defaults to 2000. Write frequency for output dcd.
+        n_steps (int): Defaults to 10_000_000. Total number of steps to integrate
+            during simulation (timestep of 10 fs).
+        platform (str): Defaults to CUDA. OpenMM platform for running simulations.
+        restart (str): Defaults to checkpoint. Style of OpenMM restart. 
+        frestart (str): Defaults to restart.chk. Name of output restart files.
+        verbose (bool): Defaults to True. Verbosity.
+        molecule_type (str): Defaults to protein. Molecule type.
+        nmol (int): Defaults to 1. Total number of molecules. 
+        restraint (bool): Defaults to True. Whether to use secondary structure 
+            restraints.
+        charge_termini (str): Defaults to end-capped. Terminus patching. Allowed
+            options are N, C, both, or the default.
+        restraint_type (str): Defaults to harmonic. Type of restraint, either 
+            harmonic or go.
+        use_com (bool): Defaults to True. Where to apply restraintsi (com or CA). 
+        colabfold (int): Defaults to 0. Predicted beta-column confidence style.
+            Use 0 for AF and 1&2 for Colabfold.
+        k_harmonic (float) Defaults to 700.0. Harmonic spring constant to use for
+            restraints [kJ/mol].
+
     Usage:
         m = CGBuilder(*args)
         m.build()
@@ -23,7 +54,7 @@ class CGBuilder:
                  residues_file: PathLike,
                  domains_file: PathLike,
                  box_dim: list[float],
-                 temp: float = 310,
+                 temp: float = 310.,
                  ion_conc: float = 0.15,
                  pH: float = 7.4,
                  topol : str = 'center',
@@ -67,6 +98,10 @@ class CGBuilder:
 
     @classmethod
     def from_dict(cls: Type[_T], cg_params: dict) -> _T:
+        """
+        Classmethod for creating CG simulation from toml config file. 
+        Recommended method for instantiating CGBuilder.
+        """
         conf_args = cg_params['config']
         comp_args = cg_params['components']
         
@@ -119,11 +154,18 @@ class CGBuilder:
                    colabfold = colabfold,
                    k_harmonic = k_harmonic)
 
-    def build(self):
+    def build(self) -> None:
+        """
+        Prepares system for CALVADOS simulation. 
+        Writes config and components yaml files.
+        """
         self.write_config()
         self.write_components()
     
-    def write_config(self):
+    def write_config(self) -> None:
+        """
+        Write CALVADOS config yaml.
+        """
         config = Config(sysname = self.input_pdb.stem,
                         box = self.box_dim,
                         temp = self.temp,
@@ -140,7 +182,10 @@ class CGBuilder:
         with open(f'{self.path}/config.yaml','w') as f:
             yaml.dump(config.config, f)
 
-    def write_components(self):
+    def write_components(self) -> None:
+        """
+        Write CALVADOS components yaml.
+        """
         components = Components(molecule_type = self.molecule_type,
                                 nmol = self.nmol,
                                 restraint = self.restraint,

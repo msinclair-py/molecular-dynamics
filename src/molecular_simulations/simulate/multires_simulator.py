@@ -97,7 +97,9 @@ class MultiResolutionSimulator:
         cg2all_bin (str): Defaults to 'convert_cg2all'. Path to cg2all binary. Must
             be provided if cg2all is installed in a separate environment. 
         cg2all_ckpt (OptPath): Path to cg2all checkpoint file. 
-
+        AMBERHOME (str | None): Defaults to None. Path to AMBERHOME (excluding bin). 
+            Used for sander and pdb4amber. If None, assumes AmberTools binaries are 
+            available in the current $PATH.
 
     Usage:
         sim = MultiResolutionSimulator.from_toml('config.toml')
@@ -225,7 +227,7 @@ class MultiResolutionSimulator:
             if self.AMBERHOME is None:
                 sander = 'sander'
             else:
-                sander = str(self.AMBERHOME / 'sander')
+                sander = str(self.AMBERHOME / 'bin/sander')
             sander_minimize(aa_path, 'system.inpcrd', 'system.prmtop', sander)
 
             aa_simulator = _aa_simulator(
@@ -279,7 +281,7 @@ class MultiResolutionSimulator:
             if self.AMBERHOME is None:
                 command = ['pdb4amber'] 
             else:
-                command = [str(self.AMBERHOME / 'pdb4amber')]
+                command = [str(self.AMBERHOME / 'bin/pdb4amber')]
             command += [str(cg_path / 'last_frame.pdb'), '-y']
             result = subprocess.run(command, shell=False, capture_output=True, text=True)
             if result.returncode == 0:
