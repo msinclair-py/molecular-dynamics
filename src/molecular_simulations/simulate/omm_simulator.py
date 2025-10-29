@@ -246,7 +246,7 @@ class Simulator:
         if not skip_eq:
             logger.info('No restart detected, will begin equilibration.')
             self.equilibrate()
-            logger.info('Equilibration finished, running {self.prod_steps} steps of production MD.')
+            logger.info(f'Equilibration finished, running {self.prod_steps} steps of production MD.')
 
         if self.restart.exists():
             logger.info('Checkpoint file detected, resuming simulation.')

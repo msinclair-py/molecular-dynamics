@@ -4,7 +4,7 @@ build-backend = 'hatchling.build'
 
 [project]
 name = 'molecular_simulations'
-version = '0.3.17'
+version = '0.3.18'
 authors = [
   { name='Matt Sinclair', email='msinclair@anl.gov' },
 ]
