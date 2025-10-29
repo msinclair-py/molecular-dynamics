@@ -1,4 +1,5 @@
 from copy import deepcopy
+import logging
 import MDAnalysis as mda
 import numpy as np
 from openmm import *
@@ -11,6 +12,8 @@ from typing import Optional, Union
 PathLike = Union[Path, str]
 OptPath = Union[Path, str, None]
 
+logger = logging.getLogger(__name__)
+
 class Simulator:
     """
     Class for performing OpenMM simulations on AMBER FF inputs. Inputs must conform
@@ -18,18 +21,27 @@ class Simulator:
 
     Arguments:
         path (PathLike): Path to simulation inputs, same as output path.
+        top_name (Optional[str]): Defaults to None. Optional topology file name. If not
+            provided, we will assume this is `system.prmtop`.
+        coor_name (Optional[str]): Defaults to None. Optional coordinate file name. If not
+            provided, we will assume this is `system.inpcrd`.
+        out_path (Optional[Path]): Defaults to None. Optional output path which is where we
+            will place the simulation outputs. If not provided, we will assume this is 
+            `self.path`.
         ff (str): Switch for whether or not to utilize AMBER or CHARMM ff.
-        equil_steps (int): Defaults to 1,250,000 (2.5 ns). Number of simulation timesteps to
-            perform equilibration for (2fs timestep).
-        prod_steps (int): Defaults to 250,000,000 (1 µs). Number of simulation timesteps to
-            perform production MD for (4fs timestep).
+        equil_steps (int): Defaults to 1,250,000 (2.5 ns at 2 fs timestep). Number of simulation 
+            timesteps to perform equilibration.
+        prod_steps (int): Defaults to 250,000,000 (1 µs at 4 fs timestep). Number of simulation 
+            timesteps to perform production MD.
         n_equil_cycles (int): Defaults to 3 cycles. Number of additional unrestrained 
             equilibration cycles to perform. Increasing this may triage unstable systems 
             at the cost of more simulation time albeit this may be negligible in the 
             grand scheme of things.
-        reporter_frequency (int): Defaults to 1,000 timesteps. How often to write out to
-            the logs and trajectory files in equilibration. X times less frequently during
-            production MD.
+        temperature (float): Defaults to 300.0. Temperature for simulation.
+        eq_reporter_frequency (int): Defaults to 1,000 timesteps. How often to write out to
+            the logs and trajectory files in equilibration.
+        prod_reporter_frequency (int): Defaults to 10,000 timesteps. How often to write out to
+            the logs and trajectory files in production.
         platform (str): Defaults to CUDA. Which OpenMM platform to simulate with (options
             include CUDA, CPU, OpenCL).
         device_ids (list[int]): Defaults to [0]. Which accelerators to use (multiple GPU 
@@ -232,15 +244,21 @@ class Simulator:
         skip_eq = all([f.exists() 
                        for f in [self.eq_state, self.eq_chkpt, self.eq_log]])
         if not skip_eq:
+            logger.info('No restart detected, will begin equilibration.')
             self.equilibrate()
+            logger.info('Equilibration finished, running {self.prod_steps} steps of production MD.')
 
         if self.restart.exists():
+            logger.info('Checkpoint file detected, resuming simulation.')
             self.check_num_steps_left()
+            logger.info(f'Will run {self.prod_steps} steps of production MD.')
             self.production(chkpt=str(self.restart), 
                             restart=True)
         else:
             self.production(chkpt=str(self.eq_chkpt),
                             restart=False)
+
+        logger.info('Production MD run complete.')
 
     def equilibrate(self) -> Simulation:
         """
@@ -590,17 +608,27 @@ class ImplicitSimulator(Simulator):
     
     Arguments:
         path (PathLike): Path to simulation inputs, same as output path.
-        equil_steps (int): Defaults to 1,250,000 (2.5 ns). Number of simulation timesteps to
-            perform equilibration for (2fs timestep).
-        prod_steps (int): Defaults to 250,000,000 (1 µs). Number of simulation timesteps to
-            perform production MD for (4fs timestep).
+        top_name (Optional[str]): Defaults to None. Optional topology file name. If not
+            provided, we will assume this is `system.prmtop`.
+        coor_name (Optional[str]): Defaults to None. Optional coordinate file name. If not
+            provided, we will assume this is `system.inpcrd`.
+        out_path (Optional[Path]): Defaults to None. Optional output path which is where we
+            will place the simulation outputs. If not provided, we will assume this is 
+            `self.path`.
+        ff (str): Switch for whether or not to utilize AMBER or CHARMM ff.
+        equil_steps (int): Defaults to 1,250,000 (2.5 ns at 2 fs timestep). Number of simulation 
+            timesteps to perform equilibration.
+        prod_steps (int): Defaults to 250,000,000 (1 µs at 4 fs timestep). Number of simulation 
+            timesteps to perform production MD.
         n_equil_cycles (int): Defaults to 3 cycles. Number of additional unrestrained 
             equilibration cycles to perform. Increasing this may triage unstable systems 
             at the cost of more simulation time albeit this may be negligible in the 
             grand scheme of things.
-        reporter_frequency (int): Defaults to 1,000 timesteps. How often to write out to
-            the logs and trajectory files in equilibration. X times less frequently during
-            production MD.
+        temperature (float): Defaults to 300.0. Temperature for simulation.
+        eq_reporter_frequency (int): Defaults to 1,000 timesteps. How often to write out to
+            the logs and trajectory files in equilibration.
+        prod_reporter_frequency (int): Defaults to 10,000 timesteps. How often to write out to
+            the logs and trajectory files in production.
         platform (str): Defaults to CUDA. Which OpenMM platform to simulate with (options
             include CUDA, CPU, OpenCL).
         device_ids (list[int]): Defaults to [0]. Which accelerators to use (multiple GPU 
@@ -630,10 +658,13 @@ class ImplicitSimulator(Simulator):
                  force_constant: float=10.,
                  implicit_solvent: Singleton=GBn2,
                  solute_dielectric: float=1.,
-                 solvent_dielectric: float=78.5):
+                 solvent_dielectric: float=78.5,
+                 **kwargs):
         super().__init__(path=path, top_name=top_name, 
+                         coor_name=coor_name, out_path=out_path,
                          ff=ff, equil_steps=equil_steps, 
-                         prod_steps=prod_steps, n_equil_cycles=n_equil_cycles,
+                         prod_steps=prod_steps, 
+                         n_equil_cycles=n_equil_cycles,
                          temperature=temperature,
                          eq_reporter_frequency=eq_reporter_frequency, 
                          prod_reporter_frequency=prod_reporter_frequency,

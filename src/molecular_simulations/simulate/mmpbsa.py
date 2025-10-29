@@ -68,8 +68,11 @@ class MMPBSA(MMPBSA_settings):
                  gb_surfoff: float=0.,
                  amberhome: PathLike='',
                  **kwargs):
-        super().__init__(top=top, dcd=dcd, selections=selections, first_frame=first_frame, last_frame=last_frame, stride=stride, n_cpus=n_cpus,
-                         out=out, solvent_probe=solvent_probe, offset=offset, gb_surften=gb_surften, gb_surfoff=gb_surfoff)
+        super().__init__(top=top, dcd=dcd, 
+                         selections=selections, first_frame=first_frame, 
+                         last_frame=last_frame, stride=stride, n_cpus=n_cpus,
+                         out=out, solvent_probe=solvent_probe, offset=offset, 
+                         gb_surften=gb_surften, gb_surfoff=gb_surfoff)
         self.top = Path(self.top).resolve()
         self.traj = Path(self.dcd).resolve()
         self.path = self.top.parent
@@ -87,10 +90,17 @@ class MMPBSA(MMPBSA_settings):
             self.cpptraj = Path(amberhome) / self.cpptraj
             self.mmpbsa_py_energy = Path(amberhome) / self.mmpbsa_py_energy
 
-        self.fh = FileHandler(self.top, self.traj, self.path, self.selections, 
-                              self.first_frame, self.last_frame, self.stride,
-                              self.cpptraj)
-        self.analyzer = OutputAnalyzer(self.path, self.gb_surften, self.gb_surfoff)
+        self.fh = FileHandler(top=self.top, 
+                              traj=self.traj, 
+                              path=self.path, 
+                              sels=self.selections, 
+                              first=self.first_frame, 
+                              last=self.last_frame, 
+                              stride=self.stride,
+                              cpptraj_binary=self.cpptraj)
+        self.analyzer = OutputAnalyzer(path=self.path, 
+                                       surface_tension=self.gb_surften, 
+                                       sasa_offset=self.gb_surfoff)
 
         for key, value in kwargs.items():
             setattr(self, key, value)

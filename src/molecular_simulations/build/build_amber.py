@@ -1,6 +1,6 @@
 #!/usr/bin/env python
+import logging
 from openmm.app import PDBFile
-import os
 from pathlib import Path
 import subprocess
 import tempfile
@@ -8,6 +8,8 @@ from typing import Dict, List, Union
 
 PathLike = Union[str, Path]
 OptPath = Union[str, Path, None]
+
+logger = logging.getLogger(__name__)
 
 class ImplicitSolvent:
     """
@@ -33,7 +35,7 @@ class ImplicitSolvent:
         if out is not None:
             self.out = self.path / out
         else:
-            self.out = self.path / 'protein.pdb' 
+            self.out = self.path / 'system.pdb' 
 
         self.out = self.out.resolve()
 
@@ -70,7 +72,10 @@ class ImplicitSolvent:
         Returns:
             None
         """
+        logger.info('Build start: implicit solvent',
+                    extra={'pdb': str(self.pdb), 'out': str(self.out)})
         self.tleap_it()
+        logger.info('Build finished')
 
     def tleap_it(self) -> None:
         """
@@ -139,8 +144,6 @@ class ExplicitSolvent(ImplicitSolvent):
                  mod_protein: bool=False, polarizable: bool=False, amberhome: str='', **kwargs):
         super().__init__(path, pdb, protein, rna, dna, phos_protein, 
                          mod_protein, None, amberhome, **kwargs)
-        
-        self.out = self.path / 'system'
         self.pad = padding
         self.ffs.extend(['leaprc.water.opc'])
         self.water_box = 'OPCBOX'
@@ -160,11 +163,14 @@ class ExplicitSolvent(ImplicitSolvent):
         Returns:
             None
         """
+        logger.info('Build started: explicit solvent',
+                    extra={'pdb': str(self.pdb), 'out': str(self.out)})
         self.prep_pdb()
         dim = self.get_pdb_extent()
         num_ions = self.get_ion_numbers(dim**3)
         self.assemble_system(dim, num_ions)
         self.clean_up_directory()
+        logger.info('Build finished')
 
     def prep_pdb(self) -> None:
         """
@@ -175,7 +181,10 @@ class ExplicitSolvent(ImplicitSolvent):
         Returns:
             None
         """
-        os.system(f'{self.pdb4amber} -i {self.pdb} -o {self.path}/protein.pdb -y')
+        cmd = f'{self.pdb4amber} -i {self.pdb} -o {self.path}/protein.pdb -y'
+        subprocess.run(cmd, shell=True, cwd=str(self.path), check=True,
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
         self.pdb = f'{self.path}/protein.pdb'
         
     def assemble_system(self, dim: float, num_ions: int) -> None:
@@ -190,6 +199,10 @@ class ExplicitSolvent(ImplicitSolvent):
             None
         """
         tleap_ffs = '\n'.join([f'source {ff}' for ff in self.ffs])
+        out_pdb = self.out
+        out_top = self.out.with_suffix('.prmtop')
+        out_coor = self.out.with_suffix('.inpcrd')
+
         tleap_complex = f"""{tleap_ffs}
         PROT = loadpdb {self.pdb}
         
@@ -202,8 +215,8 @@ class ExplicitSolvent(ImplicitSolvent):
         
         addIonsRand PROT Na+ {num_ions} Cl- {num_ions}
         
-        savepdb PROT {self.out}.pdb
-        saveamberparm PROT {self.out}.prmtop {self.out}.inpcrd
+        savepdb PROT {out_pdb)
+        saveamberparm PROT {out_top} {out_coor}
         quit
         """
         
@@ -242,7 +255,6 @@ class ExplicitSolvent(ImplicitSolvent):
         Returns:
             None
         """
-        os.remove('leap.log')
         (self.path / 'build').mkdir(exist_ok=True)
         for f in self.path.glob('*'):
             if not any([ext in f.name for ext in ['.prmtop', '.inpcrd', 'build']]):
