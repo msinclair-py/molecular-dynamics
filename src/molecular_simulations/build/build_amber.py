@@ -40,12 +40,8 @@ class ImplicitSolvent:
 
         self.out = self.out.resolve()
 
-        if amberhome:
-            self.tleap = str(Path(amberhome) / 'tleap')
-            self.pdb4amber = str(Path(amberhome) / 'pdb4amber')
-        else:
-            self.tleap = 'tleap'
-            self.pdb4amber = 'pdb4amber'
+        self.tleap = str(Path(amberhome) / 'bin' / 'tleap')
+        self.pdb4amber = str(Path(amberhome) / 'bin' / 'pdb4amber')
 
         switches = [protein, rna, dna, phos_protein, mod_protein]
         ffs = [
