@@ -288,7 +288,7 @@ class Simulator:
                                                       potentialEnergy=True,
                                                       speed=True,
                                                       temperature=True))
-        simulation.reporters.append(DCDReporter(str(self.eq.dcd), self.eq_freq))
+        simulation.reporters.append(DCDReporter(str(self.eq_dcd), self.eq_freq))
 
         simulation, integrator = self._heating(simulation, integrator)
         simulation = self._equilibrate(simulation)
@@ -730,7 +730,7 @@ class ImplicitSimulator(Simulator):
                                                       potentialEnergy=True,
                                                       speed=True,
                                                       temperature=True))
-        simulation.reporters.append(DCDReporter(str(self.eq.dcd), self.eq_freq))
+        simulation.reporters.append(DCDReporter(str(self.eq_dcd), self.eq_freq))
 
         simulation, integrator = self._heating(simulation, integrator)
         simulation = self._equilibrate(simulation)
