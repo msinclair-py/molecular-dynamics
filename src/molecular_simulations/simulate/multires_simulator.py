@@ -28,15 +28,15 @@ class sander_min_defaults:
     imin=1       # Perform energy minimization
     maxcyc=5000  # Maximum number of minimization cycles
     ncyc=2500    # Switch from steepest descent to conjugate gradient after this many steps
-    ntb=0,       # Periodic boundary conditions (constant volume)
-    ntr=0,       # No restraints
+    ntb=0        # Periodic boundary conditions (constant volume)
+    ntr=0        # No restraints
     cut=10.0     # Nonbonded cutoff in Angstroms
     ntpr=10000   # Print energy every 10000 steps (don't print it)
-    wr=5000      # Write restart file every 500 steps (only once)
+    ntwr=5000    # Write restart file every 5000 steps (only once)
     ntxo=1       # Output restart file format (ASCII)
 
     def __init__(self):
-        self.mdin_contents = """Minimization input
+        self.mdin_contents = f"""Minimization input
  &cntrl
   imin={self.imin},
   maxcyc={self.maxcyc},
@@ -46,24 +46,41 @@ class sander_min_defaults:
   cut={self.cut:.1f},
   ntpr={self.ntpr},
   ntwr={self.ntwr},
-  ntxo={self.ntxo},
- /"""
+  ntxo={self.ntxo} 
+ /
+ """
 
 def sander_minimize(path: Path,
                     inpcrd_file: str,
                     prmtop_file: str,
                     sander_cmd: str) -> None:
+    """
+    Minimize MD system with sander and output new inpcrd file.
+    
+    Arguments:
+        path (Path): Path to directory containing inpcrd and prmtop. New inpcrd will be
+            written here as well.
+        inpcrd_file (str): Name of inpcrd file in path
+        prmtop_file (str): Name of prmtop file in path
+        sander_cmd (str): Command for sander
+    """
     defaults = sander_min_defaults()
     mdin = defaults.mdin_contents
-    with tempfile.NamedTemporaryFile(mode='w+', suffix='.in', dir=str(path)) as tmp:
-        tmp.write(mdin)
-        tmp.flush()
+    with tempfile.NamedTemporaryFile(mode='w+', suffix='.in', dir=str(path)) as tmp_in:
+        tmp_in.write(mdin)
+        tmp_in.flush()
         outfile = Path(inpcrd_file).with_suffix('.min.inpcrd')
-        command = [sander_cmd, '-O', '-i', tmp.name, '/dev/null']
-        command += ['-p', prmtop_file, '-c', inpcrd_file, '-r', str(outfile), '-ref', inpcrd_file]
-        result = subprocess.run(command, shell=False, capture_output=True, text=True)
-        if result.returncode != 0:
-            raise RuntimeError(f'sander error!\n{result.stderr}')
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.out', dir=str(path)) as tmp_out:
+            command = [sander_cmd, '-O', 
+                       '-i', tmp_in.name, 
+                       '-o', tmp_out.name,
+                       '-p', str(path / prmtop_file), 
+                       '-c', str(path / inpcrd_file),
+                       '-r', str(path / outfile),
+                       '-inf', str(path / 'min.mdinfo')] 
+            result = subprocess.run(command, shell=False, capture_output=True, text=True)
+            if result.returncode != 0:
+                raise RuntimeError(f'sander error!\n{result.stderr}\n{result.stdout}')
 
 class MultiResolutionSimulator:
     """
@@ -102,7 +119,7 @@ class MultiResolutionSimulator:
         self.aa_params = aa_params
         self.cg2all_bin = cg2all_bin
         self.cg2all_ckpt = cg2all_ckpt
-        self.AMBERHOME = Path(AMBERHOME)
+        self.AMBERHOME = Path(AMBERHOME) if AMBERHOME is not None else None
 
     @classmethod
     def from_toml(cls: Type[_T], config: PathLike) -> _T:
@@ -260,7 +277,7 @@ class MultiResolutionSimulator:
 
             # use pdb4amber to fix cg2all-generated pdb
             if self.AMBERHOME is None:
-                command = ['pdb4amber'], 
+                command = ['pdb4amber'] 
             else:
                 command = [str(self.AMBERHOME / 'pdb4amber')]
             command += [str(cg_path / 'last_frame.pdb'), '-y']
