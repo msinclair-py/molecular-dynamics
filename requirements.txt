@@ -1,9 +1,11 @@
+black-pdbfixer
 MDAnalysis
 mdtraj
 natsort
 openmm
 parmed
 parsl
+pyyaml
 rdkit
 polars
 pyyaml

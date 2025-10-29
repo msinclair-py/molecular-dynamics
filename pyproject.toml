@@ -4,7 +4,7 @@ build-backend = 'hatchling.build'
 
 [project]
 name = 'molecular_simulations'
-version = '0.3.16'
+version = '0.3.17'
 authors = [
   { name='Matt Sinclair', email='msinclair@anl.gov' },
 ]
@@ -20,6 +20,7 @@ classifiers = [
 license = 'MIT'
 license-files = ['LICEN[CS]E*']
 dependencies = [
+    'black-pdbfixer',
     'MDAnalysis>=2.7',
     'mdtraj',
     'natsort',
@@ -29,6 +30,7 @@ dependencies = [
     'parsl>=2024.1.29',
     'polars',
     'pydantic',
+    'pyyaml',
     'scikit-learn',
     'seaborn'
 ]

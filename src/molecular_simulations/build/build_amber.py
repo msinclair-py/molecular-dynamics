@@ -215,7 +215,7 @@ class ExplicitSolvent(ImplicitSolvent):
         
         addIonsRand PROT Na+ {num_ions} Cl- {num_ions}
         
-        savepdb PROT {out_pdb)
+        savepdb PROT {out_pdb}
         saveamberparm PROT {out_top} {out_coor}
         quit
         """
