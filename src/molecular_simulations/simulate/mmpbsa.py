@@ -69,7 +69,7 @@ class MMPBSA(MMPBSA_settings):
                  offset: int=0,
                  gb_surften: float=0.0072,
                  gb_surfoff: float=0.,
-                 amberhome: PathLike='',
+                 amberhome: PathLike=os.environ['AMBERHOME'],
                  **kwargs):
         super().__init__(top=top, dcd=dcd, 
                          selections=selections, first_frame=first_frame, 
@@ -85,13 +85,13 @@ class MMPBSA(MMPBSA_settings):
             self.path = Path(out).resolve()
 
         self.path.mkdir(exist_ok=True, parents=True)
-        os.chdir(str(self.path)) # critical for parallel runs to not overwrite files
+        #os.chdir(str(self.path)) # critical for parallel runs to not overwrite files
 
         self.cpptraj = 'cpptraj'
         self.mmpbsa_py_energy = 'mmpbsa_py_energy'
         if amberhome: # we are overriding AMBERHOME or using another env's install
-            self.cpptraj = Path(amberhome) / self.cpptraj
-            self.mmpbsa_py_energy = Path(amberhome) / self.mmpbsa_py_energy
+            self.cpptraj = Path(amberhome) / 'bin' / self.cpptraj
+            self.mmpbsa_py_energy = Path(amberhome) / 'bin' / self.mmpbsa_py_energy
 
         self.fh = FileHandler(top=self.top, 
                               traj=self.traj, 
@@ -156,9 +156,8 @@ class MMPBSA(MMPBSA_settings):
         
         self.fh.write_file(sasa_in, sasa)
 
-        result = subprocess.run(f'{self.cpptraj} -i {sasa}', shell=True, capture_output=True, text=True)
-        if result.returncode != 0:
-            raise RuntimeError(f'MM-PBSA hates us:\n{result.stdout}\n{result.stderr}')
+        subprocess.run(f'{self.cpptraj} -i {sasa}', shell=True, cwd=str(self.path),
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         sasa.unlink()
     
     def calculate_energy(self,
@@ -184,7 +183,9 @@ class MMPBSA(MMPBSA_settings):
         Returns:
             None
         """
-        subprocess.call(f'{self.mmpbsa_py_energy} -O -i {mdin} -p {prm} -c {pdb} -y {trj} -o {pre}_{suf}.mdout', shell=True)
+        cmd = f'{self.mmpbsa_py_energy} -O -i {mdin} -p {prm} -c {pdb} -y {trj} -o {pre}_{suf}.mdout'
+        subprocess.run(cmd, shell=True, cwd=str(self.path), 
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     
     def write_mdins(self) -> tuple[Path, Path]:
         """
@@ -248,11 +249,13 @@ class OutputAnalyzer:
                  path: PathLike,
                  surface_tension: float=0.0072,
                  sasa_offset: float=0.,
-                 _tolerance: float = 0.005):
+                 _tolerance: float = 0.005,
+                 log: bool=True):
         self.path = Path(path)
         self.surften = surface_tension
         self.offset = sasa_offset
         self.tolerance = _tolerance
+        self.log = log
 
         self.systems = ['receptor', 'ligand', 'complex']
         self.levels = ['gb', 'pb']
@@ -518,7 +521,7 @@ class OutputAnalyzer:
             differences.append(pl.DataFrame(
                 {diff_cols[i]: data[:,i] for i in range(len(diff_cols))}
             ))
-
+        
         self.pretty_print(differences)
 
     def pretty_print(self,
@@ -535,6 +538,7 @@ class OutputAnalyzer:
             None
         """
         print_statement = []
+        log_statement = []
         for df, level in zip(dfs, ['Generalized Born ', 'Poisson Boltzmann']):
             print_statement += [
                 f'{" ":<20}=========================',
@@ -545,19 +549,28 @@ class OutputAnalyzer:
             ]
             for col in df.columns:
                 mean, std, err = [x.item() for x in df.select(pl.col(col)).to_numpy()]
+                report = f'{col:<20}{mean:<16.3f}{std:<16.3f}{err:<16.3f}'
                 if abs(mean) <= self.tolerance:
                     continue
 
                 if col in ['G gas', '∆G Binding']:
                     print_statement.append('')
 
-                print_statement.append(f'{col:<20}{mean:<16.3f}{std:<16.3f}{err:<16.3f}')
+                if col == '∆G Binding':
+                    log_statement.append(f'{level.strip()}:')
+                    log_statement.append(report)
+
+                print_statement.append(report)
 
         print_statement = '\n'.join(print_statement)
         with open('deltaG.txt', 'w') as fout:
             fout.write(print_statement)
         
-        print(print_statement)
+        if self.log:
+            for statement in log_statement:
+                logging.info(statement)
+        else:
+            print(print_statement)
 
     @staticmethod
     def parse_line(line) -> tuple[list[str], list[float]]:
@@ -628,8 +641,6 @@ class FileHandler:
             self.path / 'ligand.prmtop'
         ]
 
-        print(self.topologies)
-        
         cpptraj_in = [
             f'parm {self.top}',
             'parmstrip :Na+,Cl-,WAT',
@@ -651,7 +662,8 @@ class FileHandler:
         
         script = self.path  / 'cpptraj.in'
         self.write_file('\n'.join(cpptraj_in), script)
-        subprocess.call(f'{self.cpptraj} -i {script}', shell=True)
+        subprocess.call(f'{self.cpptraj} -i {script}', shell=True, cwd=str(self.path),
+                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         script.unlink()
         
     def prepare_trajectories(self) -> None:
@@ -710,7 +722,8 @@ class FileHandler:
 
         name = self.path / 'mdcrd.in'
         self.write_file('\n'.join(cpptraj_in), name)
-        subprocess.call(f'{self.cpptraj} -i {name}', shell=True)
+        subprocess.call(f'{self.cpptraj} -i {name}', shell=True, cwd=str(self.path),
+                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         name.unlink()
 
