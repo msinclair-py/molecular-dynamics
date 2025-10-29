@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import json
+import logging
 import numpy as np
 import os
 from pathlib import Path
@@ -8,6 +9,8 @@ import subprocess
 from typing import Union
 
 PathLike = Union[Path, str]
+
+logger = logging.getLogger(__name__)
 
 @dataclass
 class MMPBSA_settings:
@@ -115,13 +118,16 @@ class MMPBSA(MMPBSA_settings):
         Returns:
             None
         """
+        logger.info('Preparing MM-PBSA calculation.')
         gb_mdin, pb_mdin = self.write_mdins()
 
         for (prefix, top, traj, pdb) in self.fh.files:
+            logger.info(f'Computing energy terms for {prefix.name}.')
             self.calculate_sasa(prefix, top, traj)
             self.calculate_energy(prefix, top, traj, pdb, gb_mdin, 'gb')
             self.calculate_energy(prefix, top, traj, pdb, pb_mdin, 'pb')
 
+        logger.info('Collating results.')
         self.analyzer.parse_outputs()
 
     def calculate_sasa(self,
