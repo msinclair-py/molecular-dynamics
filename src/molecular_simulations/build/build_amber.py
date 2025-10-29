@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import logging
 from openmm.app import PDBFile
+import os
 from pathlib import Path
 import subprocess
 import tempfile
@@ -19,7 +20,7 @@ class ImplicitSolvent:
     def __init__(self, path: OptPath, pdb: str, protein: bool=True,
                  rna: bool=False, dna: bool=False, phos_protein: bool=False,
                  mod_protein: bool=False, out: OptPath=None,
-                 amberhome: str='', **kwargs):
+                 amberhome: str=os.environ['AMBERHOME'], **kwargs):
         if path is None:
             self.path = Path(pdb).parent
         elif isinstance(path, str):
@@ -141,9 +142,12 @@ class ExplicitSolvent(ImplicitSolvent):
     """
     def __init__(self, path: PathLike, pdb: PathLike, padding: float=10., protein: bool=True,
                  rna: bool=False, dna: bool=False, phos_protein: bool=False,
-                 mod_protein: bool=False, polarizable: bool=False, amberhome: str='', **kwargs):
-        super().__init__(path, pdb, protein, rna, dna, phos_protein, 
-                         mod_protein, None, amberhome, **kwargs)
+                 mod_protein: bool=False, polarizable: bool=False, 
+                 amberhome: str=os.environ['AMBERHOME'], **kwargs):
+        super().__init__(path=path, pdb=pdb, protein=protein, rna=rna, 
+                         dna=dna, phos_protein=phos_protein, 
+                         mod_protein=mod_protein, out=None, 
+                         amberhome=amberhome, **kwargs)
         self.pad = padding
         self.ffs.extend(['leaprc.water.opc'])
         self.water_box = 'OPCBOX'
