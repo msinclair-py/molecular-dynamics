@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 import polars as pl
 import subprocess
-from typing import Union
+from typing import Optional, Union
 
 PathLike = Union[Path, str]
 
@@ -69,7 +69,7 @@ class MMPBSA(MMPBSA_settings):
                  offset: int=0,
                  gb_surften: float=0.0072,
                  gb_surfoff: float=0.,
-                 amberhome: PathLike=os.environ['AMBERHOME'],
+                 amberhome: Optional[str]=None,
                  **kwargs):
         super().__init__(top=top, dcd=dcd, 
                          selections=selections, first_frame=first_frame, 
@@ -89,7 +89,12 @@ class MMPBSA(MMPBSA_settings):
 
         self.cpptraj = 'cpptraj'
         self.mmpbsa_py_energy = 'mmpbsa_py_energy'
-        if amberhome: # we are overriding AMBERHOME or using another env's install
+        if amberhome is None: # we are overriding AMBERHOME or using another env's install
+            if 'AMBERHOME' in os.environ:
+                amberhome = os.environ['AMBERHOME']
+            else:
+                raise ValueError('AMBERHOME not set in env vars!')
+        
             self.cpptraj = Path(amberhome) / 'bin' / self.cpptraj
             self.mmpbsa_py_energy = Path(amberhome) / 'bin' / self.mmpbsa_py_energy
 

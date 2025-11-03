@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 import subprocess
 import tempfile
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 
 PathLike = Union[str, Path]
 OptPath = Union[str, Path, None]
@@ -20,7 +20,7 @@ class ImplicitSolvent:
     def __init__(self, path: OptPath, pdb: str, protein: bool=True,
                  rna: bool=False, dna: bool=False, phos_protein: bool=False,
                  mod_protein: bool=False, out: OptPath=None,
-                 amberhome: str=os.environ['AMBERHOME'], **kwargs):
+                 amberhome: Optional[str]=None, **kwargs):
         if path is None:
             self.path = Path(pdb).parent
         elif isinstance(path, str):
@@ -31,7 +31,7 @@ class ImplicitSolvent:
         self.path = self.path.resolve()
         self.path.mkdir(exist_ok=True, parents=True)
 
-        self.pdb = pdb
+        self.pdb = pdb.resolve()
 
         if out is not None:
             self.out = self.path / out
@@ -39,6 +39,12 @@ class ImplicitSolvent:
             self.out = self.path / 'system.pdb' 
 
         self.out = self.out.resolve()
+
+        if amberhome is None:
+            if 'AMBERHOME' in os.environ:
+                amberhome = os.environ['AMBERHOME']
+            else:
+                raise ValueError(f'AMBERHOME is not set in env vars!')
 
         self.tleap = str(Path(amberhome) / 'bin' / 'tleap')
         self.pdb4amber = str(Path(amberhome) / 'bin' / 'pdb4amber')
@@ -127,7 +133,6 @@ class ImplicitSolvent:
             temp_file.write(inp)
             temp_file.flush()
             tleap_command = f'{self.tleap} -f {temp_file.name}'
-            print(tleap_command)
             subprocess.run(tleap_command, shell=True, cwd=str(self.path), check=True,
                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     
@@ -139,7 +144,7 @@ class ExplicitSolvent(ImplicitSolvent):
     def __init__(self, path: PathLike, pdb: PathLike, padding: float=10., protein: bool=True,
                  rna: bool=False, dna: bool=False, phos_protein: bool=False,
                  mod_protein: bool=False, polarizable: bool=False, 
-                 amberhome: str=os.environ['AMBERHOME'], **kwargs):
+                 amberhome: Optional[str]=None, **kwargs):
         super().__init__(path=path, pdb=pdb, protein=protein, rna=rna, 
                          dna=dna, phos_protein=phos_protein, 
                          mod_protein=mod_protein, out=None, 
