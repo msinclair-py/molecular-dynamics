@@ -17,10 +17,18 @@ class ImplicitSolvent:
     Class for building a system using ambertools. Produces explicit solvent cubic box
     with user-specified padding which has been neutralized and ionized with 150mM NaCl.
     """
-    def __init__(self, path: OptPath, pdb: str, protein: bool=True,
-                 rna: bool=False, dna: bool=False, phos_protein: bool=False,
-                 mod_protein: bool=False, out: OptPath=None,
-                 amberhome: Optional[str]=None, **kwargs):
+    def __init__(self, 
+                 path: OptPath, 
+                 pdb: str, 
+                 protein: bool=True,
+                 rna: bool=False, 
+                 dna: bool=False, 
+                 phos_protein: bool=False,
+                 mod_protein: bool=False, 
+                 out: OptPath=None, 
+                 delete_temp_file: bool=True, 
+                 amberhome: Optional[str]=None, 
+                 **kwargs):
         if path is None:
             self.path = Path(pdb).parent
         elif isinstance(path, str):
@@ -39,6 +47,7 @@ class ImplicitSolvent:
             self.out = self.path / 'system.pdb' 
 
         self.out = self.out.resolve()
+        self.delete = delete_temp_file
 
         if amberhome is None:
             if 'AMBERHOME' in os.environ:
@@ -129,7 +138,10 @@ class ImplicitSolvent:
         Returns:
             None
         """
-        with tempfile.NamedTemporaryFile(mode='w+', suffix='.in', dir=str(self.path)) as temp_file:
+        with tempfile.NamedTemporaryFile(mode='w+', 
+                                         suffix='.in', 
+                                         delete=self.delete, 
+                                         dir=str(self.path)) as temp_file:
             temp_file.write(inp)
             temp_file.flush()
             tleap_command = f'{self.tleap} -f {temp_file.name}'
@@ -141,14 +153,30 @@ class ExplicitSolvent(ImplicitSolvent):
     Class for building a system using ambertools. Produces explicit solvent cubic box
     with user-specified padding which has been neutralized and ionized with 150mM NaCl.
     """
-    def __init__(self, path: PathLike, pdb: PathLike, padding: float=10., protein: bool=True,
-                 rna: bool=False, dna: bool=False, phos_protein: bool=False,
-                 mod_protein: bool=False, polarizable: bool=False, 
-                 amberhome: Optional[str]=None, **kwargs):
-        super().__init__(path=path, pdb=pdb, protein=protein, rna=rna, 
-                         dna=dna, phos_protein=phos_protein, 
-                         mod_protein=mod_protein, out=None, 
-                         amberhome=amberhome, **kwargs)
+    def __init__(self, 
+                 path: PathLike, 
+                 pdb: PathLike, 
+                 padding: float=10., 
+                 protein: bool=True,
+                 rna: bool=False, 
+                 dna: bool=False, 
+                 phos_protein: bool=False,
+                 mod_protein: bool=False, 
+                 polarizable: bool=False, 
+                 delete_temp_file: bool=True,
+                 amberhome: Optional[str]=None, 
+                 **kwargs):
+        super().__init__(path=path, 
+                         pdb=pdb, 
+                         protein=protein, 
+                         rna=rna, 
+                         dna=dna, 
+                         phos_protein=phos_protein, 
+                         mod_protein=mod_protein, 
+                         out=None,
+                         delete_temp_file=delete_temp_file,
+                         amberhome=amberhome, 
+                         **kwargs)
         self.pad = padding
         self.ffs.extend(['leaprc.water.opc'])
         self.water_box = 'OPCBOX'
