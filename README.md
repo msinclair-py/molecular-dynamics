@@ -1,4 +1,7 @@
 # molecular-dynamics repository README
+[![CI/CD](https://github.com/msinclair-py/molecular-simulations/workflows/CI%2FCD/badge.svg)](https://github.com/msinclair-py/molecular-simulations/actions)
+[![PyPI version](https://img.shields.io/pypi/v/molecular-simulations)](https://pypi.org/project/molecular-simulations/)
+
 [molecular-dynamics](https://molecular-simulations.readthedocs.io/en/latest/index.html) 
 is a collection of python utilities for MD simulation building, 
 running and analysis.

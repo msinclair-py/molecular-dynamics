@@ -9,13 +9,13 @@ class RCReporter:
                  file: Path,
                  report_interval: int,
                  atom_indices: list[int],
-                 params: list[int | float]):
+                 rc0: float):
         self.file = open(file, 'w')
         self.file.write()
         
         self.report_interval = report_interval
         self.atom_indices = atom_indices
-        self.params = params
+        self.rc0 = rc0
         
     def __del__(self):
         """_summary_
