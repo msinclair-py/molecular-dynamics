@@ -71,11 +71,18 @@ class MMPBSA(MMPBSA_settings):
                  gb_surfoff: float=0.,
                  amberhome: Optional[str]=None,
                  **kwargs):
-        super().__init__(top=top, dcd=dcd, 
-                         selections=selections, first_frame=first_frame, 
-                         last_frame=last_frame, stride=stride, n_cpus=n_cpus,
-                         out=out, solvent_probe=solvent_probe, offset=offset, 
-                         gb_surften=gb_surften, gb_surfoff=gb_surfoff)
+        super().__init__(top=top, 
+                         dcd=dcd, 
+                         selections=selections, 
+                         first_frame=first_frame, 
+                         last_frame=last_frame, 
+                         stride=stride, 
+                         n_cpus=n_cpus,
+                         out=out, 
+                         solvent_probe=solvent_probe, 
+                         offset=offset, 
+                         gb_surften=gb_surften, 
+                         gb_surfoff=gb_surfoff)
         self.top = Path(self.top).resolve()
         self.traj = Path(self.dcd).resolve()
         self.path = self.top.parent
@@ -85,7 +92,6 @@ class MMPBSA(MMPBSA_settings):
             self.path = Path(out).resolve()
 
         self.path.mkdir(exist_ok=True, parents=True)
-        #os.chdir(str(self.path)) # critical for parallel runs to not overwrite files
 
         self.cpptraj = 'cpptraj'
         self.mmpbsa_py_energy = 'mmpbsa_py_energy'
@@ -568,7 +574,7 @@ class OutputAnalyzer:
                 print_statement.append(report)
 
         print_statement = '\n'.join(print_statement)
-        with open('deltaG.txt', 'w') as fout:
+        with open(self.path / 'deltaG.txt', 'w') as fout:
             fout.write(print_statement)
         
         if self.log:

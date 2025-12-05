@@ -11,9 +11,8 @@ import polars as pl
 # Import the modules to test
 import sys
 import os
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from autocluster import GenericDataloader, PeriodicDataloader, AutoKMeans, Decomposition
+from molecular_simulations.analysis.autocluster import GenericDataloader, PeriodicDataloader, AutoKMeans, Decomposition
 
 
 class TestGenericDataloader:
