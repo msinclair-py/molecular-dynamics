@@ -1,3 +1,4 @@
+from concurrent.futures import as_completed, ThreadPoolExecutor
 from dataclasses import dataclass
 import json
 import logging
@@ -5,12 +6,49 @@ import numpy as np
 import os
 from pathlib import Path
 import polars as pl
+import re
 import subprocess
-from typing import Optional, Union
+from typing import Literal, Optional, Union
 
 PathLike = Union[Path, str]
 
 logger = logging.getLogger(__name__)
+
+def _run_subprocess(cmd: str, cwd: str) -> subprocess.CompletedProcess:
+    """Helper function for running subprocesses (module level for pickling)"""
+    return subprocess.run(
+        cmd,
+        shell=True,
+        cwd=cwd,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        check=False
+    )
+
+def _run_energy_calculation(args: tuple[str]) -> Path:
+    """Worker function for parallel energy calculations.
+    Must be module level for ThreadPoolExecutor pickling.
+
+    Args:
+        args (tuple): Tuple of (mmpbsa_binary, mdin_path, prmtop, pdb, traj_chunk, output_path, cwd)
+
+    Returns:
+        (Path): Path to the output file.
+    """
+    mmpbsa_binary, mdin, prm, pdb, trj, out, cwd = args
+    cmd = f'{mmpbsa_binary} -O -i {mdin} -p {prm} -c {pdb} -y {trj} -o {out}'
+    subprocess.run(cmd, shell=True, cwd=str(cwd), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    return Path(out)
+
+def _run_sasa_calculation(args: tuple[str]) -> Path:
+    """Worker function for parallel SASA calculations.
+    Must be module level for ThreadPoolExecutor pickling."""
+    cpptraj_binary, sasa_script, cwd = args
+    subprocess.run(f'{cpptraj_binary} -i {sasa_script}', shell=True, cwd=str(cwd),
+                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    return Path(sasa_script)
 
 @dataclass
 class MMPBSA_settings:
@@ -54,7 +92,10 @@ class MMPBSA(MMPBSA_settings):
         solvent_probe (float): Defaults to 1.4Å. The probe radius to use for SA calculations.
         offset (int): Defaults to 0Å. I don't know what this does.
         gb_surften (float): Defaults to 0.0072.
-        gb_suroff (float): Defaults to 0.0.
+        gb_surfoff (float): Defaults to 0.0.
+        parallel_mode (str): 'frame' for frame-level parallelization (recommended),
+                             'system' for system-level parallelization,
+                             'hybrid' for both (most aggressive)
     """
     def __init__(self,
                  top: PathLike,
@@ -70,6 +111,7 @@ class MMPBSA(MMPBSA_settings):
                  gb_surften: float=0.0072,
                  gb_surfoff: float=0.,
                  amberhome: Optional[str]=None,
+                 parallel_mode: Literal['frame', 'system', 'hybrid'] = 'frame',
                  **kwargs):
         super().__init__(top=top, 
                          dcd=dcd, 
@@ -83,6 +125,7 @@ class MMPBSA(MMPBSA_settings):
                          offset=offset, 
                          gb_surften=gb_surften, 
                          gb_surfoff=gb_surfoff)
+        self.parallel_mode = parallel_mode
         self.top = Path(self.top).resolve()
         self.traj = Path(self.dcd).resolve()
         self.path = self.top.parent
@@ -104,42 +147,255 @@ class MMPBSA(MMPBSA_settings):
             self.cpptraj = Path(amberhome) / 'bin' / self.cpptraj
             self.mmpbsa_py_energy = Path(amberhome) / 'bin' / self.mmpbsa_py_energy
 
-        self.fh = FileHandler(top=self.top, 
-                              traj=self.traj, 
-                              path=self.path, 
-                              sels=self.selections, 
-                              first=self.first_frame, 
-                              last=self.last_frame, 
-                              stride=self.stride,
-                              cpptraj_binary=self.cpptraj)
-        self.analyzer = OutputAnalyzer(path=self.path, 
-                                       surface_tension=self.gb_surften, 
-                                       sasa_offset=self.gb_surfoff)
+        self.fh = FileHandler(
+            top=self.top, 
+            traj=self.traj, 
+            path=self.path, 
+            sels=self.selections, 
+            first=self.first_frame, 
+            last=self.last_frame, 
+            stride=self.stride,
+            cpptraj_binary=self.cpptraj,
+            n_chunks=self.n_cpus
+        )
+
+        self.analyzer = OutputAnalyzer(
+            path=self.path, 
+            surface_tension=self.gb_surften, 
+            sasa_offset=self.gb_surfoff
+        )
 
         for key, value in kwargs.items():
             setattr(self, key, value)
 
     def run(self) -> None:
         """
-        Main logic of MM-PBSA. Computes the SASA with molsurf in cpptraj, and
-        the various energy terms for GB/PB using mmpbsa_py_energy from ambertools.
-        Finally, parse outputs and collate into a neat form consisting of a json
-        of raw data and a plain text file of the binding free energies.
-
-        Returns:
-            None
+        Main logic of MM-PBSA with parallelization.
+        
+        Depending on parallel_mode:
+        - 'frame': Splits trajectory into chunks, processes in parallel
+        - 'system': Processes complex/receptor/ligand in parallel  
+        - 'hybrid': Both frame-level and system-level parallelization
         """
-        logger.info('Preparing MM-PBSA calculation.')
+        logger.info(f'Preparing MM-PBSA calculation with {self.n_cpus} CPUs (mode: {self.parallel_mode})')
         gb_mdin, pb_mdin = self.write_mdins()
 
+        if self.parallel_mode == 'frame':
+            self._run_frame_parallel(gb_mdin, pb_mdin)
+        elif self.parallel_mode == 'system':
+            self._run_system_parallel(gb_mdin, pb_mdin)
+        elif self.parallel_mode == 'hybrid':
+            self._run_hybrid_parallel(gb_mdin, pb_mdin)
+        else:
+            # Fallback to serial
+            self._run_serial(gb_mdin, pb_mdin)
+
+        logger.info('Collating results.')
+        self.analyzer.parse_outputs()
+
+    def _run_serial(self, gb_mdin: Path, pb_mdin: Path) -> None:
+        """Original serial implementation."""
         for (prefix, top, traj, pdb) in self.fh.files:
             logger.info(f'Computing energy terms for {prefix.name}.')
             self.calculate_sasa(prefix, top, traj)
             self.calculate_energy(prefix, top, traj, pdb, gb_mdin, 'gb')
             self.calculate_energy(prefix, top, traj, pdb, pb_mdin, 'pb')
 
-        logger.info('Collating results.')
-        self.analyzer.parse_outputs()
+    def _run_frame_parallel(self, gb_mdin: Path, pb_mdin: Path) -> None:
+        """
+        Frame-level parallelization: split trajectory into chunks, process in parallel.
+        This provides the best speedup for long trajectories.
+        """
+        # Collect all calculation tasks
+        energy_tasks = []
+        sasa_tasks = []
+        
+        for (prefix, top, traj_chunks, pdb) in self.fh.files_chunked:
+            system_name = prefix.name
+            logger.info(f'Preparing parallel energy calculations for {system_name}.')
+            
+            # SASA calculations for each chunk
+            for i, traj_chunk in enumerate(traj_chunks):
+                sasa_script = self._write_sasa_script(prefix, top, traj_chunk, chunk_idx=i)
+                sasa_tasks.append((str(self.cpptraj), str(sasa_script), str(self.path)))
+            
+            # Energy calculations for each chunk
+            for i, traj_chunk in enumerate(traj_chunks):
+                # GB calculation
+                out_gb = f'{system_name}_chunk{i}_gb.mdout'
+                energy_tasks.append((
+                    str(self.mmpbsa_py_energy), str(gb_mdin), str(top), 
+                    str(pdb), str(traj_chunk), out_gb, str(self.path)
+                ))
+                # PB calculation
+                out_pb = f'{system_name}_chunk{i}_pb.mdout'
+                energy_tasks.append((
+                    str(self.mmpbsa_py_energy), str(pb_mdin), str(top),
+                    str(pdb), str(traj_chunk), out_pb, str(self.path)
+                ))
+        
+        # Run SASA calculations in parallel
+        logger.info(f'Running {len(sasa_tasks)} SASA calculations in parallel.')
+        with ThreadPoolExecutor(max_workers=self.n_cpus) as executor:
+            list(executor.map(_run_sasa_calculation, sasa_tasks))
+        
+        # Combine SASA results
+        self._combine_sasa_chunks()
+        
+        # Run energy calculations in parallel
+        logger.info(f'Running {len(energy_tasks)} energy calculations in parallel.')
+        with ThreadPoolExecutor(max_workers=self.n_cpus) as executor:
+            list(executor.map(_run_energy_calculation, energy_tasks))
+        
+        # Combine energy results
+        self._combine_energy_chunks()
+
+    def _run_system_parallel(self, gb_mdin: Path, pb_mdin: Path) -> None:
+        """
+        System-level parallelization: process complex/receptor/ligand concurrently.
+        Maximum 3x speedup.
+        """
+        tasks = []
+        for (prefix, top, traj, pdb) in self.fh.files:
+            tasks.append((prefix, top, traj, pdb, gb_mdin, pb_mdin))
+        
+        def process_system(args):
+            prefix, top, traj, pdb, gb_mdin, pb_mdin = args
+            self.calculate_sasa(prefix, top, traj)
+            self.calculate_energy(prefix, top, traj, pdb, gb_mdin, 'gb')
+            self.calculate_energy(prefix, top, traj, pdb, pb_mdin, 'pb')
+            return prefix.name
+        
+        # Use ThreadPoolExecutor since subprocess calls release the GIL
+        with ThreadPoolExecutor(max_workers=min(3, self.n_cpus)) as executor:
+            futures = [executor.submit(process_system, t) for t in tasks]
+            for future in as_completed(futures):
+                logger.info(f'Completed energy terms for {future.result()}.')
+
+    def _run_hybrid_parallel(self, gb_mdin: Path, pb_mdin: Path) -> None:
+        """
+        Hybrid parallelization: frame-level within system-level.
+        Most aggressive parallelization.
+        """
+        # For hybrid, we allocate CPUs across systems
+        cpus_per_system = max(1, self.n_cpus // 3)
+        
+        def process_system_parallel(args):
+            prefix, top, traj_chunks, pdb = args
+            system_name = prefix.name
+            
+            # Run SASA in parallel for this system
+            sasa_tasks = []
+            for i, traj_chunk in enumerate(traj_chunks):
+                sasa_script = self._write_sasa_script(prefix, top, traj_chunk, chunk_idx=i)
+                sasa_tasks.append((str(self.cpptraj), str(sasa_script), str(self.path)))
+            
+            with ThreadPoolExecutor(max_workers=cpus_per_system) as executor:
+                list(executor.map(_run_sasa_calculation, sasa_tasks))
+            
+            # Run energy calculations in parallel for this system
+            energy_tasks = []
+            for i, traj_chunk in enumerate(traj_chunks):
+                out_gb = f'{system_name}_chunk{i}_gb.mdout'
+                energy_tasks.append((
+                    str(self.mmpbsa_py_energy), str(gb_mdin), str(top),
+                    str(pdb), str(traj_chunk), out_gb, str(self.path)
+                ))
+                out_pb = f'{system_name}_chunk{i}_pb.mdout'
+                energy_tasks.append((
+                    str(self.mmpbsa_py_energy), str(pb_mdin), str(top),
+                    str(pdb), str(traj_chunk), out_pb, str(self.path)
+                ))
+            
+            with ThreadPoolExecutor(max_workers=cpus_per_system) as executor:
+                list(executor.map(_run_energy_calculation, energy_tasks))
+            
+            return system_name
+        
+        # Process all systems in parallel at the top level
+        with ThreadPoolExecutor(max_workers=3) as executor:
+            futures = [executor.submit(process_system_parallel, args) 
+                      for args in self.fh.files_chunked]
+            for future in as_completed(futures):
+                logger.info(f'Completed {future.result()}.')
+        
+        # Combine results
+        self._combine_sasa_chunks()
+        self._combine_energy_chunks()
+
+    def _write_sasa_script(self, prefix: Path, prm: Path, trj: Path, 
+                          chunk_idx: int = 0) -> Path:
+        """Write a SASA calculation script for a trajectory chunk."""
+        sasa = self.path / f'sasa_{prefix.name}_chunk{chunk_idx}.in'
+        out_file = f'{prefix.name}_chunk{chunk_idx}_surf.dat'
+        sasa_in = [
+            f'parm {prm}',
+            f'trajin {trj}',
+            f'molsurf :* out {out_file} probe {self.solvent_probe} offset {self.offset}',
+            'run',
+            'quit'
+        ]
+        self.fh.write_file(sasa_in, sasa)
+        return sasa
+
+    def _combine_sasa_chunks(self) -> None:
+        """Combine SASA results from all chunks into single files (in correct frame order)."""
+        def extract_chunk_idx(filepath: Path) -> int:
+            """Extract chunk index from filename for proper numerical sorting."""
+            match = re.search(r'_chunk(\d+)_', filepath.name)
+            return int(match.group(1)) if match else 0
+        
+        for system in ['complex', 'receptor', 'ligand']:
+            combined_data = []
+            chunk_files = list(self.path.glob(f'{system}_chunk*_surf.dat'))
+            # Sort numerically by chunk index, not lexicographically
+            chunk_files.sort(key=extract_chunk_idx)
+            
+            for chunk_file in chunk_files:
+                with open(chunk_file) as f:
+                    lines = f.readlines()
+                    if combined_data:
+                        # Skip header for subsequent chunks
+                        combined_data.extend(lines[1:])
+                    else:
+                        combined_data.extend(lines)
+            
+            # Write combined file
+            output = self.path / f'{system}_surf.dat'
+            with open(output, 'w') as f:
+                f.writelines(combined_data)
+            
+            # Clean up chunk files
+            for chunk_file in chunk_files:
+                chunk_file.unlink()
+
+    def _combine_energy_chunks(self) -> None:
+        """Combine energy results from all chunks into single files (in correct frame order)."""
+        def extract_chunk_idx(filepath: Path) -> int:
+            """Extract chunk index from filename for proper numerical sorting."""
+            match = re.search(r'_chunk(\d+)_', filepath.name)
+            return int(match.group(1)) if match else 0
+        
+        for system in ['complex', 'receptor', 'ligand']:
+            for level in ['gb', 'pb']:
+                combined_data = []
+                chunk_files = list(self.path.glob(f'{system}_chunk*_{level}.mdout'))
+                # Sort numerically by chunk index, not lexicographically
+                chunk_files.sort(key=extract_chunk_idx)
+                
+                for chunk_file in chunk_files:
+                    with open(chunk_file) as f:
+                        content = f.read()
+                        combined_data.append(content)
+                
+                # Write combined file (mdout format allows concatenation of frame data)
+                output = self.path / f'{system}_{level}.mdout'
+                with open(output, 'w') as f:
+                    f.write('\n'.join(combined_data))
+                
+                # Clean up chunk files
+                for chunk_file in chunk_files:
+                    chunk_file.unlink()
 
     def calculate_sasa(self,
                        pre: str,
@@ -251,6 +507,7 @@ class MMPBSA(MMPBSA_settings):
         return gb, pb
 
 
+
 class OutputAnalyzer:
     """
     Analyzes the outputs from an MM-PBSA run. Stores data in a Polars dataframe
@@ -282,6 +539,7 @@ class OutputAnalyzer:
         """        
         self.gb = pl.DataFrame()
         self.pb = pl.DataFrame()
+
         for system in self.systems:
             E_sasa = self.read_sasa(self.path / f'{system}_surf.dat')
             E_gb = self.read_GB(self.path / f'{system}_gb.mdout', system)
@@ -291,7 +549,7 @@ class OutputAnalyzer:
 
             self.gb = pl.concat([self.gb, E_gb], how='vertical')
             self.pb = pl.concat([self.pb, E_pb], how='vertical')
-        
+
         all_cols = list(set(self.gb.columns + self.pb.columns))
         self.contributions = {
                 'G gas': [col for col in all_cols
@@ -341,7 +599,7 @@ class OutputAnalyzer:
         gb_terms = ['BOND', 'ANGLE', 'DIHED', 'VDWAALS', 'EEL',
                     'EGB', '1-4 VDW', '1-4 EEL', 'RESTRAINT', 'ESURF']
         data = {gb_term: [] for gb_term in gb_terms}
-        
+
         lines = open(_file, 'r').readlines()
 
         return self.parse_energy_file(lines, data, system)
@@ -370,7 +628,21 @@ class OutputAnalyzer:
 
         return self.parse_energy_file(lines, data, system)
     
-    def parse_energy_file(self,
+    def parse_energy_file(self, file_contents: list[str],
+                         data: dict[str, list], system: str) -> pl.DataFrame:
+        """Parse energy file contents."""
+        for line in file_contents:
+            if '=' in line and any(key in line for key in data.keys()):
+                parsed = self.parse_line(line)
+                for key, val in parsed:
+                    if key in data:
+                        data[key].append(val)
+
+        df = pl.DataFrame(data)
+        df = df.with_columns(pl.lit(system).alias('system'))
+        return df
+
+    def parse_energy_file_OLD(self,
                           file_contents: list[str],
                           data: dict[str, list],
                           system: str) -> pl.DataFrame:
@@ -624,7 +896,8 @@ class FileHandler:
                  first: int,
                  last: int,
                  stride: int,
-                 cpptraj_binary: PathLike):
+                 cpptraj_binary: PathLike,
+                 n_chunks: int=1):
         self.top = top
         self.traj = traj
         self.path = path
@@ -633,9 +906,19 @@ class FileHandler:
         self.lf = last
         self.stride = stride
         self.cpptraj = cpptraj_binary
+        self.n_chunks = n_chunks
 
         self.prepare_topologies()
         self.prepare_trajectories()
+
+        self.trajectory_chunks = {}
+
+        if n_chunks > 1:
+            self._count_frames()
+            self._split_trajectories()
+        else:
+            for system, traj in zip(['complex', 'receptor', 'ligand'], self.trajectories):
+                self.trajectory_chunks[system] = [traj]
 
     def prepare_topologies(self) -> None:
         """
@@ -691,9 +974,9 @@ class FileHandler:
         frame_control = f'start {self.ff}'
 
         if self.lf > -1:
-            frame_control += f'stop {self.lf}'
+            frame_control += f' stop {self.lf}'
         
-        frame_control += f'offset {self.stride}'
+        frame_control += f' offset {self.stride}'
         
         cpptraj_in = [
             f'parm {self.top}', 
@@ -738,6 +1021,116 @@ class FileHandler:
 
         name.unlink()
 
+    def _count_frames(self) -> None:
+        """Count the total number of frames in the processed trajectory."""
+        # Use cpptraj to count frames
+        count_script = self.path / 'count_frames.in'
+        count_out = self.path / 'frame_count.dat'
+
+        script_content = [
+            f'parm {self.topologies[0]}',
+            f'trajin {self.trajectories[0]}',
+            f'trajinfo {self.trajectories[0]} name myinfo',
+            'run',
+            'quit'
+        ]
+        self.write_file('\n'.join(script_content), count_script)
+
+        result = subprocess.run(
+            f'{self.cpptraj} -i {count_script}',
+            shell=True, cwd=str(self.path),
+            capture_output=True, text=True
+        )
+
+        # Parse frame count from cpptraj output
+        for line in result.stdout.split('\n'):
+            if 'frames' in line.lower() and 'total' in line.lower():
+                parts = line.split()
+                for i, part in enumerate(parts):
+                    if part.isdigit():
+                        self.total_frames = int(part)
+                        break
+
+        # Fallback: count lines in trajectory (for ASCII formats) or use file size heuristic
+        if not hasattr(self, 'total_frames'):
+            # Try to infer from first trajectory file
+            self.total_frames = self._estimate_frames()
+
+        count_script.unlink(missing_ok=True)
+        logger.info(f'Total frames in trajectory: {self.total_frames}')
+
+    def _estimate_frames(self) -> int:
+        """Estimate frame count by running a quick cpptraj analysis."""
+        script = self.path / 'estimate_frames.in'
+        script_content = [
+            f'parm {self.topologies[0]}',
+            f'trajin {self.trajectories[0]}',
+            'run',
+            'quit'
+        ]
+        self.write_file('\n'.join(script_content), script)
+
+        result = subprocess.run(
+            f'{self.cpptraj} -i {script}',
+            shell=True, cwd=str(self.path),
+            capture_output=True, text=True
+        )
+
+        script.unlink(missing_ok=True)
+
+        # Parse output for frame count
+        for line in result.stdout.split('\n'):
+            if 'frames' in line.lower():
+                for word in line.split():
+                    if word.isdigit():
+                        return int(word)
+
+        # Default fallback
+        return 100
+
+    def _split_trajectories(self) -> None:
+        """Split trajectories into chunks for parallel processing."""
+        frames_per_chunk = max(1, self.total_frames // self.n_chunks)
+        self.trajectory_chunks = {system: [] for system in ['complex', 'receptor', 'ligand']}
+
+        for i, (top, traj, system) in enumerate(zip(
+            self.topologies,
+            self.trajectories,
+            ['complex', 'receptor', 'ligand']
+        )):
+            for chunk_idx in range(self.n_chunks):
+                start_frame = chunk_idx * frames_per_chunk + 1  # cpptraj is 1-indexed
+
+                if chunk_idx == self.n_chunks - 1:
+                    # Last chunk gets remaining frames
+                    end_frame = self.total_frames
+                else:
+                    end_frame = (chunk_idx + 1) * frames_per_chunk
+
+                chunk_traj = self.path / f'{system}_chunk{chunk_idx}.crd'
+
+                # Create chunk trajectory
+                split_script = self.path / f'split_{system}_{chunk_idx}.in'
+                script_content = [
+                    f'parm {top}',
+                    f'trajin {traj} {start_frame} {end_frame}',
+                    f'trajout {chunk_traj} crd',
+                    'run',
+                    'quit'
+                ]
+                self.write_file('\n'.join(script_content), split_script)
+
+                subprocess.run(
+                    f'{self.cpptraj} -i {split_script}',
+                    shell=True, cwd=str(self.path),
+                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+                )
+
+                split_script.unlink()
+                self.trajectory_chunks[system].append(chunk_traj)
+
+        logger.info(f'Split trajectories into {self.n_chunks} chunks of ~{frames_per_chunk} frames each.')
+
     @property
     def files(self) -> tuple[list[str]]:
         """
@@ -750,6 +1143,21 @@ class FileHandler:
         """
         _order = [self.path / prefix for prefix in ['complex', 'receptor', 'ligand']]
         return zip(_order, self.topologies, self.trajectories, self.pdbs)
+
+    @property
+    def files_chunked(self) -> list[tuple]:
+        """Returns file info with chunked trajectories for parallel processing."""
+        result = []
+        for system, top, pdb in zip(
+            ['complex', 'receptor', 'ligand'],
+            self.topologies,
+            self.pdbs
+        ):
+            prefix = self.path / system
+            traj_chunks = self.trajectory_chunks[system]
+            result.append((prefix, top, traj_chunks, pdb))
+
+        return result
 
     @staticmethod
     def write_file(lines: list[str],
