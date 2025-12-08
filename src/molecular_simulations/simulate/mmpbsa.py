@@ -193,6 +193,8 @@ class MMPBSA(MMPBSA_settings):
         logger.info('Collating results.')
         self.analyzer.parse_outputs()
 
+        self.free_energy = self.analyzer.free_energy
+
     def _run_serial(self, gb_mdin: Path, pb_mdin: Path) -> None:
         """Original serial implementation."""
         for (prefix, top, traj, pdb) in self.fh.files:
@@ -525,6 +527,8 @@ class OutputAnalyzer:
         self.tolerance = _tolerance
         self.log = log
 
+        self.free_energy = None
+
         self.systems = ['receptor', 'ligand', 'complex']
         self.levels = ['gb', 'pb']
 
@@ -842,6 +846,9 @@ class OutputAnalyzer:
                 if col == '∆G Binding':
                     log_statement.append(f'{level.strip()}:')
                     log_statement.append(report)
+
+                    if level == 'Poisson Boltzmann':
+                        self.free_energy = [mean, std]
 
                 print_statement.append(report)
 
