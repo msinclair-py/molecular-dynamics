@@ -91,6 +91,8 @@ class PeriodicDataloader(GenericDataloader):
             self.shapes.append(temp.shape)
             self.data_array.append(temp)
 
+        self.data_array = np.vstack(self.data_array)
+
     def remove_periodicity(self,
                            arr: np.ndarray) -> np.ndarray:
         """Removes periodicity from each feature using sin and cos. Each

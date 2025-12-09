@@ -210,9 +210,9 @@ class RelativeSASA(SASA):
             ])
 
             if exposed_area != 0.:
-                result[resindex] /= exposed_area
+                result[res_index] /= exposed_area
 
-        self.results.relative_area += np.array([result[_id] for _id in self.ag.residues.resids])
+        self.results.relative_area += np.array([result[_id] for _id in self.ag.residues.resindices])
 
     def _conclude(self):
         """

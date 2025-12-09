@@ -1,3 +1,6 @@
+"""
+Unit tests for fingerprinter.py module
+"""
 import numpy as np
 import pytest
 
@@ -6,35 +9,81 @@ from molecular_simulations.analysis.fingerprinter import (
     lennard_jones, lennard_jones_sum, unravel_index
 )
 
-def test_unravel_index_shapes(x, y):
+
+def test_unravel_index_shapes():
+    """Test unravel_index produces correct shapes and values"""
     i, j = unravel_index(5, 7)
     assert i.shape == j.shape
     assert i.size == 5 * 7
     assert i.max() == 4 and j.max() == 6
 
+
+def test_unravel_index_values():
+    """Test unravel_index produces correct index pairs"""
+    i, j = unravel_index(2, 3)
+    # Should produce: (0,0), (0,1), (0,2), (1,0), (1,1), (1,2)
+    expected_i = np.array([0, 0, 0, 1, 1, 1])
+    expected_j = np.array([0, 1, 2, 0, 1, 2])
+    assert np.array_equal(i, expected_i)
+    assert np.array_equal(j, expected_j)
+
+
 def test_dist_mat_basic():
-    xyz1 = np.array([0., 0., 0.],
-                    [1., 0., 0.])
-    xyz2 = np.array([0., 1., 0.])
+    """Test distance matrix calculation with simple coordinates"""
+    xyz1 = np.array([[0., 0., 0.],
+                     [1., 0., 0.]])
+    xyz2 = np.array([[0., 1., 0.]])
     D = dist_mat(xyz1, xyz2)
     assert D.shape == (2, 1)
     assert np.isclose(D[0, 0], 1.)
     assert np.isclose(D[1, 0], np.sqrt(2.))
 
+
+def test_dist_mat_symmetric():
+    """Test that distance matrix is symmetric when inputs are swapped"""
+    xyz1 = np.array([[0., 0., 0.],
+                     [1., 1., 1.]])
+    xyz2 = np.array([[2., 0., 0.],
+                     [0., 2., 0.]])
+    
+    D12 = dist_mat(xyz1, xyz2)
+    D21 = dist_mat(xyz2, xyz1)
+    
+    assert D12.shape == (2, 2)
+    assert D21.shape == (2, 2)
+    assert np.allclose(D12, D21.T)
+
+
 def test_electrostatic_symmetry_and_sign():
-    d = 0.5  # distance
+    """Test electrostatic interaction symmetry and sign"""
+    d = 0.5  # distance in nm
     e1, e2 =  0.5, -0.5
     e3, e4 = -0.5,  0.5
     e_ab = electrostatic(d, e1, e2)
     e_ba = electrostatic(d, e2, e1)
     e_cd = electrostatic(d, e3, e4)
+    
     # Symmetric in swapping particles
     assert np.isclose(e_ab, e_ba)
-    # Opposite-sign charges should yield negative energy; same magnitude pair should match
+    # Opposite-sign charges should yield negative energy
     assert e_ab < 0
+    # Same magnitude pair should match
     assert np.isclose(e_ab, e_cd)
 
+
+def test_electrostatic_cutoff():
+    """Test that electrostatic energy is zero beyond cutoff"""
+    # Distance > 1.0 nm should give zero energy
+    e_far = electrostatic(1.5, 1.0, 1.0)
+    assert e_far == 0.0
+    
+    # Distance < 1.0 nm should give non-zero energy
+    e_near = electrostatic(0.5, 1.0, 1.0)
+    assert e_near != 0.0
+
+
 def test_electrostatic_sum_vectorization_matches_scalar():
+    """Test that vectorized electrostatic_sum matches scalar accumulation"""
     rng = np.random.default_rng(0)
     n, m = 4, 3
     D = rng.random((n, m)) + 0.2
@@ -51,15 +100,34 @@ def test_electrostatic_sum_vectorization_matches_scalar():
     vec = electrostatic_sum(D, qi, qj)
     assert np.isclose(vec, scalar)
 
+
 def test_lj_basic_properties():
+    """Test basic Lennard-Jones properties"""
     # Attractive well around sigma, repulsive at very small r
     e_far = lennard_jones(5.0, 1.0, 1.0, 0.2, 0.2)
     e_mid = lennard_jones(1.5, 1.0, 1.0, 0.2, 0.2)
     e_close = lennard_jones(0.5, 1.0, 1.0, 0.2, 0.2)
-    assert e_far > e_mid  # tends toward 0 from below/above depending on combination
-    assert e_close > e_mid  # repulsive wall at short distance
+    
+    # Far distance should be close to zero (cutoff at 1.2 nm)
+    assert e_far == 0.0  # Beyond cutoff
+    # Close distance should be strongly repulsive
+    assert e_close > e_mid
+
+
+def test_lj_cutoff():
+    """Test Lennard-Jones cutoff behavior"""
+    # Distance > 1.2 nm should give zero energy
+    e_far = lennard_jones(1.5, 1.0, 1.0, 0.2, 0.2)
+    assert e_far == 0.0
+    
+    # Distance < 1.2 nm should give non-zero energy
+    # Use distance=0.8 which is not at the zero-crossing point
+    e_near = lennard_jones(0.8, 1.0, 1.0, 0.2, 0.2)
+    assert e_near != 0.0
+
 
 def test_lj_sum_matches_manual_sum():
+    """Test that vectorized lennard_jones_sum matches manual accumulation"""
     rng = np.random.default_rng(1)
     n, m = 3, 2
     D = rng.random((n, m)) + 0.3
@@ -75,3 +143,30 @@ def test_lj_sum_matches_manual_sum():
 
     summed = lennard_jones_sum(D, si, sj, ei, ej)
     assert np.isclose(summed, manual)
+
+
+def test_lj_combination_rules():
+    """Test Lennard-Jones combination rules"""
+    # Using Lorentz-Berthelot combining rules:
+    # sigma_ij = (sigma_i + sigma_j) / 2
+    # epsilon_ij = sqrt(epsilon_i * epsilon_j)
+    
+    distance = 1.0
+    sigma_i, sigma_j = 0.5, 1.0
+    epsilon_i, epsilon_j = 0.1, 0.4
+    
+    energy = lennard_jones(distance, sigma_i, sigma_j, epsilon_i, epsilon_j)
+    
+    # Should use combined parameters
+    sigma_ij = 0.5 * (sigma_i + sigma_j)  # = 0.75
+    epsilon_ij = np.sqrt(epsilon_i * epsilon_j)  # = 0.2
+    
+    # Verify energy is computed with combined parameters
+    sigma_r = sigma_ij / distance
+    expected_energy = 4. * epsilon_ij * (sigma_r**12 - sigma_r**6)
+    
+    assert np.isclose(energy, expected_energy)
+
+
+if __name__ == "__main__":
+    pytest.main([__file__, "-v"])

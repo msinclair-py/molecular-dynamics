@@ -1,54 +1,124 @@
-from concurrent.futures import as_completed, ThreadPoolExecutor
+from concurrent.futures import as_completed, ThreadPoolExecutor, wait, ALL_COMPLETED
 from dataclasses import dataclass
 import json
 import logging
-import numpy as np
 import os
+import pandas as pd
 from pathlib import Path
 import polars as pl
 import re
 import subprocess
+import time
 from typing import Literal, Optional, Union
+        
+# This is simply to enable higher level parallelism by parsl/academy
+# Numpy by default allows all threads to be used and in agentic settings
+# we have seen oversubscription of threads and some calculations fail to
+# to write out. These settings must be set BEFORE importing numpy
+os.environ.setdefault('OPENBLAS_NUM_THREADS', '1')
+os.environ.setdefault('MKL_NUM_THREADS', '1')
+os.environ.setdefault('OMP_NUM_THREADS', '1')
+import numpy as np
 
 PathLike = Union[Path, str]
 
 logger = logging.getLogger(__name__)
 
-def _run_subprocess(cmd: str, cwd: str) -> subprocess.CompletedProcess:
-    """Helper function for running subprocesses (module level for pickling)"""
-    return subprocess.run(
-        cmd,
-        shell=True,
-        cwd=cwd,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        check=False
-    )
-
-def _run_energy_calculation(args: tuple[str]) -> Path:
+def _run_energy_calculation(args: tuple[str],
+                            max_retries: int=3) -> tuple[Path, bool, str]:
     """Worker function for parallel energy calculations.
     Must be module level for ThreadPoolExecutor pickling.
 
     Args:
         args (tuple): Tuple of (mmpbsa_binary, mdin_path, prmtop, pdb, traj_chunk, output_path, cwd)
+        max_retries (int): Number of retry attempts for failed calculations
 
     Returns:
         (Path): Path to the output file.
     """
     mmpbsa_binary, mdin, prm, pdb, trj, out, cwd = args
     cmd = f'{mmpbsa_binary} -O -i {mdin} -p {prm} -c {pdb} -y {trj} -o {out}'
-    subprocess.run(cmd, shell=True, cwd=str(cwd), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-    return Path(out)
+    expected_output = Path(cwd) / out
 
-def _run_sasa_calculation(args: tuple[str]) -> Path:
+    for attempt in range(max_retries):
+        try:
+            result = subprocess.run(cmd, shell=True, cwd=str(cwd), 
+                                    capture_output=True, text=True)
+
+            if expected_output.exists() and expected_output.stat().st_size > 0:
+                with open(expected_output, 'r') as f:
+                    content = f.read()
+                    if ' BOND' in content:
+                        return (out, True, '')
+                    else:
+                        error = 'Output file exists but contains no energy data'
+            else:
+                error = 'Output file missing or empty after subprocess complete'
+
+            if result.returncode != 0:
+                error = f'Return code: {result.returncode}: {result.stderr or result.stdout}'
+
+        except subprocess.TimeoutExpired:
+            error = 'Calculation timed out'
+        except Exception as e:
+            error = f'Exception: {e}'
+
+        if attempt < max_retries - 1:
+            logger.warning(f'Energy calculation {out} failed (attempt {attempt + 1}/{max_retries})')
+            logger.warning(f'Error: {error}')
+            time.sleep(2 ** attempt)
+
+    return (out, False, error)
+
+def _run_sasa_calculation(args: tuple[str],
+                          max_retries: int=3) -> tuple[Path, bool, str]:
     """Worker function for parallel SASA calculations.
     Must be module level for ThreadPoolExecutor pickling."""
     cpptraj_binary, sasa_script, cwd = args
-    subprocess.run(f'{cpptraj_binary} -i {sasa_script}', shell=True, cwd=str(cwd),
-                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-    return Path(sasa_script)
+    # Parse expected output from script
+    script_path = Path(sasa_script)
+    with open(script_path, 'r') as f:
+        script_content = f.read()
+
+    match = re.search(r'molsurf\s+.*?\s+out\s+(\S+)', script_content)
+    if match:
+        expected_output = Path(cwd) / match.group(1)
+    else:
+        expected_output = None
+    
+    for attempt in range(max_retries):
+        try:
+            result = subprocess.run(f'{cpptraj_binary} -i {sasa_script}', shell=True, cwd=str(cwd),
+                                    capture_output=True, text=True)
+            if expected_output and expected_output.exists():
+                if expected_output.stat().st_size > 0:
+                    with open(expected_output, 'r') as f:
+                        lines = f.readlines()
+                        data_lines = [l for l in lines if l.strip() and not l.strip().startswith('#')]
+                        if len(data_lines) > 0:
+                            return (sasa_script, True, '')
+                        else:
+                            error = 'Output file has no data lines'
+                else: 
+                    error = 'Expected output file is empty'
+            else:
+                error = f'Expected output file not found: {expected_output}'
+
+            if result.returncode != 0:
+                error = f'Return code {result.returncode}: {result.stderr or result.stdout}'
+
+        except subprocess.TimeoutExpired:
+            error = 'Calculation timed out'
+        except Exception as e:
+            error = f'Exception: {e}'
+
+        if attempt < max_retries - 1:
+            logger.warning(f'SASA calculation {sasa_script} failed (attempt {attempt+1}/{max_retries})')
+            time.sleep(2 ** attempt)
+
+    return (script_path, False, error)
 
 @dataclass
 class MMPBSA_settings:
@@ -111,7 +181,7 @@ class MMPBSA(MMPBSA_settings):
                  gb_surften: float=0.0072,
                  gb_surfoff: float=0.,
                  amberhome: Optional[str]=None,
-                 parallel_mode: Literal['frame', 'system', 'hybrid'] = 'frame',
+                 parallel_mode: Literal['frame', 'serial'] = 'frame',
                  **kwargs):
         super().__init__(top=top, 
                          dcd=dcd, 
@@ -144,8 +214,8 @@ class MMPBSA(MMPBSA_settings):
             else:
                 raise ValueError('AMBERHOME not set in env vars!')
         
-            self.cpptraj = Path(amberhome) / 'bin' / self.cpptraj
-            self.mmpbsa_py_energy = Path(amberhome) / 'bin' / self.mmpbsa_py_energy
+        self.cpptraj = Path(amberhome) / 'bin' / self.cpptraj
+        self.mmpbsa_py_energy = Path(amberhome) / 'bin' / self.mmpbsa_py_energy
 
         self.fh = FileHandler(
             top=self.top, 
@@ -167,6 +237,7 @@ class MMPBSA(MMPBSA_settings):
 
         for key, value in kwargs.items():
             setattr(self, key, value)
+            
 
     def run(self) -> None:
         """
@@ -174,23 +245,17 @@ class MMPBSA(MMPBSA_settings):
         
         Depending on parallel_mode:
         - 'frame': Splits trajectory into chunks, processes in parallel
-        - 'system': Processes complex/receptor/ligand in parallel  
-        - 'hybrid': Both frame-level and system-level parallelization
         """
-        logger.info(f'Preparing MM-PBSA calculation with {self.n_cpus} CPUs (mode: {self.parallel_mode})')
+        logger.debug(f'Preparing MM-PBSA calculation with {self.n_cpus} CPUs (mode: {self.parallel_mode})')
         gb_mdin, pb_mdin = self.write_mdins()
 
         if self.parallel_mode == 'frame':
             self._run_frame_parallel(gb_mdin, pb_mdin)
-        elif self.parallel_mode == 'system':
-            self._run_system_parallel(gb_mdin, pb_mdin)
-        elif self.parallel_mode == 'hybrid':
-            self._run_hybrid_parallel(gb_mdin, pb_mdin)
         else:
             # Fallback to serial
             self._run_serial(gb_mdin, pb_mdin)
 
-        logger.info('Collating results.')
+        logger.debug('Collating results.')
         self.analyzer.parse_outputs()
 
         self.free_energy = self.analyzer.free_energy
@@ -198,7 +263,7 @@ class MMPBSA(MMPBSA_settings):
     def _run_serial(self, gb_mdin: Path, pb_mdin: Path) -> None:
         """Original serial implementation."""
         for (prefix, top, traj, pdb) in self.fh.files:
-            logger.info(f'Computing energy terms for {prefix.name}.')
+            logger.debug(f'Computing energy terms for {prefix.name}.')
             self.calculate_sasa(prefix, top, traj)
             self.calculate_energy(prefix, top, traj, pdb, gb_mdin, 'gb')
             self.calculate_energy(prefix, top, traj, pdb, pb_mdin, 'pb')
@@ -214,7 +279,7 @@ class MMPBSA(MMPBSA_settings):
         
         for (prefix, top, traj_chunks, pdb) in self.fh.files_chunked:
             system_name = prefix.name
-            logger.info(f'Preparing parallel energy calculations for {system_name}.')
+            logger.debug(f'Preparing parallel energy calculations for {system_name}.')
             
             # SASA calculations for each chunk
             for i, traj_chunk in enumerate(traj_chunks):
@@ -237,93 +302,60 @@ class MMPBSA(MMPBSA_settings):
                 ))
         
         # Run SASA calculations in parallel
-        logger.info(f'Running {len(sasa_tasks)} SASA calculations in parallel.')
+        logger.debug(f'Running {len(sasa_tasks)} SASA calculations in parallel.')
+        sasa_failures = []
         with ThreadPoolExecutor(max_workers=self.n_cpus) as executor:
-            list(executor.map(_run_sasa_calculation, sasa_tasks))
-        
+            futures = []
+            for task in sasa_tasks:
+                futures.append(executor.submit(_run_sasa_calculation, task))
+
+            logger.debug(f'Submitted {len(futures)} SASA futures, waiting for completion...')
+
+            # Wait for ALL to complete before proceeding
+            done, _ = wait(futures, return_when=ALL_COMPLETED)
+
+            for future in done:
+                script, success, error = future.result()
+                if not success:
+                    sasa_failures.append((script, error))
+                    logger.error(f'SASA calculation failed: {script}: {error[:300]}')
+
+        if sasa_failures:
+            failed_scripts = [f[0] for f in sasa_failures]
+            raise RuntimeError(f'{len(sasa_failures)} SASA calculations failed: {failed_scripts}')  
+        logger.debug('All SASA calculations completed successfully')
+
         # Combine SASA results
         self._combine_sasa_chunks()
         
-        # Run energy calculations in parallel
-        logger.info(f'Running {len(energy_tasks)} energy calculations in parallel.')
+        # Run Energy calculations in parallel
+        logger.debug(f'Running {len(energy_tasks)} energy calculations in parallel.')
+        energy_failures = []
         with ThreadPoolExecutor(max_workers=self.n_cpus) as executor:
-            list(executor.map(_run_energy_calculation, energy_tasks))
-        
-        # Combine energy results
+            futures = []
+            for task in energy_tasks:
+                futures.append(executor.submit(_run_energy_calculation, task))
+
+            logger.debug(f'Submitted {len(futures)} Energy futures, waiting for completion...')
+
+            # Wait for ALL to complete before proceeding
+            done, _ = wait(futures, return_when=ALL_COMPLETED)
+
+            for future in done:
+                script, success, error = future.result()
+                if not success:
+                    energy_failures.append((script, error))
+                    logger.error(f'Energy calculation failed: {script}: {error[:300]}')
+
+        if energy_failures:
+            failed_scripts = [f[0] for f in energy_failures]
+            raise RuntimeError(f'{len(energy_failures)} Energy calculations failed: {failed_scripts}')  
+        logger.debug('All Energy calculations completed successfully')
+
+        # Combine Energy results
         self._combine_energy_chunks()
 
-    def _run_system_parallel(self, gb_mdin: Path, pb_mdin: Path) -> None:
-        """
-        System-level parallelization: process complex/receptor/ligand concurrently.
-        Maximum 3x speedup.
-        """
-        tasks = []
-        for (prefix, top, traj, pdb) in self.fh.files:
-            tasks.append((prefix, top, traj, pdb, gb_mdin, pb_mdin))
-        
-        def process_system(args):
-            prefix, top, traj, pdb, gb_mdin, pb_mdin = args
-            self.calculate_sasa(prefix, top, traj)
-            self.calculate_energy(prefix, top, traj, pdb, gb_mdin, 'gb')
-            self.calculate_energy(prefix, top, traj, pdb, pb_mdin, 'pb')
-            return prefix.name
-        
-        # Use ThreadPoolExecutor since subprocess calls release the GIL
-        with ThreadPoolExecutor(max_workers=min(3, self.n_cpus)) as executor:
-            futures = [executor.submit(process_system, t) for t in tasks]
-            for future in as_completed(futures):
-                logger.info(f'Completed energy terms for {future.result()}.')
-
-    def _run_hybrid_parallel(self, gb_mdin: Path, pb_mdin: Path) -> None:
-        """
-        Hybrid parallelization: frame-level within system-level.
-        Most aggressive parallelization.
-        """
-        # For hybrid, we allocate CPUs across systems
-        cpus_per_system = max(1, self.n_cpus // 3)
-        
-        def process_system_parallel(args):
-            prefix, top, traj_chunks, pdb = args
-            system_name = prefix.name
-            
-            # Run SASA in parallel for this system
-            sasa_tasks = []
-            for i, traj_chunk in enumerate(traj_chunks):
-                sasa_script = self._write_sasa_script(prefix, top, traj_chunk, chunk_idx=i)
-                sasa_tasks.append((str(self.cpptraj), str(sasa_script), str(self.path)))
-            
-            with ThreadPoolExecutor(max_workers=cpus_per_system) as executor:
-                list(executor.map(_run_sasa_calculation, sasa_tasks))
-            
-            # Run energy calculations in parallel for this system
-            energy_tasks = []
-            for i, traj_chunk in enumerate(traj_chunks):
-                out_gb = f'{system_name}_chunk{i}_gb.mdout'
-                energy_tasks.append((
-                    str(self.mmpbsa_py_energy), str(gb_mdin), str(top),
-                    str(pdb), str(traj_chunk), out_gb, str(self.path)
-                ))
-                out_pb = f'{system_name}_chunk{i}_pb.mdout'
-                energy_tasks.append((
-                    str(self.mmpbsa_py_energy), str(pb_mdin), str(top),
-                    str(pdb), str(traj_chunk), out_pb, str(self.path)
-                ))
-            
-            with ThreadPoolExecutor(max_workers=cpus_per_system) as executor:
-                list(executor.map(_run_energy_calculation, energy_tasks))
-            
-            return system_name
-        
-        # Process all systems in parallel at the top level
-        with ThreadPoolExecutor(max_workers=3) as executor:
-            futures = [executor.submit(process_system_parallel, args) 
-                      for args in self.fh.files_chunked]
-            for future in as_completed(futures):
-                logger.info(f'Completed {future.result()}.')
-        
-        # Combine results
-        self._combine_sasa_chunks()
-        self._combine_energy_chunks()
+        self._verify_combined_outputs()
 
     def _write_sasa_script(self, prefix: Path, prm: Path, trj: Path, 
                           chunk_idx: int = 0) -> Path:
@@ -508,6 +540,51 @@ class MMPBSA(MMPBSA_settings):
 
         return gb, pb
 
+    def _verify_combined_outputs(self) -> None:
+        """Verify all required output files exist and have valid content.
+        Raises RuntimeError if any files are missing or invalid"""
+        missing_files = []
+        empty_files = []
+        invalid_files = []
+        
+        for system in ['complex', 'receptor', 'ligand']:
+            # Check SASA file
+            sasa_file = self.path / f'{system}_surf.dat'
+            if not sasa_file.exists():
+                missing_files.append(str(sasa_file))
+            elif sasa_file.stat().st_size == 0:
+                empty_files.append(str(sasa_file))
+            else:
+                # Verify it has data lines
+                with open(sasa_file) as f:
+                    data_lines = [l for l in f if l.strip() and not l.strip().startswith('#')]
+                    if len(data_lines) == 0:
+                        invalid_files.append(f'{sasa_file} (no data lines)')
+            
+            # Check energy files
+            for level in ['gb', 'pb']:
+                energy_file = self.path / f'{system}_{level}.mdout'
+                if not energy_file.exists():
+                    missing_files.append(str(energy_file))
+                elif energy_file.stat().st_size == 0:
+                    empty_files.append(str(energy_file))
+                else:
+                    # Verify it has BOND lines (energy data)
+                    with open(energy_file) as f:
+                        content = f.read()
+                        if ' BOND' not in content:
+                            invalid_files.append(f'{energy_file} (no energy data)')
+        
+        errors = []
+        if missing_files:
+            errors.append(f"Missing files: {missing_files}")
+        if empty_files:
+            errors.append(f"Empty files: {empty_files}")
+        if invalid_files:
+            errors.append(f"Invalid files: {invalid_files}")
+        
+        if errors:
+            raise RuntimeError(f"Output verification failed: {'; '.join(errors)}")
 
 
 class OutputAnalyzer:
@@ -579,11 +656,10 @@ class OutputAnalyzer:
         Returns:
             (np.ndarray): A numpy array of the per-frame rescaled SASA energies.
         """
-        sasa = []
-        for line in open(_file).readlines()[1:]:
-            sasa.append(line.split()[-1].strip())
+        df = pd.read_csv(_file, sep='\s+') # read in dataframe
+        sasa = df.iloc[:, -1].to_numpy(dtype=float) * self.surften + self.offset
 
-        return pl.Series('ESURF', np.array(sasa, dtype=float) * self.surften + self.offset)
+        return pl.Series('ESURF', sasa)
 
     def read_GB(self,
                 _file: PathLike,
@@ -1064,7 +1140,7 @@ class FileHandler:
             self.total_frames = self._estimate_frames()
 
         count_script.unlink(missing_ok=True)
-        logger.info(f'Total frames in trajectory: {self.total_frames}')
+        logger.debug(f'Total frames in trajectory: {self.total_frames}')
 
     def _estimate_frames(self) -> int:
         """Estimate frame count by running a quick cpptraj analysis."""
@@ -1136,7 +1212,7 @@ class FileHandler:
                 split_script.unlink()
                 self.trajectory_chunks[system].append(chunk_traj)
 
-        logger.info(f'Split trajectories into {self.n_chunks} chunks of ~{frames_per_chunk} frames each.')
+        logger.debug(f'Split trajectories into {self.n_chunks} chunks of ~{frames_per_chunk} frames each.')
 
     @property
     def files(self) -> tuple[list[str]]:

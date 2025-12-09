@@ -59,7 +59,7 @@ class ipSAE:
 
         self.scorer = ScoreCalculator(chains=chains,
                                       chain_pair_type=chain_types,
-                                      residues=residue_types) 
+                                      n_residues=residue_types) 
 
     def run(self) -> None:
         """
@@ -330,7 +330,7 @@ class ScoreCalculator:
             None
         """
         permuted = set()
-        for c1, c2 in permutations(self.unique_chains):
+        for c1, c2 in permutations(self.unique_chains, 2):
             if c1 != c2:
                 permuted.add((c1, c2))
                 permuted.add((c2, c1))

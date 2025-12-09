@@ -4,7 +4,7 @@ build-backend = 'hatchling.build'
 
 [project]
 name = 'molecular_simulations'
-version = '0.3.23'
+version = '0.3.26'
 authors = [
   { name='Matt Sinclair', email='msinclair@anl.gov' },
 ]
@@ -62,7 +62,10 @@ allow-direct-references = true
 packages = ['src/molecular_simulations']
 
 [tool.pytest.ini_options]
-addopts = '-q --disable-warnings --maxfail=1'
+addopts = '-q --maxfail=1'
+filterwarnings = [
+    'ignore::DeprecationWarning:importlib._bootstrap',
+]
 testpaths = ['tests']
 markers = [
     'slow: potentially long-running test',

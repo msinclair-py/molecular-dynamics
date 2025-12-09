@@ -8,11 +8,12 @@ from pathlib import Path
 from unittest.mock import Mock, patch, MagicMock
 import polars as pl
 
-# Import the modules to test
-import sys
-import os
-
-from molecular_simulations.analysis.autocluster import GenericDataloader, PeriodicDataloader, AutoKMeans, Decomposition
+from molecular_simulations.analysis.autocluster import (
+    GenericDataloader, 
+    PeriodicDataloader, 
+    AutoKMeans, 
+    Decomposition
+)
 
 
 class TestGenericDataloader:
@@ -31,10 +32,10 @@ class TestGenericDataloader:
             np.save(file1, test_data1)
             np.save(file2, test_data2)
             
-            # Initialize dataloader
+            # Initialize dataloader - expects list, not np.array
             loader = GenericDataloader([file1, file2])
             
-            # Check that data is loaded correctly
+            # Check that data is loaded and vstacked correctly
             assert loader.data.shape == (25, 5)
             assert len(loader.shapes) == 2
             assert loader.shapes[0] == (10, 5)
@@ -86,14 +87,45 @@ class TestGenericDataloader:
             np.save(file, test_data)
             
             loader = GenericDataloader([file])
-            assert loader.data.shape == (10, 12)  # 3*4 = 12
+            # Should reshape to (10, 12) since 3*4 = 12
+            assert loader.data.shape == (10, 12)
 
 
 class TestPeriodicDataloader:
     """Test suite for PeriodicDataloader class"""
     
-    def test_remove_periodicity(self):
-        """Test periodicity removal using sin/cos decomposition"""
+    def test_remove_periodicity_method(self):
+        """Test the remove_periodicity method directly"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # Create a dummy file so __init__ doesn't fail
+            dummy_data = np.array([[0, 0]])
+            dummy_file = Path(tmpdir) / "dummy.npy"
+            np.save(dummy_file, dummy_data)
+            
+            loader = PeriodicDataloader([dummy_file])
+            
+            # Now test remove_periodicity with our test data
+            test_data = np.array([[0, np.pi/2], [np.pi, 3*np.pi/2]])
+            result = loader.remove_periodicity(test_data)
+            
+            # Check that features are doubled
+            assert result.shape[1] == test_data.shape[1] * 2
+            
+            # Verify sin/cos decomposition
+            # For angle 0: cos(0)=1, sin(0)=0
+            assert np.isclose(result[0, 0], 1.0)  # cos(0)
+            assert np.isclose(result[0, 1], 0.0)  # sin(0)
+            
+            # For angle π/2: cos(π/2)≈0, sin(π/2)=1
+            assert np.isclose(result[0, 2], 0.0, atol=1e-10)  # cos(π/2)
+            assert np.isclose(result[0, 3], 1.0)  # sin(π/2)
+            
+            # For angle π: cos(π)=-1, sin(π)≈0
+            assert np.isclose(result[1, 0], -1.0)  # cos(π)
+            assert np.isclose(result[1, 1], 0.0, atol=1e-10)  # sin(π)
+    
+    def test_load_data_with_periodicity(self):
+        """Test loading data with periodicity removal applied"""
         with tempfile.TemporaryDirectory() as tmpdir:
             # Create test data with known values
             test_data = np.array([[0, np.pi/2], [np.pi, 3*np.pi/2]])
@@ -102,24 +134,59 @@ class TestPeriodicDataloader:
             
             loader = PeriodicDataloader([file])
             
-            # Check that features are doubled
+            # Data should be vstacked into a numpy array
+            assert isinstance(loader.data_array, np.ndarray)
             assert loader.data.shape[1] == test_data.shape[1] * 2
             
-            # Verify sin/cos decomposition
+            # Verify periodicity was removed
             # For angle 0: cos(0)=1, sin(0)=0
-            # For angle π/2: cos(π/2)=0, sin(π/2)=1
             assert np.isclose(loader.data[0, 0], 1.0)  # cos(0)
             assert np.isclose(loader.data[0, 1], 0.0)  # sin(0)
+            
+            # For angle π/2: cos(π/2)≈0, sin(π/2)=1
             assert np.isclose(loader.data[0, 2], 0.0, atol=1e-10)  # cos(π/2)
             assert np.isclose(loader.data[0, 3], 1.0)  # sin(π/2)
+    
+    def test_inheritance_from_generic(self):
+        """Test that PeriodicDataloader properly inherits from GenericDataloader"""
+        assert issubclass(PeriodicDataloader, GenericDataloader)
+        
+        with tempfile.TemporaryDirectory() as tmpdir:
+            test_data = np.random.rand(10, 3)
+            file = Path(tmpdir) / "data.npy"
+            np.save(file, test_data)
+            
+            loader = PeriodicDataloader([file])
+            
+            # Should have inherited attributes
+            assert hasattr(loader, 'files')
+            assert hasattr(loader, 'shapes')
+            assert hasattr(loader, 'data_array')
 
 
 class TestAutoKMeans:
     """Test suite for AutoKMeans class"""
     
-    @patch('autocluster.KMeans')
-    @patch('autocluster.silhouette_score')
-    def test_sweep_n_clusters(self, mock_silhouette, mock_kmeans):
+    def test_initialization(self):
+        """Test AutoKMeans initialization"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # Create dummy data file
+            test_data = np.random.rand(20, 5)
+            file = Path(tmpdir) / "data.npy"
+            np.save(file, test_data)
+            
+            # Initialize AutoKMeans
+            auto_km = AutoKMeans(tmpdir, max_clusters=5, stride=1)
+            
+            assert auto_km.data_dir == Path(tmpdir)
+            assert auto_km.n_clusters == 5
+            assert auto_km.stride == 1
+            assert auto_km.dataloader is not None
+            assert auto_km.decomposition is not None
+    
+    @patch('molecular_simulations.analysis.autocluster.silhouette_score')
+    @patch('molecular_simulations.analysis.autocluster.KMeans')
+    def test_sweep_n_clusters(self, mock_kmeans, mock_silhouette):
         """Test n_clusters parameter sweep"""
         with tempfile.TemporaryDirectory() as tmpdir:
             # Create dummy data
@@ -133,7 +200,8 @@ class TestAutoKMeans:
             mock_kmeans_instance.cluster_centers_ = np.array([[0, 0], [1, 1]])
             mock_kmeans.return_value = mock_kmeans_instance
             
-            mock_silhouette.return_value = 0.5
+            # Return increasing silhouette scores so we can test best selection
+            mock_silhouette.side_effect = [0.3, 0.5, 0.4]
             
             # Initialize AutoKMeans
             auto_km = AutoKMeans(tmpdir, max_clusters=5, stride=1)
@@ -142,9 +210,11 @@ class TestAutoKMeans:
             # Run sweep
             auto_km.sweep_n_clusters([2, 3, 4])
             
-            # Check that silhouette score was called
-            assert mock_silhouette.called
-            assert mock_kmeans.called
+            # Check that best score (0.5) was selected
+            assert mock_silhouette.call_count == 3
+            assert mock_kmeans.call_count == 3
+            assert auto_km.centers is not None
+            assert auto_km.labels is not None
     
     def test_map_centers_to_frames(self):
         """Test mapping cluster centers to frames"""
@@ -154,17 +224,20 @@ class TestAutoKMeans:
             np.save(file, test_data)
             
             auto_km = AutoKMeans(tmpdir)
-            auto_km.reduced = np.array([[0, 0], [1, 1], [2, 2]])
-            auto_km.centers = np.array([[0.1, 0.1], [1.1, 1.1]])
-            auto_km.shape = (3, 5)
+            # Set up reduced data and centers
+            auto_km.reduced = np.array([[0, 0], [1, 1], [2, 2], [3, 3], [4, 4]])
+            auto_km.centers = np.array([[0.1, 0.1], [3.9, 3.9]])
+            auto_km.shape = (10, 5)
             
             auto_km.map_centers_to_frames()
             
+            # Should have one entry per cluster
             assert len(auto_km.cluster_centers) == 2
-            assert all(isinstance(v, tuple) for v in auto_km.cluster_centers.values())
+            # Each value should be a tuple of (replica, frame)
+            assert all(isinstance(v, tuple) and len(v) == 2 
+                      for v in auto_km.cluster_centers.values())
     
-    @patch('autocluster.json.dump')
-    def test_save_centers(self, mock_json_dump):
+    def test_save_centers(self):
         """Test saving cluster centers to JSON"""
         with tempfile.TemporaryDirectory() as tmpdir:
             test_data = np.random.rand(10, 5)
@@ -176,26 +249,44 @@ class TestAutoKMeans:
             
             auto_km.save_centers()
             
-            # Check that json.dump was called
-            assert mock_json_dump.called
+            # Check that file was created
+            output_file = Path(tmpdir) / 'cluster_centers.json'
+            assert output_file.exists()
+            
+            # Verify contents
+            import json
+            with open(output_file) as f:
+                loaded = json.load(f)
+            assert '0' in loaded  # Keys become strings in JSON
+            assert '1' in loaded
     
-    @patch('polars.DataFrame.write_parquet')
-    def test_save_labels(self, mock_write_parquet):
+    def test_save_labels(self):
         """Test saving cluster labels to parquet"""
         with tempfile.TemporaryDirectory() as tmpdir:
             test_data = np.random.rand(10, 5)
-            file = Path(tmpdir) / "data.npy"
-            np.save(file, test_data)
+            file1 = Path(tmpdir) / "test1.npy"
+            file2 = Path(tmpdir) / "test2.npy"
+            np.save(file1, test_data[:5])
+            np.save(file2, test_data[5:])
             
             auto_km = AutoKMeans(tmpdir)
-            auto_km.dataloader.files = [Path("test1.npy"), Path("test2.npy")]
-            auto_km.dataloader.shape = (5, 3)
+            auto_km.dataloader.files = [file1, file2]
+            # Set uniform shape
+            auto_km.dataloader.shapes = [(5, 5), (5, 5)]
             auto_km.labels = np.array([0, 1, 0, 1, 0, 1, 0, 1, 0, 1])
             
             auto_km.save_labels()
             
-            # Check that write_parquet was called
-            assert mock_write_parquet.called
+            # Check that file was created
+            output_file = Path(tmpdir) / 'cluster_assignments.parquet'
+            assert output_file.exists()
+            
+            # Verify it can be read
+            df = pl.read_parquet(output_file)
+            assert 'system' in df.columns
+            assert 'frame' in df.columns
+            assert 'cluster' in df.columns
+            assert len(df) == 10
 
 
 class TestDecomposition:
@@ -205,6 +296,9 @@ class TestDecomposition:
         """Test PCA decomposition initialization"""
         decomp = Decomposition('PCA', n_components=2)
         assert decomp.decomposer is not None
+        # Should be a PCA instance
+        from sklearn.decomposition import PCA
+        assert isinstance(decomp.decomposer, PCA)
     
     def test_fit_transform(self):
         """Test fit_transform method"""
@@ -214,6 +308,7 @@ class TestDecomposition:
         X_reduced = decomp.fit_transform(X)
         
         assert X_reduced.shape == (100, 2)
+        assert isinstance(X_reduced, np.ndarray)
     
     def test_separate_fit_and_transform(self):
         """Test separate fit and transform methods"""
@@ -224,12 +319,43 @@ class TestDecomposition:
         X_reduced = decomp.transform(X)
         
         assert X_reduced.shape == (100, 2)
+        assert isinstance(X_reduced, np.ndarray)
+    
+    def test_fit_transform_consistency(self):
+        """Test that fit_transform gives same result as fit then transform"""
+        X = np.random.rand(100, 10)
+        
+        # Method 1: fit_transform
+        decomp1 = Decomposition('PCA', n_components=2, random_state=42)
+        X_reduced1 = decomp1.fit_transform(X)
+        
+        # Method 2: separate fit and transform
+        decomp2 = Decomposition('PCA', n_components=2, random_state=42)
+        decomp2.fit(X)
+        X_reduced2 = decomp2.transform(X)
+        
+        # Should give same results
+        assert np.allclose(X_reduced1, X_reduced2)
     
     def test_unsupported_algorithm(self):
         """Test that unsupported algorithms raise appropriate errors"""
         with pytest.raises(TypeError):
             # TICA and UMAP are not implemented (None in the dict)
             decomp = Decomposition('TICA')
+            decomp.fit_transform(np.random.rand(10, 5))
+    
+    def test_pca_with_custom_params(self):
+        """Test PCA with custom parameters"""
+        X = np.random.rand(100, 10)
+        
+        # Test with different n_components
+        decomp3 = Decomposition('PCA', n_components=3)
+        X_reduced3 = decomp3.fit_transform(X)
+        assert X_reduced3.shape == (100, 3)
+        
+        decomp5 = Decomposition('PCA', n_components=5)
+        X_reduced5 = decomp5.fit_transform(X)
+        assert X_reduced5.shape == (100, 5)
 
 
 if __name__ == "__main__":

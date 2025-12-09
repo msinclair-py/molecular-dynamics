@@ -39,7 +39,7 @@ class ImplicitSolvent:
         self.path = self.path.resolve()
         self.path.mkdir(exist_ok=True, parents=True)
 
-        self.pdb = pdb.resolve()
+        self.pdb = Path(pdb).resolve()
 
         if out is not None:
             self.out = self.path / out
