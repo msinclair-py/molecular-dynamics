@@ -1,8 +1,10 @@
 from pathlib import Path
 import pytest
+from unittest.mock import patch
 
-from molecular_simulations.build.build_amber import ImplicitSolvent
+from molecular_simulations.build import ImplicitSolvent
 
+@patch.dict('os.environ', {'AMBERHOME': '/mock/amber/path'})
 def test_write_leap_writes_file(tmp_path: Path):
     content = 'source leaprc.protein.ff19SB\nquit\n'
     imp = ImplicitSolvent(path=tmp_path, pdb='dummy.pdb')
@@ -10,6 +12,7 @@ def test_write_leap_writes_file(tmp_path: Path):
     assert leap_path.exists()
     assert leap_path.read_text() == content
 
+@patch.dict('os.environ', {'AMBERHOME': '/mock/amber/path'})
 def test_write_leap_returns_path(tmp_path: Path):
     imp = ImplicitSolvent(path=tmp_path, pdb='dummy.pdb')
     p = imp.write_leap('quit\n')
