@@ -75,7 +75,8 @@ class TestBuildToSimulate:
         minimizer = Minimizer(
             topology=tmp_path / 'system.prmtop',
             coordinates=tmp_path / 'system.inpcrd',
-            out='min.pdb'
+            out='min.pdb',
+            platform='CPU'
         )
         assert minimizer.topology.exists()
         assert minimizer.coordinates.exists()
