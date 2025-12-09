@@ -38,6 +38,7 @@ END
 class TestBuildToSimulate:
     """Test that builders create valid inputs for simulators"""
     
+    @patch.dict('os.environ', {'AMBERHOME': '/mock/amber/path'})
     @pytest.mark.requires_amber
     def test_implicit_solvent_builder_creates_simulator_inputs(self, tmp_path):
         """Test ImplicitSolvent builder creates files that Minimizer can use"""
