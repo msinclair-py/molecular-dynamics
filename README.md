@@ -1,39 +1,220 @@
-# molecular-dynamics repository README
+# molecular-simulations
+
 [![CI/CD](https://github.com/msinclair-py/molecular-simulations/workflows/CI%2FCD/badge.svg)](https://github.com/msinclair-py/molecular-simulations/actions)
 [![PyPI version](https://img.shields.io/pypi/v/molecular-simulations)](https://pypi.org/project/molecular-simulations/)
+[![Documentation Status](https://readthedocs.org/projects/molecular-simulations/badge/?version=latest)](https://molecular-simulations.readthedocs.io/en/latest/?badge=latest)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 
-[molecular-dynamics](https://molecular-simulations.readthedocs.io/en/latest/index.html) 
-is a collection of python utilities for MD simulation building, 
-running and analysis.
+A comprehensive Python toolkit for building, running, and analyzing molecular dynamics simulations using the AMBER force field ecosystem and OpenMM.
 
-Capable of building molecular dynamics systems using the AMBER forcefield
-ecosystem. Available forcefields include: fixed-charge forcefields (ff19SB 
-for proteins, OL21 for DNA, and OL3 for RNA), ff15ipq polarizable forcefield,
-and the ability to parameterize small molecules using GAFF2. In all explicit
-systems OPC water is used with the exception of polarizable systems where a
-polarizable water model is used (SPC/Eb). 
-Loosely tested support for implicit solvent systems as well.
+📖 **[Full Documentation](https://molecular-simulations.readthedocs.io/en/latest/index.html)**
 
-Also bundled in this library are tools for analyzing molecular simulations
-including: correlation analysis, interaction energy, residue energy footprinting, 
-automatic clustering, an MDAnalysis-based SASA and RSASA methods and more.
+## Features
+
+### 🔨 System Building
+- **Explicit solvent systems** with OPC water model
+- **Implicit solvent** support for faster calculations
+- **Small molecule parameterization** via GAFF2
+
+### ⚡ Simulation Engine
+- **OpenMM integration** (v8.0+) with GPU acceleration
+- **HPC deployment** via [Parsl](https://parsl.readthedocs.io/) for PBS schedulers
+- **MM-PBSA calculations** for binding free energy estimation in parallel
+- Flexible configuration for various cluster environments
+
+### 📊 Analysis Tools
+- **Automatic clustering** with KMeans++ and dimensionality reduction (PCA)
+- **Protein-protein interaction analysis** using covariance matrices
+- **Interaction energy fingerprinting** (electrostatic + Lennard-Jones)
+- **Linear interaction energy** calculations (static and dynamic)
+- **Interface scoring** with ipTM, ipSAE, pDockQ, and pDockQ2
+- **SASA calculations** (absolute and relative) via MDAnalysis
+- **Residue energy footprinting** for binding site characterization
 
 ## Installation
-Easily installed via pip. PyPI page: https://pypi.org/project/molecular-simulations/
 
-`pip install molecular-simulations`
+Install from PyPI:
 
-## Package details
-Simulations are performed using OpenMM version >= 8 due to CUDA versioning
-on ALCF Polaris. Note that due to some scaling issues reported by users,
-OpenMM versions 8.0-8.1 suffer from slow integration times for larger
-systems. All MD simulations are deployed on a PBS scheduler via 
-[Parsl](https://parsl.readthedocs.io/en/stable/) but
-with some minor tweaking of the Parsl configuration object they can be
-deployed on theoretically any HPC cluster/job scheduler. Jobs can also
-be run locally without the need for Parsl (example coming soon).
+```bash
+pip install molecular-simulations
+```
 
-## Usage
-See `examples` for how to run a few of the tools contained within.
+For small molecule support (requires RDKit and OpenBabel):
 
-See Parsl documentation for further examples of how to run on other HPC resources. https://parsl.readthedocs.io/en/stable/
+```bash
+pip install molecular-simulations[ligand]
+```
+
+For development:
+
+```bash
+pip install molecular-simulations[dev]
+```
+
+## Quick Start
+
+### Building a Solvated System
+
+```python
+from molecular_simulations.build import ExplicitSolvent
+from pathlib import Path
+
+# Build an explicitly solvated system
+pdb_file = Path('/path/to/protein.pdb')
+output_dir = Path('/path/to/outputs')
+
+builder = ExplicitSolvent(output_dir, pdb_file)
+builder.build()
+
+# Outputs: topology (.prmtop) and coordinates (.inpcrd)
+```
+
+### Running a Simulation
+
+```python
+from molecular_simulations.simulate import Simulator
+
+# Initialize and run simulation
+sim = Simulator(
+    path=builder.out.parent, # Directory containing simulation inputs
+)
+sim.run()
+```
+
+### Analyzing Trajectories
+
+#### Interaction Energy Fingerprinting
+
+```python
+from molecular_simulations.analysis import Fingerprinter
+
+fp = Fingerprinter(
+    topology='/path/to/system.prmtop',
+    trajectory='/path/to/trajectory.dcd',
+    target_selection='segid A',
+    binder_selection='segid B'
+)
+fp.run()
+fp.save()  # Saves to fingerprint.npz
+```
+
+#### Automatic Clustering
+
+```python
+from molecular_simulations.analysis import AutoKMeans
+
+clusterer = AutoKMeans(
+    data_directory='/path/to/features/',
+    max_clusters=10,
+    reduction_algorithm='PCA',
+    reduction_kws={'n_components': 2}
+)
+clusterer.run()
+clusterer.save_labels()   # Saves cluster assignments
+clusterer.save_centers()  # Saves cluster centroids
+```
+
+#### Protein-Protein Interaction Analysis
+
+```python
+from molecular_simulations.analysis import PPInteractions
+
+ppi = PPInteractions(
+    top='/path/to/topology.prmtop',
+    traj='/path/to/trajectory.dcd',
+    out='/path/to/outputs/',
+    sel1='chainID A',
+    sel2='chainID B'
+)
+ppi.run()  # Analyzes H-bonds, salt bridges, hydrophobic contacts
+```
+
+#### Interface Scoring (ipSAE/pDockQ)
+
+```python
+from molecular_simulations.analysis import ipSAE
+
+scorer = ipSAE(
+    structure_file='/path/to/complex.pdb',
+    pae_file='/path/to/pae.json',  # AlphaFold PAE matrix
+    plddt_file='/path/to/plddt.json'
+)
+scores = scorer.run()
+# Returns: ipTM, ipSAE, pDockQ, pDockQ2 scores
+```
+
+#### SASA Calculations
+
+```python
+from molecular_simulations.analysis import SASA, RelativeSASA
+
+# Absolute SASA
+sasa = SASA(universe, selection='protein')
+sasa.run()
+results = sasa.measure_sasa()
+
+# Relative SASA (normalized by max accessible area)
+rsasa = RelativeSASA(universe, selection='protein')
+rsasa.run()
+```
+
+## Supported Force Fields
+
+| Component | Force Field | Notes |
+|-----------|-------------|-------|
+| Proteins | ff19SB | Fixed-charge, recommended |
+| Proteins | ff15ipq | Polarizable |
+| DNA | OL21 | Latest AMBER DNA parameters |
+| RNA | OL3 | Standard RNA parameters |
+| Small molecules | GAFF2 | General AMBER Force Field 2 |
+| Water (explicit) | OPC | 4-point model |
+| Water (polarizable) | SPC/Eb | For ff15ipq systems |
+
+## Requirements
+
+- Python ≥ 3.10
+- OpenMM ≥ 8.0
+- MDAnalysis ≥ 2.7
+- Parsl ≥ 2024.1.29
+- NumPy, SciPy, scikit-learn
+- Optional: RDKit, OpenBabel (for ligand parameterization)
+
+## Known Issues
+
+- OpenMM versions 8.0-8.1 may exhibit slower integration times for larger systems due to a known bug
+- Advanced features are tested but not all edge cases have been encountered, please open an Issue if you find one
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## Citation
+
+If you use this software in your research, please cite:
+
+```bibtex
+@software{molecular_simulations,
+  author = {Sinclair, Matt},
+  title = {molecular-simulations: A Python toolkit for MD simulation and analysis},
+  url = {https://github.com/msinclair-py/molecular-simulations},
+  year = {2025}
+}
+```
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- [OpenMM](https://openmm.org/) for molecular dynamics engine
+- [MDAnalysis](https://www.mdanalysis.org/) for trajectory analysis
+- [Parsl](https://parsl-project.org/) for parallel workflow execution
+- [AMBER](https://ambermd.org/) force field developers
