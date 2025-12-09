@@ -247,7 +247,7 @@ class TestScoreCalculator:
 class TestIpSAE:
     """Test suite for ipSAE class"""
     
-    @patch('molecular_simulations.analysis.ipSAE.ModelParser')
+    @patch('molecular_simulations.analysis.ipSAE.ModelParser', create=True)
     def test_init(self, mock_parser):
         """Test ipSAE initialization"""
         with tempfile.TemporaryDirectory() as tmpdir:
