@@ -247,10 +247,36 @@ class TestScoreCalculator:
 class TestIpSAE:
     """Test suite for ipSAE class"""
     
-    def test_init(self, mock_parser):
+    @pytest.fixture(autouse=True)
+    def mock_model_parser(self):
+        """Mock ModelParser for all tests in this class"""
+        import sys
+        
+        # Get the actual MODULE from sys.modules
+        ipSAE_module = sys.modules.get('molecular_simulations.analysis.ipSAE')
+        
+        if ipSAE_module is None:
+            # Module not loaded yet, import it
+            import molecular_simulations.analysis.ipSAE
+            ipSAE_module = sys.modules['molecular_simulations.analysis.ipSAE']
+        
+        # Save the original ModelParser
+        original_parser = ipSAE_module.ModelParser
+        
+        # Replace with mock
+        mock_parser_instance = MagicMock()
+        mock_parser_class = MagicMock(return_value=mock_parser_instance)
+        ipSAE_module.ModelParser = mock_parser_class
+        
+        yield mock_parser_instance
+        
+        # Restore original after test
+        ipSAE_module.ModelParser = original_parser
+    
+    def test_init(self):
         """Test ipSAE initialization"""
         with tempfile.TemporaryDirectory() as tmpdir:
-            # Create dummy files
+            # Create dummy files (ModelParser is mocked so content doesn't matter)
             structure_file = Path(tmpdir) / "test.pdb"
             structure_file.touch()
             plddt_file = Path(tmpdir) / "plddt.npy"

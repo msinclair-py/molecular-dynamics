@@ -1,352 +1,293 @@
 """
-Unit tests for ipSAE.py module
+Unit tests for sasa.py module
 """
 import pytest
 import numpy as np
-import tempfile
-from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock, mock_open
-import polars as pl
+from unittest.mock import Mock, patch, MagicMock
+import MDAnalysis as mda
+from MDAnalysis.core import groups
 
-from molecular_simulations.analysis.ipSAE import ipSAE, ScoreCalculator, ModelParser
+from molecular_simulations.analysis import SASA, RelativeSASA
 
 
-class TestModelParser:
-    """Test suite for ModelParser class"""
+class TestSASA:
+    """Test suite for SASA class"""
     
-    def test_init(self):
-        """Test ModelParser initialization"""
-        parser = ModelParser("test.pdb")
-        assert parser.structure == Path("test.pdb")
-        assert parser.token_mask == []
-        assert parser.residues == []
-        assert parser.cb_residues == []
-        assert parser.chains == []
-    
-    def test_nucleic_acids_property(self):
-        """Test nucleic acids property"""
-        parser = ModelParser("test.pdb")
-        na_list = parser.nucleic_acids
-        assert 'DA' in na_list
-        assert 'DC' in na_list
-        assert 'DT' in na_list
-        assert 'DG' in na_list
-        assert 'A' in na_list
-        assert 'C' in na_list
-        assert 'U' in na_list
-        assert 'G' in na_list
-    
-    def test_parse_pdb_line(self):
-        """Test PDB line parsing"""
-        pdb_line = "ATOM      1  CA  GLY A   1      10.000  20.000  30.000  1.00 20.00           C"
-        result = ModelParser.parse_pdb_line(pdb_line)
+    @patch('molecular_simulations.analysis.sasa.KDTree')
+    def test_init(self, mock_kdtree):
+        """Test SASA initialization"""
+        # Create mock universe and atomgroup
+        mock_universe = MagicMock()
+        mock_trajectory = MagicMock()
+        mock_universe.trajectory = mock_trajectory
         
-        assert result['atom_num'] == 1
-        assert result['atom_name'] == 'CA'
-        assert result['res'] == 'GLY'
-        assert result['chain_id'] == 'A'
-        assert result['resid'] == 1
-        assert np.allclose(result['coor'], [10.0, 20.0, 30.0])
-    
-    def test_parse_cif_line(self):
-        """Test CIF line parsing"""
-        # mmCIF format: group_PDB id label_atom_id alt_id label_comp_id label_asym_id label_seq_id Cartn_x Cartn_y Cartn_z ...
-        cif_line = "ATOM 1 CA . GLY A 1 10.000 20.000 30.000 1.00 20.00 C"
-        fields = {
-            'id': 1,              # Atom serial number
-            'label_atom_id': 2,   # Atom name (CA)
-            'label_comp_id': 4,   # Residue name (GLY)
-            'label_asym_id': 5,   # Chain ID (A)
-            'label_seq_id': 6,    # Residue ID (1)
-            'Cartn_x': 7,         # X coordinate
-            'Cartn_y': 8,         # Y coordinate
-            'Cartn_z': 9          # Z coordinate
-        }
+        mock_ag = MagicMock(spec=mda.AtomGroup)
+        mock_ag.universe = mock_universe
+        mock_ag.elements = np.array(['C', 'H', 'O', 'N'])
         
-        result = ModelParser.parse_cif_line(cif_line, fields)
+        # Create SASA instance
+        sasa = SASA(mock_ag, probe_radius=1.4, n_points=256)
         
-        assert result['atom_num'] == 1
-        assert result['atom_name'] == 'CA'
-        assert result['res'] == 'GLY'
-        assert result['chain_id'] == 'A'
-        assert result['resid'] == 1
-        assert np.allclose(result['coor'], [10.0, 20.0, 30.0])
+        assert sasa.probe_radius == 1.4
+        assert sasa.n_points == 256
+        assert sasa.ag == mock_ag
+        assert hasattr(sasa, 'radii')
+        assert hasattr(sasa, 'sphere')
     
-    def test_parse_cif_line_missing_resid(self):
-        """Test CIF line parsing with missing residue ID"""
-        cif_line = "ATOM 1 CA . GLY A . 10.000 20.000 30.000 1.00 20.00 C"
-        fields = {
-            'id': 1,
-            'label_atom_id': 2,
-            'label_comp_id': 4,
-            'label_asym_id': 5,
-            'label_seq_id': 6,
-            'Cartn_x': 7,
-            'Cartn_y': 8,
-            'Cartn_z': 9
-        }
+    def test_init_with_updating_atomgroup(self):
+        """Test that UpdatingAtomGroup raises TypeError"""
+        mock_ag = MagicMock(spec=groups.UpdatingAtomGroup)
         
-        result = ModelParser.parse_cif_line(cif_line, fields)
-        assert result is None
+        with pytest.raises(TypeError):
+            SASA(mock_ag)
     
-    @patch("builtins.open", mock_open(read_data="""ATOM      1  CA  GLY A   1      10.000  20.000  30.000  1.00 20.00           C
-ATOM      2  CB  GLY A   1      11.000  21.000  31.000  1.00 20.00           C
-ATOM      3  CA  ALA A   2      12.000  22.000  32.000  1.00 20.00           C
-END"""))
-    def test_parse_structure_file_pdb(self):
-        """Test parsing PDB structure file"""
-        parser = ModelParser("test.pdb")
-        parser.parse_structure_file()
+    def test_init_without_elements(self):
+        """Test that missing elements raises ValueError"""
+        mock_universe = MagicMock()
+        mock_trajectory = MagicMock()
+        mock_universe.trajectory = mock_trajectory
         
-        assert len(parser.residues) == 2  # Only CA atoms
-        assert len(parser.token_mask) == 2
-        assert len(parser.chains) == 2
-        assert all(chain == 'A' for chain in parser.chains)
+        mock_ag = MagicMock(spec=mda.AtomGroup)
+        mock_ag.universe = mock_universe
+        del mock_ag.elements  # Remove elements attribute
+        
+        with pytest.raises(ValueError):
+            SASA(mock_ag)
     
-    def test_classify_chains(self):
-        """Test chain classification"""
-        parser = ModelParser("test.pdb")
-        # Set up residues - need to structure it so the bug doesn't break the test
-        # The implementation has a bug where it uses indices from unique(chains) instead of self.chains
-        # So residue at index 0 represents chain A, index 1 represents chain B
-        parser.residues = [
-            {'res': 'GLY'},  # Chain A - index 0
-            {'res': 'DA'},   # Chain B - index 1
+    def test_get_sphere(self):
+        """Test fibonacci sphere generation"""
+        mock_universe = MagicMock()
+        mock_trajectory = MagicMock()
+        mock_universe.trajectory = mock_trajectory
+        
+        mock_ag = MagicMock(spec=mda.AtomGroup)
+        mock_ag.universe = mock_universe
+        mock_ag.elements = np.array(['C', 'H'])
+        
+        sasa = SASA(mock_ag, n_points=100)
+        sphere = sasa.get_sphere()
+        
+        assert sphere.shape == (100, 3)
+        # Check that points are on unit sphere
+        norms = np.linalg.norm(sphere, axis=1)
+        assert np.allclose(norms, 1.0, rtol=1e-5)
+    
+    @patch('molecular_simulations.analysis.sasa.KDTree')
+    def test_measure_sasa(self, mock_kdtree):
+        """Test SASA measurement for atomgroup"""
+        # Setup mock objects
+        mock_universe = MagicMock()
+        mock_trajectory = MagicMock()
+        mock_universe.trajectory = mock_trajectory
+        
+        mock_ag = MagicMock(spec=mda.AtomGroup)
+        mock_ag.universe = mock_universe
+        mock_ag.elements = np.array(['C', 'H', 'O'])
+        mock_ag.n_atoms = 3
+        mock_ag.positions = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0]])
+        
+        # Mock KDTree behavior
+        mock_kdtree_instance = MagicMock()
+        mock_kdtree_instance.query_ball_point.return_value = [0, 1]
+        mock_kdtree.return_value = mock_kdtree_instance
+        
+        sasa = SASA(mock_ag, n_points=100)
+        sasa.radii = np.array([1.7, 1.2, 1.52])
+        sasa.points_available = set(range(100))
+        
+        result = sasa.measure_sasa(mock_ag)
+        
+        assert result.shape == (3,)
+        assert all(r >= 0 for r in result)
+    
+    def test_prepare(self):
+        """Test _prepare method"""
+        mock_universe = MagicMock()
+        mock_trajectory = MagicMock()
+        mock_universe.trajectory = mock_trajectory
+        
+        mock_ag = MagicMock(spec=mda.AtomGroup)
+        mock_ag.universe = mock_universe
+        mock_ag.elements = np.array(['C', 'H'])
+        mock_ag.n_residues = 5
+        
+        sasa = SASA(mock_ag)
+        sasa._prepare()
+        
+        assert hasattr(sasa.results, 'sasa')
+        assert sasa.results.sasa.shape == (5,)
+        assert all(s == 0 for s in sasa.results.sasa)
+    
+    @patch.object(SASA, 'measure_sasa')
+    def test_single_frame(self, mock_measure):
+        """Test _single_frame method"""
+        mock_universe = MagicMock()
+        mock_trajectory = MagicMock()
+        mock_universe.trajectory = mock_trajectory
+        
+        # Setup mock atoms with residue IDs
+        mock_atoms = []
+        for i in range(3):
+            mock_atom = MagicMock()
+            mock_atom.resid = i + 1
+            mock_atoms.append(mock_atom)
+        
+        mock_ag = MagicMock(spec=mda.AtomGroup)
+        mock_ag.universe = mock_universe
+        mock_ag.elements = np.array(['C', 'H', 'O'])
+        mock_ag.n_residues = 3
+        mock_ag.atoms = mock_atoms
+        
+        # Mock measure_sasa to return area values
+        mock_measure.return_value = np.array([10.0, 20.0, 30.0])
+        
+        sasa = SASA(mock_ag)
+        sasa.results = MagicMock()
+        sasa.results.sasa = np.zeros(3)
+        
+        sasa._single_frame()
+        
+        mock_measure.assert_called_once_with(mock_ag)
+        assert sasa.results.sasa[0] == 10.0
+        assert sasa.results.sasa[1] == 20.0
+        assert sasa.results.sasa[2] == 30.0
+    
+    def test_conclude(self):
+        """Test _conclude method"""
+        mock_universe = MagicMock()
+        mock_trajectory = MagicMock()
+        mock_universe.trajectory = mock_trajectory
+        
+        mock_ag = MagicMock(spec=mda.AtomGroup)
+        mock_ag.universe = mock_universe
+        mock_ag.elements = np.array(['C', 'H'])
+        
+        sasa = SASA(mock_ag)
+        sasa.results = MagicMock()
+        sasa.results.sasa = np.array([100.0, 200.0, 300.0])
+        sasa.n_frames = 10
+        
+        sasa._conclude()
+        
+        assert sasa.results.sasa[0] == 10.0
+        assert sasa.results.sasa[1] == 20.0
+        assert sasa.results.sasa[2] == 30.0
+
+
+class TestRelativeSASA:
+    """Test suite for RelativeSASA class"""
+    
+    def test_init_without_bonds(self):
+        """Test that missing bonds raises ValueError"""
+        mock_universe = MagicMock()
+        mock_trajectory = MagicMock()
+        mock_universe.trajectory = mock_trajectory
+        
+        mock_ag = MagicMock(spec=mda.AtomGroup)
+        mock_ag.universe = mock_universe
+        mock_ag.elements = np.array(['C', 'H'])
+        del mock_ag.bonds  # Remove bonds attribute
+        
+        with pytest.raises(ValueError):
+            RelativeSASA(mock_ag)
+    
+    def test_prepare(self):
+        """Test _prepare method for RelativeSASA"""
+        mock_universe = MagicMock()
+        mock_trajectory = MagicMock()
+        mock_universe.trajectory = mock_trajectory
+        
+        mock_ag = MagicMock(spec=mda.AtomGroup)
+        mock_ag.universe = mock_universe
+        mock_ag.elements = np.array(['C', 'H'])
+        mock_ag.bonds = MagicMock()
+        mock_ag.n_residues = 5
+        
+        rel_sasa = RelativeSASA(mock_ag)
+        rel_sasa._prepare()
+        
+        assert hasattr(rel_sasa.results, 'sasa')
+        assert hasattr(rel_sasa.results, 'relative_area')
+        assert rel_sasa.results.sasa.shape == (5,)
+        assert rel_sasa.results.relative_area.shape == (5,)
+    
+    @patch.object(RelativeSASA, 'measure_sasa')
+    def test_single_frame_relative(self, mock_measure):
+        """Test _single_frame method for RelativeSASA"""
+        mock_universe = MagicMock()
+        mock_trajectory = MagicMock()
+        mock_universe.trajectory = mock_trajectory
+        
+        # Setup mock residues
+        mock_residues = MagicMock()
+        mock_residues.resindices = np.array([0, 1, 2])
+        mock_residues.resids = np.array([1, 2, 3])
+        
+        # Setup mock atoms
+        mock_atoms = []
+        for i in range(3):
+            mock_atom = MagicMock()
+            mock_atom.resid = i + 1
+            mock_atoms.append(mock_atom)
+        
+        # Setup mock atomgroup
+        mock_ag = MagicMock(spec=mda.AtomGroup)
+        mock_ag.universe = mock_universe
+        mock_ag.elements = np.array(['C', 'H', 'O'])
+        mock_ag.bonds = MagicMock()
+        mock_ag.n_residues = 3
+        mock_ag.atoms = mock_atoms
+        mock_ag.residues = mock_residues
+        
+        # Mock select_atoms to return tripeptide
+        mock_tripeptide = MagicMock()
+        mock_tripeptide.__len__ = MagicMock(return_value=3)
+        mock_tripeptide.resindices = np.array([0, 1, 2])
+        mock_ag.select_atoms.return_value = mock_tripeptide
+        
+        # Mock measure_sasa to return different values for different calls
+        mock_measure.side_effect = [
+            np.array([10.0, 20.0, 30.0]),  # Initial SASA
+            np.array([5.0, 10.0, 15.0]),   # Tripeptide SASA
+            np.array([5.0, 10.0, 15.0]),   # Tripeptide SASA
+            np.array([5.0, 10.0, 15.0]),   # Tripeptide SASA
         ]
-        parser.chains = ['A', 'B']  # Must match residues length
         
-        parser.classify_chains()
+        rel_sasa = RelativeSASA(mock_ag)
+        rel_sasa.results = MagicMock()
+        rel_sasa.results.sasa = np.zeros(3)
+        rel_sasa.results.relative_area = np.zeros(3)
         
-        assert parser.chain_types['A'] == 'protein'
-        assert parser.chain_types['B'] == 'nucleic_acid'
-
-
-class TestScoreCalculator:
-    """Test suite for ScoreCalculator class"""
-    
-    def test_init(self):
-        """Test ScoreCalculator initialization"""
-        chains = np.array(['A', 'A', 'B', 'B'])
-        chain_pair_type = {'A': 'protein', 'B': 'protein'}
-        n_residues = 4
+        rel_sasa._single_frame()
         
-        calc = ScoreCalculator(chains, chain_pair_type, n_residues)
+        assert mock_measure.called
+    
+    def test_conclude_relative(self):
+        """Test _conclude method for RelativeSASA"""
+        mock_universe = MagicMock()
+        mock_trajectory = MagicMock()
+        mock_universe.trajectory = mock_trajectory
         
-        assert np.array_equal(calc.chains, chains)
-        assert np.array_equal(calc.unique_chains, np.array(['A', 'B']))
-        assert calc.n_res == n_residues
-        assert calc.pDockQ_cutoff == 8.0
-        assert calc.PAE_cutoff == 12.0
-        assert calc.dist_cutoff == 10.0
-    
-    def test_pDockQ_score(self):
-        """Test pDockQ score calculation"""
-        score = ScoreCalculator.pDockQ_score(150.0)
-        assert 0 <= score <= 1
+        mock_ag = MagicMock(spec=mda.AtomGroup)
+        mock_ag.universe = mock_universe
+        mock_ag.elements = np.array(['C', 'H'])
+        mock_ag.bonds = MagicMock()
         
-        # Test with extreme values
-        score_low = ScoreCalculator.pDockQ_score(0.0)
-        score_high = ScoreCalculator.pDockQ_score(300.0)
-        assert score_low < score_high
-    
-    def test_pDockQ2_score(self):
-        """Test pDockQ2 score calculation"""
-        score = ScoreCalculator.pDockQ2_score(80.0)
-        assert 0 <= score <= 1.5
+        rel_sasa = RelativeSASA(mock_ag)
+        rel_sasa.results = MagicMock()
+        rel_sasa.results.sasa = np.array([100.0, 200.0, 300.0])
+        rel_sasa.results.relative_area = np.array([0.5, 0.6, 0.7])
+        rel_sasa.n_frames = 10
         
-        # Test with extreme values
-        score_low = ScoreCalculator.pDockQ2_score(0.0)
-        score_high = ScoreCalculator.pDockQ2_score(200.0)
-        assert score_low < score_high
-    
-    def test_compute_pTM(self):
-        """Test pTM score calculation"""
-        x = np.array([5.0, 10.0, 15.0])
-        d0 = 10.0
-        scores = ScoreCalculator.compute_pTM(x, d0)
+        rel_sasa._conclude()
         
-        assert scores.shape == (3,)
-        assert all(0 <= s <= 1 for s in scores)
-    
-    def test_compute_d0(self):
-        """Test d0 calculation"""
-        # Test with small L - should return close to min_value
-        d0_small = ScoreCalculator.compute_d0(10, 'protein')
-        assert d0_small >= 1.0  # Should be at least the min_value
-        assert d0_small < 2.0   # But not too large for small L
-        
-        # Test with larger L - should return larger value
-        d0_large = ScoreCalculator.compute_d0(100, 'protein')
-        assert d0_large > d0_small  # Larger L gives larger d0
-        
-        # Test nucleic acid has different min_value
-        d0_na_small = ScoreCalculator.compute_d0(10, 'nucleic_acid')
-        assert d0_na_small >= 2.0  # NA min_value is 2.0
-        assert d0_na_small < 3.0
-    
-    def test_permute_chains(self):
-        """Test chain permutation"""
-        chains = np.array(['A', 'A', 'B', 'B', 'C', 'C'])
-        chain_pair_type = {'A': 'protein', 'B': 'protein', 'C': 'protein'}
-        
-        # Patch permute_chains to avoid the bug in the implementation
-        with patch.object(ScoreCalculator, 'permute_chains'):
-            calc = ScoreCalculator(chains, chain_pair_type, 6)
-            
-            # Manually set up what permute_chains should have done
-            calc.permuted = {
-                ('A', 'B'): 0,
-                ('A', 'C'): 1,
-                ('B', 'C'): 2
-            }
-            
-            # Check that expected pairs exist
-            assert ('A', 'B') in calc.permuted
-            assert ('A', 'C') in calc.permuted
-            assert ('B', 'C') in calc.permuted
-            # Self-pairs should not exist
-            assert ('A', 'A') not in calc.permuted
-            assert ('B', 'B') not in calc.permuted
-            assert ('C', 'C') not in calc.permuted
-    
-    @patch('polars.DataFrame.write_parquet')
-    def test_compute_scores(self, mock_write):
-        """Test score computation"""
-        chains = np.array(['A', 'A', 'B', 'B'])
-        chain_pair_type = {'A': 'protein', 'B': 'protein'}
-        
-        # Mock permute_chains to avoid the bug
-        with patch.object(ScoreCalculator, 'permute_chains'):
-            calc = ScoreCalculator(chains, chain_pair_type, 4)
-            
-            # Manually set up permuted chains
-            calc.permuted = {('A', 'B'): 0}
-            
-            # Create mock data - ensure some distances are within cutoff
-            # pDockQ_cutoff is 8.0, so make sure some distances are < 8.0
-            distances = np.array([
-                [0, 1, 5, 6],    # Residue 0 to all others
-                [1, 0, 7, 5],    # Residue 1 to all others  
-                [5, 7, 0, 3],    # Residue 2 to all others
-                [6, 5, 3, 0]     # Residue 3 to all others
-            ])
-            pLDDT = np.array([90, 85, 80, 75])  # Good pLDDT scores
-            PAE = np.array([
-                [0, 2, 8, 10],
-                [2, 0, 9, 8],
-                [8, 9, 0, 5],
-                [10, 8, 5, 0]
-            ])
-            
-            calc.compute_scores(distances, pLDDT, PAE)
-            
-            assert hasattr(calc, 'df')
-            assert hasattr(calc, 'scores')
-
-
-class TestIpSAE:
-    """Test suite for ipSAE class"""
-    
-    @patch('molecular_simulations.analysis.ipSAE.ModelParser')
-    def test_init(self, mock_parser):
-        """Test ipSAE initialization"""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            # Create dummy files
-            structure_file = Path(tmpdir) / "test.pdb"
-            structure_file.touch()
-            plddt_file = Path(tmpdir) / "plddt.npy"
-            pae_file = Path(tmpdir) / "pae.npy"
-            
-            ipsae = ipSAE(structure_file, plddt_file, pae_file)
-            
-            assert ipsae.plddt_file == plddt_file
-            assert ipsae.pae_file == pae_file
-            assert ipsae.path == Path(tmpdir)
-    
-    def test_load_pLDDT_file(self):
-        """Test loading pLDDT file"""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            # Create test pLDDT data
-            plddt_data = np.random.rand(100) * 0.01  # Values between 0 and 1
-            plddt_file = Path(tmpdir) / "plddt.npz"
-            np.savez(plddt_file, plddt=plddt_data)
-            
-            ipsae = ipSAE("test.pdb", plddt_file, "pae.npy")
-            result = ipsae.load_pLDDT_file()
-            
-            # Check that values are scaled by 100
-            assert np.allclose(result, plddt_data * 100)
-    
-    def test_load_PAE_file(self):
-        """Test loading PAE file"""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            # Create test PAE data
-            pae_data = np.random.rand(100, 100) * 30
-            pae_file = Path(tmpdir) / "pae.npz"
-            np.savez(pae_file, pae=pae_data)
-            
-            ipsae = ipSAE("test.pdb", "plddt.npy", pae_file)
-            result = ipsae.load_PAE_file()
-            
-            assert np.array_equal(result, pae_data)
-    
-    @patch('polars.DataFrame.write_parquet')
-    def test_save_scores(self, mock_write):
-        """Test saving scores to parquet"""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            ipsae = ipSAE("test.pdb", "plddt.npy", "pae.npy", out_path=tmpdir)
-            ipsae.scores = pl.DataFrame({'test': [1, 2, 3]})
-            
-            ipsae.save_scores()
-            
-            mock_write.assert_called_once()
-            args = mock_write.call_args[0]
-            assert 'ipSAE_scores.parquet' in str(args[0])
-    
-    def test_parse_structure_file(self):
-        """Test structure file parsing"""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            ipsae = ipSAE("test.pdb", "plddt.npy", "pae.npy", out_path=tmpdir)
-            
-            # Mock the parser methods directly on the instance
-            ipsae.parser.parse_structure_file = MagicMock()
-            ipsae.parser.classify_chains = MagicMock()
-            
-            # Set up mock data that parse_structure_file would populate
-            ipsae.parser.residues = [
-                {'coor': np.array([0, 0, 0])},
-                {'coor': np.array([1, 1, 1])},
-                {'coor': np.array([2, 2, 2])}
-            ]
-            ipsae.parser.token_mask = [1, 1, 1]
-            
-            ipsae.parse_structure_file()
-            
-            assert ipsae.coordinates.shape == (3, 3)
-            assert ipsae.token_array.shape == (3,)
-            ipsae.parser.parse_structure_file.assert_called_once()
-            ipsae.parser.classify_chains.assert_called_once()
-    
-    def test_prepare_scorer(self):
-        """Test scorer preparation"""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            ipsae = ipSAE("test.pdb", "plddt.npy", "pae.npy", out_path=tmpdir)
-            
-            # Setup mock parser data
-            ipsae.parser.chains = ['A', 'A', 'B']
-            ipsae.parser.chain_types = {'A': 'protein', 'B': 'protein'}
-            ipsae.parser.residues = [
-                {'res': 'GLY'},
-                {'res': 'ALA'},
-                {'res': 'VAL'}
-            ]
-            
-            # Mock permute_chains to avoid the bug
-            with patch.object(ScoreCalculator, 'permute_chains'):
-                ipsae.prepare_scorer()
-                
-                assert isinstance(ipsae.scorer, ScoreCalculator)
-                assert np.array_equal(ipsae.scorer.chains, ['A', 'A', 'B'])
+        # Use approximate comparison for floating point
+        assert np.isclose(rel_sasa.results.sasa[0], 10.0)
+        assert np.isclose(rel_sasa.results.sasa[1], 20.0)
+        assert np.isclose(rel_sasa.results.sasa[2], 30.0)
+        assert np.isclose(rel_sasa.results.relative_area[0], 0.05)
+        assert np.isclose(rel_sasa.results.relative_area[1], 0.06)
+        assert np.isclose(rel_sasa.results.relative_area[2], 0.07)
 
 
 if __name__ == "__main__":
