@@ -19,13 +19,14 @@ A comprehensive Python toolkit for building, running, and analyzing molecular dy
 
 ### ⚡ Simulation Engine
 - **OpenMM integration** (v8.0+) with GPU acceleration
+- **Advanced simulations** Constant-pH and Empirical Valence Bond
 - **HPC deployment** via [Parsl](https://parsl.readthedocs.io/) for PBS schedulers
 - **MM-PBSA calculations** for binding free energy estimation in parallel
 - Flexible configuration for various cluster environments
 
 ### 📊 Analysis Tools
 - **Automatic clustering** with KMeans++ and dimensionality reduction (PCA)
-- **Protein-protein interaction analysis** using covariance matrices
+- **Protein-protein interaction analysis** using covariance matrix approach
 - **Interaction energy fingerprinting** (electrostatic + Lennard-Jones)
 - **Linear interaction energy** calculations (static and dynamic)
 - **Interface scoring** with ipTM, ipSAE, pDockQ, and pDockQ2
@@ -105,7 +106,7 @@ fp.save()  # Saves to fingerprint.npz
 from molecular_simulations.analysis import AutoKMeans
 
 clusterer = AutoKMeans(
-    data_directory='/path/to/features/',
+    data_directory='/path/to/features/', # should be populated with .npy files
     max_clusters=10,
     reduction_algorithm='PCA',
     reduction_kws={'n_components': 2}
@@ -113,6 +114,21 @@ clusterer = AutoKMeans(
 clusterer.run()
 clusterer.save_labels()   # Saves cluster assignments
 clusterer.save_centers()  # Saves cluster centroids
+```
+
+#### MM-PBSA implementation
+
+```python
+from molecular_simulations.simulate.mmpbsa import MMPBSA
+
+mmpbsa = MMPBSA(
+    top='/path/to/file.prmtop',
+    dcd='/path/to/traj.dcd',
+    selections=[':1-100', ':101-200'], # cpptraj-style selections
+    n_cpus=1,                          # CPU-based parallelism supported
+    amberhome='/path/to/dir',          # should be above /bin/cpptraj
+    parallel_mode='frame'              # frame or serial
+)
 ```
 
 #### Protein-Protein Interaction Analysis
@@ -161,6 +177,7 @@ rsasa.run()
 
 ## Supported Force Fields
 
+|==============AMBER==============|
 | Component | Force Field | Notes |
 |-----------|-------------|-------|
 | Proteins | ff19SB | Fixed-charge, recommended |
@@ -171,13 +188,20 @@ rsasa.run()
 | Water (explicit) | OPC | 4-point model |
 | Water (polarizable) | SPC/Eb | For ff15ipq systems |
 
+|=============CHARMM=============|
+See OpenMM documentation on providing parameter
+sets. CHARMM does not translate very well to the
+pre-build XML files for unusual lipids, small molecules,
+etc.
+
 ## Requirements
 
 - Python ≥ 3.10
 - OpenMM ≥ 8.0
 - MDAnalysis ≥ 2.7
 - Parsl ≥ 2024.1.29
-- NumPy, SciPy, scikit-learn
+- NumPy, SciPy, scikit-learn, Polars
+- ambertools
 - Optional: RDKit, OpenBabel (for ligand parameterization)
 
 ## Known Issues
