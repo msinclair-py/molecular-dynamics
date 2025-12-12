@@ -1173,7 +1173,15 @@ class FileHandler:
 
     def _split_trajectories(self) -> None:
         """Split trajectories into chunks for parallel processing."""
-        frames_per_chunk = max(1, self.total_frames // self.n_chunks)
+        actual_chunks = min(self.n_chunks, self.total_frames) # in case we have fewer frames than resources
+
+        if actual_chunks < self.n_chunks:
+            logger.warning(
+                f'Requested {self.n_chunks} chunks but only {self.total_frames} frames.'
+                f'Using {actual_chunks} chunks (some CPUs will be idle)'
+            )
+
+        frames_per_chunk = max(1, self.total_frames // actual_chunks)
         self.trajectory_chunks = {system: [] for system in ['complex', 'receptor', 'ligand']}
 
         for i, (top, traj, system) in enumerate(zip(
@@ -1181,10 +1189,10 @@ class FileHandler:
             self.trajectories,
             ['complex', 'receptor', 'ligand']
         )):
-            for chunk_idx in range(self.n_chunks):
+            for chunk_idx in range(actual_chunks):
                 start_frame = chunk_idx * frames_per_chunk + 1  # cpptraj is 1-indexed
 
-                if chunk_idx == self.n_chunks - 1:
+                if chunk_idx == actual_chunks - 1:
                     # Last chunk gets remaining frames
                     end_frame = self.total_frames
                 else:
@@ -1212,7 +1220,7 @@ class FileHandler:
                 split_script.unlink()
                 self.trajectory_chunks[system].append(chunk_traj)
 
-        logger.debug(f'Split trajectories into {self.n_chunks} chunks of ~{frames_per_chunk} frames each.')
+        logger.debug(f'Split trajectories into {actual_chunks} chunks of ~{frames_per_chunk} frames each.')
 
     @property
     def files(self) -> tuple[list[str]]:
