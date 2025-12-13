@@ -1,6 +1,7 @@
 # molecular-simulations
 
 ![CI/CD](https://github.com/msinclair-py/molecular-simulations/actions/workflows/ci.yml/badge.svg)
+[![codecov](https://codecov.io/gh/msinclair-py/molecular-simulations/branch/main/graph/badge.svg)](https://codecov.io/gh/msinclair-py/molecular-simulations)
 [![PyPI version](https://img.shields.io/pypi/v/molecular-simulations)](https://pypi.org/project/molecular-simulations/)
 [![Documentation Status](https://readthedocs.org/projects/molecular-simulations/badge/?version=latest)](https://molecular-simulations.readthedocs.io/en/latest/?badge=latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
