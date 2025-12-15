@@ -46,8 +46,8 @@ Create an explicitly solvated system with the ff19SB force field:
        out=output_dir,
        pdb=pdb_file,
        # Optional parameters:
-       # box_buffer=12.0,     # Angstroms of water padding
-       # ion_concentration=0.15,  # M NaCl
+       # padding=12.0,     # Angstroms of water padding
+       # amberhome='/path/to/env',  # Use another env's AmberTools installation
    )
    builder.build()
 
@@ -99,12 +99,12 @@ For more control over the simulation:
 
    sim = Simulator(
        path=output_dir,
-       equil_steps=1_000_000,   # 2 ns equilibration
-       prod_steps=25_000_000,   # 100 ns production
-       temperature=310,         # K (body temperature)
-       pressure=1.0,            # atm
-       save_frequency=5000,     # Save every 20 ps
-       platform="CUDA",         # Force GPU platform
+       equil_steps=1_000_000,         # 2 ns equilibration per cycle
+       prod_steps=25_000_000,         # 100 ns production
+       temperature=310,               # K (body temperature)
+       n_equil_cycles=3,              # N cycles of unrestrained equilibration
+       prod_reporter_frequency=5000,  # Save every 20 ps
+       platform="CUDA",               # Force GPU platform
    )
 
 Step 4: Basic Analysis

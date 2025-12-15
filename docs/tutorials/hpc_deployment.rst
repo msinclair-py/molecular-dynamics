@@ -31,11 +31,10 @@ Create a YAML configuration file for your cluster:
    # executor: HighThroughputExecutor
    # provider: PBSProProvider
    # account: "myproject"
-   # queue: "gpu"
+   # queue: "prod"
    # walltime: "24:00:00"
    # nodes_per_block: 1
-   # cpus_per_node: 32
-   # gpus_per_node: 4
+   # available_accelerators: 4
 
 Using LocalSettings
 -------------------
