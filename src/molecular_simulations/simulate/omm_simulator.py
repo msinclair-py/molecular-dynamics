@@ -1,3 +1,16 @@
+"""OpenMM molecular dynamics simulation module.
+
+This module provides classes for running molecular dynamics simulations using
+OpenMM with AMBER or CHARMM force fields. It supports both explicit and implicit
+solvent simulations, with built-in equilibration protocols and production MD.
+
+Classes:
+    Simulator: Main class for explicit solvent OpenMM simulations.
+    ImplicitSimulator: Simulator for implicit solvent (GB) simulations.
+    CustomForcesSimulator: Simulator with user-defined custom forces.
+    Minimizer: Simple energy minimization utility.
+"""
+
 from copy import deepcopy
 import logging
 import MDAnalysis as mda
@@ -14,69 +27,85 @@ OptPath = Union[Path, str, None]
 
 logger = logging.getLogger(__name__)
 
-class Simulator:
-    """
-    Class for performing OpenMM simulations on AMBER FF inputs. Inputs must conform
-    to naming conventions found below in the init.
 
-    Arguments:
-        path (PathLike): Path to simulation inputs, same as output path.
-        top_name (Optional[str]): Defaults to None. Optional topology file name. If not
-            provided, we will assume this is `system.prmtop`.
-        coor_name (Optional[str]): Defaults to None. Optional coordinate file name. If not
-            provided, we will assume this is `system.inpcrd`.
-        out_path (Optional[Path]): Defaults to None. Optional output path which is where we
-            will place the simulation outputs. If not provided, we will assume this is 
-            `self.path`.
-        ff (str): Switch for whether or not to utilize AMBER or CHARMM ff.
-        equil_steps (int): Defaults to 1,250,000 (2.5 ns at 2 fs timestep). Number of simulation 
-            timesteps to perform equilibration.
-        prod_steps (int): Defaults to 250,000,000 (1 µs at 4 fs timestep). Number of simulation 
-            timesteps to perform production MD.
-        n_equil_cycles (int): Defaults to 3 cycles. Number of additional unrestrained 
-            equilibration cycles to perform. Increasing this may triage unstable systems 
-            at the cost of more simulation time albeit this may be negligible in the 
-            grand scheme of things.
-        temperature (float): Defaults to 300.0. Temperature for simulation.
-        eq_reporter_frequency (int): Defaults to 1,000 timesteps. How often to write out to
-            the logs and trajectory files in equilibration.
-        prod_reporter_frequency (int): Defaults to 10,000 timesteps. How often to write out to
-            the logs and trajectory files in production.
-        platform (str): Defaults to CUDA. Which OpenMM platform to simulate with (options
-            include CUDA, CPU, OpenCL).
-        device_ids (list[int]): Defaults to [0]. Which accelerators to use (multiple GPU 
-            support is tenuous with OpenMM). Primarily used to distribute jobs to different
-            GPUs on a node of an HPC resource.
-        force_constant (float): Defaults to 10.0 kcal/mol*Å^2. Force constant to use for 
-            harmonic restraints during equilibration. Currently restraints are only applied
-            to protein backbone atoms.
-        params (Optional[str]): Optional list of CHARMM parameter files for loading from 
+class Simulator:
+    """Class for performing OpenMM simulations on AMBER FF inputs.
+
+    Inputs must conform to naming conventions found below in the init.
+    Supports explicit solvent simulations with PME electrostatics and
+    hydrogen mass repartitioning for longer timesteps.
+
+    Args:
+        path: Path to simulation inputs, same as output path.
+        top_name: Optional topology file name. If not provided, assumes
+            'system.prmtop'.
+        coor_name: Optional coordinate file name. If not provided, assumes
+            'system.inpcrd'.
+        out_path: Optional output path for simulation outputs. If not
+            provided, uses the same path as inputs.
+        ff: Force field to use, either 'amber' or 'charmm'.
+        equil_steps: Number of equilibration timesteps. Defaults to 1,250,000
+            (2.5 ns at 2 fs timestep).
+        prod_steps: Number of production timesteps. Defaults to 250,000,000
+            (1 µs at 4 fs timestep).
+        n_equil_cycles: Number of unrestrained equilibration cycles after
+            restraint relaxation. Defaults to 3.
+        temperature: Simulation temperature in Kelvin. Defaults to 300.0.
+        eq_reporter_frequency: Reporter frequency during equilibration in
+            timesteps. Defaults to 1,000.
+        prod_reporter_frequency: Reporter frequency during production in
+            timesteps. Defaults to 10,000.
+        platform: OpenMM platform to use. Options: 'CUDA', 'CPU', 'OpenCL'.
+            Defaults to 'CUDA'.
+        device_ids: List of GPU device IDs to use. Defaults to [0].
+        force_constant: Harmonic restraint force constant in kcal/mol*Å².
+            Defaults to 10.0.
+        params: Optional list of CHARMM parameter files for loading from
             psf/pdb file using CHARMM36m forcefield.
+        membrane: Whether this is a membrane system requiring anisotropic
+            pressure coupling. Defaults to False.
+
+    Attributes:
+        path: Path object for simulation directory.
+        top_file: Path to topology file.
+        coor_file: Path to coordinate file.
+        temperature: Simulation temperature.
+        simulation: OpenMM Simulation object (available after production).
+
+    Example:
+        >>> sim = Simulator(
+        ...     path='./simulation',
+        ...     equil_steps=500_000,
+        ...     prod_steps=50_000_000,
+        ...     device_ids=[0, 1]
+        ... )
+        >>> sim.run()
     """
-    def __init__(self, 
-                 path: PathLike, 
-                 top_name: Optional[str]=None,
-                 coor_name: Optional[str]=None,
-                 out_path: Optional[Path]=None,
-                 ff: str='amber',
-                 equil_steps: int=1_250_000, 
-                 prod_steps: int=250_000_000, 
-                 n_equil_cycles: int=3,
-                 temperature: float=300.,
-                 eq_reporter_frequency: int=1_000,
-                 prod_reporter_frequency: int=10_000,
-                 platform: str='CUDA',
-                 device_ids: list[int]=[0],
-                 force_constant: float=10.,
-                 params: Optional[str]=None,
-                 membrane: bool=False):
-        self.path = Path(path) # enforce path object
+
+    def __init__(self,
+                 path: PathLike,
+                 top_name: Optional[str] = None,
+                 coor_name: Optional[str] = None,
+                 out_path: Optional[Path] = None,
+                 ff: str = 'amber',
+                 equil_steps: int = 1_250_000,
+                 prod_steps: int = 250_000_000,
+                 n_equil_cycles: int = 3,
+                 temperature: float = 300.,
+                 eq_reporter_frequency: int = 1_000,
+                 prod_reporter_frequency: int = 10_000,
+                 platform: str = 'CUDA',
+                 device_ids: list[int] = [0],
+                 force_constant: float = 10.,
+                 params: Optional[str] = None,
+                 membrane: bool = False):
+        self.path = Path(path)  # enforce path object
         self.top_file = self.path / top_name if top_name is not None else self.path / 'system.prmtop'
         self.coor_file = self.path / coor_name if coor_name is not None else self.path / 'system.inpcrd'
         self.temperature = temperature
 
         self.ff = ff.lower()
-        self.params = params # for charmm parameter sets
+        self.params = params  # for charmm parameter sets
         self.setup_barostat(membrane)
 
         if out_path is not None:
@@ -90,7 +119,7 @@ class Simulator:
         self.eq_log = p / 'eq.log'
         self.eq_dcd = p / 'eq.dcd'
         self.eq_freq = eq_reporter_frequency
-        
+
         self.dcd = p / 'prod.dcd'
         self.restart = p / 'prod.rst.chk'
         self.state = p / 'prod.state'
@@ -104,27 +133,26 @@ class Simulator:
         self.prod_steps = prod_steps
         self.k = force_constant
         self.platform = Platform.getPlatformByName(platform)
-        self.properties = {'DeviceIndex': ','.join([str(x) for x in device_ids]), 
+        self.properties = {'DeviceIndex': ','.join([str(x) for x in device_ids]),
                            'Precision': 'mixed'}
 
         if platform == 'CPU':
             self.properties = {}
-            
-    def setup_barostat(self,
-                       is_membrane_system: bool) -> None:
-        """Chooses the correct barostat for the system based on whether or not there is
-        a membrane present.
+
+    def setup_barostat(self, is_membrane_system: bool) -> None:
+        """Configure the barostat based on system type.
+
+        Chooses the correct barostat for the system based on whether or not
+        there is a membrane present. Membrane systems use MonteCarloMembraneBarostat
+        with anisotropic pressure coupling.
 
         Args:
-            is_membrane_system (bool): True if this is a membrane-containing system.
-            
-        Returns:
-            None
+            is_membrane_system: True if this is a membrane-containing system.
         """
         self.barostat_args = {
             'defaultPressure': 1 * bar,
         }
-        
+
         if is_membrane_system:
             self.barostat = MonteCarloMembraneBarostat
             self.barostat_args.update({
@@ -140,13 +168,16 @@ class Simulator:
             })
 
     def load_system(self) -> System:
-        """Loads correct set of files based on which forcefield we have specified.
+        """Load the molecular system based on force field type.
 
-        Raises:
-            AttributeError: If a non-valid choice of forcefield is made (not amber or charmm).
+        Dispatches to the appropriate file loader based on the specified
+        force field (AMBER or CHARMM).
 
         Returns:
-            System: OpenMM system loaded from correct files/forcefield.
+            OpenMM System object configured with the appropriate force field.
+
+        Raises:
+            AttributeError: If an invalid force field type is specified.
         """
         if self.ff == 'amber':
             system = self.load_amber_files()
@@ -159,17 +190,19 @@ class Simulator:
             self.indices = self.get_restraint_indices()
 
         return system
-        
+
     def load_amber_files(self) -> System:
-        """Builds an OpenMM system using the prmtop/inpcrd files. PME is utilized for
-        electrostatics and a 1 nm non-bonded cutoff is used as well as 1.5 amu HMR.
+        """Build an OpenMM system from AMBER prmtop/inpcrd files.
+
+        Uses PME for electrostatics with a 1 nm non-bonded cutoff and
+        1.5 amu hydrogen mass repartitioning for longer timesteps.
 
         Returns:
-            (System): OpenMM system
+            OpenMM System configured for AMBER force field.
         """
         if not hasattr(self, 'coordinate'):
             self.coordinate = AmberInpcrdFile(str(self.coor_file))
-            self.topology = AmberPrmtopFile(str(self.top_file), 
+            self.topology = AmberPrmtopFile(str(self.top_file),
                                             periodicBoxVectors=self.coordinate.boxVectors)
 
         system = self.topology.createSystem(nonbondedMethod=PME,
@@ -179,21 +212,22 @@ class Simulator:
                                             hydrogenMass=1.5 * amu)
 
         return system
-    
+
     def load_charmm_files(self) -> System:
-        """Builds an OpenMM system using the psf/pdb files. PME is utilized for 
-        electrostatics and a 1 nm non-bonded cutoff is used as well as 1.5 amu HMR.
+        """Build an OpenMM system from CHARMM psf/pdb files.
+
+        Uses PME for electrostatics with a 1.2 nm non-bonded cutoff.
 
         Returns:
-            (System): OpenMM system
+            OpenMM System configured for CHARMM force field.
         """
         if not hasattr(self, 'coordinate'):
             self.coordinate = PDBFile(str(self.coor_file))
-            self.topology = CharmmPsfFile(str(self.top_file), 
+            self.topology = CharmmPsfFile(str(self.top_file),
                                           periodicBoxVectors=self.coordinate.topology.getPeriodicBoxVectors())
-        if not hasattr(self, parameter_set) and self.params is not None:
+        if not hasattr(self, 'parameter_set') and self.params is not None:
             self.parameter_set = CharmmParameterSet(*self.params)
-        
+
         if self.params is None:
             self.forcefield = ForceField('charmm36_2024.xml', 'charmm36/water.xml')
             system = self.forcefield.createSystem(self.coordinate.topology,
@@ -201,47 +235,47 @@ class Simulator:
                                                   nonbondedCutoff=1.2 * nanometer,
                                                   constraints=HBonds)
         else:
-            system = self.topology.createSystem(self.parameter_set, 
-                                                nonbondedMethod=PME, 
+            system = self.topology.createSystem(self.parameter_set,
+                                                nonbondedMethod=PME,
                                                 nonbondedCutoff=1.2 * nanometer,
                                                 constraints=HBonds)
-        
-        return system
-    
-    def setup_sim(self, 
-                  system: System, 
-                  dt: float) -> tuple[Simulation, Integrator]:
-        """Builds OpenMM Integrator and Simulation objects utilizing a provided
-        OpenMM System object and integration timestep, dt.
 
-        Arguments:
-            system (System): OpenMM system to build simulation object of.
-            dt (float): Integration timestep in units of picoseconds.
+        return system
+
+    def setup_sim(self,
+                  system: System,
+                  dt: float) -> tuple[Simulation, Integrator]:
+        """Build OpenMM Simulation and Integrator objects.
+
+        Creates a LangevinMiddleIntegrator with the specified timestep and
+        builds the Simulation object with the configured platform.
+
+        Args:
+            system: OpenMM System object to simulate.
+            dt: Integration timestep in picoseconds.
 
         Returns:
-            (tuple[Simulation, Integrator]): A tuple containing both the Simulation
-                and Integrator objects.
+            Tuple containing (Simulation, Integrator) objects.
         """
-        integrator = LangevinMiddleIntegrator(self.temperature*kelvin, 
-                                              1/picosecond, 
-                                              dt*picoseconds)
-        simulation = Simulation(self.topology.topology, 
-                                system, 
-                                integrator, 
-                                self.platform, 
+        integrator = LangevinMiddleIntegrator(self.temperature * kelvin,
+                                              1 / picosecond,
+                                              dt * picoseconds)
+        simulation = Simulation(self.topology.topology,
+                                system,
+                                integrator,
+                                self.platform,
                                 self.properties)
-    
+
         return simulation, integrator
 
     def run(self) -> None:
+        """Execute the full simulation workflow.
+
+        Determines whether to restart based on existing equilibration outputs.
+        Checks production log to resume from checkpoints if available. Runs
+        equilibration if needed, then production MD.
         """
-        Main logic of class. Determines whether or not we are restarting based on
-        if all the equilibration outputs are present. Importantly the state file
-        will not be written out until equilibration is complete. Also checks the
-        production MD log to see if we have finished, otherwise decrements our
-        progress from the total number of timesteps. Finally, runs production MD.
-        """
-        skip_eq = all([f.exists() 
+        skip_eq = all([f.exists()
                        for f in [self.eq_state, self.eq_chkpt, self.eq_log]])
         if not skip_eq:
             logger.info('No restart detected, will begin equilibration.')
@@ -252,7 +286,7 @@ class Simulator:
             logger.info('Checkpoint file detected, resuming simulation.')
             self.check_num_steps_left()
             logger.info(f'Will run {self.prod_steps} steps of production MD.')
-            self.production(chkpt=str(self.restart), 
+            self.production(chkpt=str(self.restart),
                             restart=True)
         else:
             self.production(chkpt=str(self.eq_chkpt),
@@ -261,29 +295,28 @@ class Simulator:
         logger.info('Production MD run complete.')
 
     def equilibrate(self) -> Simulation:
-        """
-        Sets up and runs equilibrium MD, including energy minimization to begin.
-        Sets backbone harmonic restraints and performs a slow heating protocol
-        before periodically lessening restraints, finishing with user-specified
-        number of rounds of unrestrained equilibration.
+        """Run the equilibration protocol.
+
+        Performs energy minimization, slow heating, and gradual restraint
+        relaxation followed by unrestrained NPT equilibration.
 
         Returns:
-            (Simulation): OpenMM simulation object.
+            Equilibrated OpenMM Simulation object.
         """
         system = self.load_system()
-        system = self.add_backbone_posres(system, 
-                                          self.coordinate.positions, 
-                                          self.topology.topology.atoms(), 
+        system = self.add_backbone_posres(system,
+                                          self.coordinate.positions,
+                                          self.topology.topology.atoms(),
                                           self.indices,
                                           self.k)
-    
+
         simulation, integrator = self.setup_sim(system, dt=0.002)
-        
+
         simulation.context.setPositions(self.coordinate.positions)
         simulation.minimizeEnergy()
-        
-        simulation.reporters.append(StateDataReporter(str(self.eq_log), 
-                                                      self.eq_freq, 
+
+        simulation.reporters.append(StateDataReporter(str(self.eq_log),
+                                                      self.eq_freq,
                                                       step=True,
                                                       potentialEnergy=True,
                                                       speed=True,
@@ -292,26 +325,25 @@ class Simulator:
 
         simulation, integrator = self._heating(simulation, integrator)
         simulation = self._equilibrate(simulation)
-        
+
         return simulation
 
-    def production(self, 
-                   chkpt: PathLike, 
-                   restart: bool=False) -> None:
-        """
-        Performs production MD. Loads a new system, integrator and simulation object
-        and loads equilibration or past production checkpoint to allow either the
-        continuation of a past simulation or to inherit the outputs of equilibration.
+    def production(self,
+                   chkpt: PathLike,
+                   restart: bool = False) -> None:
+        """Run production molecular dynamics.
 
-        Arguments:
-            chkpt (PathLike): The checkpoint file to load. Should be either the equilibration
-                checkpoint or a past production checkpoint.
-            restart (bool): Defaults to False. Flag to ensure we log the full simulation
-                to reporter log. Otherwise restarts will overwrite the original log file.
+        Loads a new system with barostat, loads checkpoint, attaches reporters,
+        and runs production MD for the specified number of steps.
+
+        Args:
+            chkpt: Path to checkpoint file (equilibration or previous production).
+            restart: If True, append to existing log/DCD files instead of
+                overwriting. Defaults to False.
         """
         system = self.load_system()
         simulation, _ = self.setup_sim(system, dt=0.004)
-        
+
         system.addForce(self.barostat(*self.barostat_args.values()))
         simulation.context.reinitialize(True)
 
@@ -326,61 +358,55 @@ class Simulator:
                                            log_file,
                                            str(self.restart),
                                            restart=restart)
-    
-        self.simulation = self._production(simulation) # save simulation object
-    
-    def load_checkpoint(self, 
-                        simulation: Simulation, 
+
+        self.simulation = self._production(simulation)  # save simulation object
+
+    def load_checkpoint(self,
+                        simulation: Simulation,
                         checkpoint: PathLike) -> Simulation:
-        """
-        Loads a previous checkpoint into provided simulation object.
-        
-        Arguments:
-            simulation (Simulation): OpenMM simulation object.
-            checkpoint (PathLike): OpenMM checkpoint file.
+        """Load a checkpoint into the simulation.
+
+        Args:
+            simulation: OpenMM Simulation object to load checkpoint into.
+            checkpoint: Path to OpenMM checkpoint file.
 
         Returns:
-            (Simulation): OpenMM simulation object that has been checkpointed.
+            Simulation with restored positions and velocities.
         """
         simulation.loadCheckpoint(checkpoint)
         state = simulation.context.getState(getVelocities=True, getPositions=True)
         positions = state.getPositions()
         velocities = state.getVelocities()
-        
+
         simulation.context.setPositions(positions)
         simulation.context.setVelocities(velocities)
 
         return simulation
 
-    def attach_reporters(self, 
-                         simulation: Simulation, 
-                         dcd_file: PathLike, 
-                         log_file: PathLike, 
-                         rst_file: PathLike, 
-                         restart: bool=False) -> Simulation:
-        """
-        Attaches a StateDataReporter for logging, CheckpointReporter to output 
-        periodic checkpoints and a DCDReporter to output trajectory data to 
-        simulation object.
+    def attach_reporters(self,
+                         simulation: Simulation,
+                         dcd_file: PathLike,
+                         log_file: PathLike,
+                         rst_file: PathLike,
+                         restart: bool = False) -> Simulation:
+        """Attach trajectory, logging, and checkpoint reporters.
 
-        Arguments:
-            simulation (Simulation): OpenMM simulation object.
-            dcd_file (PathLike): DCD file to write to.
-            log_file (PathLike): Log file to write to.
-            rst_file (PathLike): Checkpoint file to write to.
-            restart (bool): Defaults to False. Whether or not we should be appending
-                to an existing DCD file or writing a new one, potentially overwriting
-                an existing DCD (if false).
+        Args:
+            simulation: OpenMM Simulation object.
+            dcd_file: Path for DCD trajectory output.
+            log_file: Path for state data log output.
+            rst_file: Path for checkpoint file output.
+            restart: If True, append to existing DCD file. Defaults to False.
 
         Returns:
-            (Simulation): OpenMM simulation object with reporters now attached.
+            Simulation with reporters attached.
         """
         simulation.reporters.extend([
             DCDReporter(
-                dcd_file, 
+                dcd_file,
                 self.prod_freq,
                 append=restart
-                ),
+            ),
             StateDataReporter(
                 log_file,
                 self.prod_freq,
@@ -393,143 +419,127 @@ class Simulator:
                 volume=True,
                 totalSteps=self.prod_steps,
                 separator='\t'
-                ),
+            ),
             CheckpointReporter(
                 rst_file,
                 self.prod_freq * 10
-                )
-            ])
+            )
+        ])
 
         return simulation
 
-    def _heating(self, 
-                 simulation: Simulation, 
+    def _heating(self,
+                 simulation: Simulation,
                  integrator: Integrator) -> tuple[Simulation, Integrator]:
-        """
-        Slow heating protocol. Seeds velocities at 5 kelvin to begin, and
-        over a period of 100,000 timesteps gradually heats up to 300 kelvin
-        in 1,000 discrete jumps. This should generalize to most systems but
-        if your system requires more control these hard-coded values will need
-        to be changed here.
+        """Perform slow heating protocol.
 
-        Arguments:
-            simulation (Simulation): OpenMM simulation object.
-            integrator (Integrator): OpenMM integrator object.
+        Gradually heats the system from 5K to the target temperature over
+        100,000 timesteps in 1,000 discrete temperature increments.
+
+        Args:
+            simulation: OpenMM Simulation object.
+            integrator: OpenMM Integrator object.
 
         Returns:
-            (tuple[Simulation, Integrator]): Tuple containing simulation and
-                integrator objects after heating has been performed.
+            Tuple of (Simulation, Integrator) after heating.
         """
-        simulation.context.setVelocitiesToTemperature(5*kelvin)
+        simulation.context.setVelocitiesToTemperature(5 * kelvin)
         T = 5
-        
+
         integrator.setTemperature(T * kelvin)
         mdsteps = 100000
         heat_steps = 1000
         length = mdsteps // heat_steps
         tstep = (self.temperature - T) / length
         for i in range(length):
-          simulation.step(heat_steps)
-          temp = T + tstep * (1 + i)
-          
-          if temp > self.temperature:
-            temp = self.temperature
-          
-          integrator.setTemperature(temp * kelvin)
-    
-        return simulation, integrator
-         
-    def _equilibrate(self, 
-                     simulation: Simulation) -> Simulation:
-        """
-        Equilibration procotol. 
-        (1) Performs a 5-step restraint relaxation in NVT ensemble wherein 
-            each step 1/5 of the restraint is relaxed until there are no harmonic 
-            restraints. Length of each step is also 1/5 of the total equil_steps 
-            set by the user. 
-        (2) One step-length of unrestrained NVT is performed before turning on 
-            barostat for NPT.
-        (3) `equil_cycles` number of step-lengths are then ran with NPT before
-            saving out the state and checkpoints.
+            simulation.step(heat_steps)
+            temp = T + tstep * (1 + i)
 
-        Arguments:
-            simulation (Simulation): OpenMM simulation object.
+            if temp > self.temperature:
+                temp = self.temperature
+
+            integrator.setTemperature(temp * kelvin)
+
+        return simulation, integrator
+
+    def _equilibrate(self, simulation: Simulation) -> Simulation:
+        """Run equilibration with restraint relaxation.
+
+        Protocol:
+        1. 5-step restraint relaxation in NVT (each step removes 1/5 of restraint)
+        2. One step of unrestrained NVT
+        3. Turn on barostat for NPT
+        4. Run equil_cycles of NPT equilibration
+
+        Args:
+            simulation: OpenMM Simulation object.
 
         Returns:
-            (Simulation): Equilibrated OpenMM simulation object.
+            Equilibrated Simulation with saved state and checkpoint.
         """
         simulation.context.reinitialize(True)
         n_levels = 5
         d_k = self.k / n_levels
         eq_steps = self.equil_steps // n_levels
 
-        for i in range(n_levels): 
+        for i in range(n_levels):
             simulation.step(eq_steps)
             k = float(self.k - (i * d_k))
-            simulation.context.setParameter('k', (k * kilocalories_per_mole/angstroms**2))
-        
+            simulation.context.setParameter('k', (k * kilocalories_per_mole / angstroms ** 2))
+
         simulation.context.setParameter('k', 0)
         simulation.step(eq_steps)
-    
+
         simulation.system.addForce(self.barostat(*self.barostat_args.values()))
         simulation.step(self.equil_cycles * eq_steps)
 
         simulation.saveState(str(self.eq_state))
         simulation.saveCheckpoint(str(self.eq_chkpt))
-    
-        return simulation
-    
-    def _production(self, 
-                    simulation: Simulation) -> Simulation:
-        """
-        Production MD procotol. Runs for specified number of timesteps before
-        saving out a final state and checkpoint file.
 
-        Arguments:
-            simulation (Simulation): OpenMM simulation object.
+        return simulation
+
+    def _production(self, simulation: Simulation) -> Simulation:
+        """Run production MD and save final state.
+
+        Args:
+            simulation: OpenMM Simulation object.
 
         Returns:
-            (Simulation): OpenMM simulation object.
+            Simulation after production run with saved state and checkpoint.
         """
         simulation.step(self.prod_steps)
         simulation.saveState(str(self.state))
         simulation.saveCheckpoint(str(self.chkpt))
-    
+
         return simulation
 
-    def get_restraint_indices(self, 
-                              addtl_selection: str='') -> list[int]:
-        """
-        Obtains atom indices that will be used to set harmonic restraints. First
-        loads an MDAnalysis universe with the input prmtop and inpcrd files. Uses
-        a base selection of protein or nucleic acid backbone but if provided an
-        additional selection can be included for things like restraining ligand
-        molecules.
+    def get_restraint_indices(self, addtl_selection: str = '') -> list[int]:
+        """Get atom indices for harmonic restraints.
 
-        Arguments:
-            addtl_selection (str): Defaults to empty string. If provided, will
-                be used to define additional atoms for restraining.
+        Uses MDAnalysis to select protein/nucleic acid backbone atoms.
+        Additional selections can be included for ligand restraints.
+
+        Args:
+            addtl_selection: Additional MDAnalysis selection string to include
+                in restraints. Defaults to empty string.
 
         Returns:
-            (list[int]): List of atomic indices for atoms to be restrained.
+            List of atom indices to restrain.
         """
         u = mda.Universe(str(self.top_file), str(self.coor_file))
         if addtl_selection:
             sel = u.select_atoms(f'backbone or nucleicbackbone or {addtl_selection}')
         else:
             sel = u.select_atoms('backbone or nucleicbackbone')
-            
-        return sel.atoms.ix
-        
-    def check_num_steps_left(self) -> None:
-        """
-        Reads the production log file to see if we have completed a simulation.
-        If there is still simulation to be completed, decrements the existing progress
-        from internal number of steps to perform. Additionally, accounts for any frames
-        that have been written to DCD that are not accounted for in the log.
 
-        Returns:
-            None
+        return sel.atoms.ix
+
+    def check_num_steps_left(self) -> None:
+        """Check production log to determine remaining simulation steps.
+
+        Reads the log file to find the last completed step, then decrements
+        the remaining steps. Also handles duplicate frames that may occur
+        when restarting from checkpoints.
         """
         prod_log = open(str(self.prod_log)).readlines()
 
@@ -540,18 +550,18 @@ class Simulator:
             try:
                 last_line = prod_log[-2]
                 last_step = int(last_line.split()[1].strip())
-            except IndexError: # something weird happend just run full time
+            except IndexError:  # something weird happened just run full time
                 return
-        
+
         if time_left := (self.prod_steps - last_step):
             self.prod_steps -= time_left
 
             if n_repeat_timesteps := (last_step % (self.prod_freq * 10)):
                 self.prod_steps -= n_repeat_timesteps
                 n_repeat_frames = n_repeat_timesteps / self.prod_freq
-                
+
                 n_total_frames = last_step / self.prod_freq
-                
+
                 lines = [f'{n_total_frames - n_repeat_frames},{n_total_frames}']
                 duplicate_log = self.path / 'duplicate_frames.log'
                 if duplicate_log.exists():
@@ -559,116 +569,110 @@ class Simulator:
                 else:
                     mode = 'w'
                     lines = ['first_frame,last_frame'] + lines
-                    
+
                 with open(str(duplicate_log), mode) as fout:
                     fout.write('\n'.join(lines))
 
     @staticmethod
-    def add_backbone_posres(system: System, 
-                            positions: np.ndarray, 
-                            atoms: list[topology.Atom], 
-                            indices: list[int], 
-                            restraint_force: float=10.) -> System:
-        """
-        Adds harmonic restraints to an OpenMM system.
+    def add_backbone_posres(system: System,
+                            positions: np.ndarray,
+                            atoms: list,
+                            indices: list[int],
+                            restraint_force: float = 10.) -> System:
+        """Add harmonic position restraints to selected atoms.
 
-        Arguments:
-            system (System): OpenMM system object.
-            positions (np.ndarray): Position array for all atoms in system.
-            atoms (list[topology.Atom]): List of all Atom objects in system.
-            indices (list[int]): List of atomic indices to restrain.
-            restraint_force (float): Defaults to 10.0 kcal/mol*Å^2. The force
-                constant to use for harmonic restraints.
+        Args:
+            system: OpenMM System object.
+            positions: Position array for all atoms (with units).
+            atoms: List of OpenMM Atom objects from topology.
+            indices: List of atom indices to restrain.
+            restraint_force: Force constant in kcal/mol*Å². Defaults to 10.0.
 
         Returns:
-            (System): OpenMM system with harmonic restraints.
+            Copy of System with harmonic restraints added.
         """
         force = CustomExternalForce("k*periodicdistance(x, y, z, x0, y0, z0)^2")
-    
-        force_amount = restraint_force * kilocalories_per_mole/angstroms**2
+
+        force_amount = restraint_force * kilocalories_per_mole / angstroms ** 2
         force.addGlobalParameter("k", force_amount)
         force.addPerParticleParameter("x0")
         force.addPerParticleParameter("y0")
         force.addPerParticleParameter("z0")
-    
+
         for i, (atom_crd, atom) in enumerate(zip(positions, atoms)):
             if atom.index in indices:
                 force.addParticle(i, atom_crd.value_in_unit(nanometers))
-      
+
         posres_sys = deepcopy(system)
         posres_sys.addForce(force)
-      
+
         return posres_sys
 
+
 class ImplicitSimulator(Simulator):
+    """Simulator for implicit solvent (Generalized Born) simulations.
+
+    Inherits from Simulator and overloads methods for implicit solvent
+    compatibility. Uses GBn2 model by default with ionic screening.
+
+    Args:
+        path: Path to simulation inputs, same as output path.
+        top_name: Optional topology file name. If not provided, assumes
+            'system.prmtop'.
+        coor_name: Optional coordinate file name. If not provided, assumes
+            'system.inpcrd'.
+        out_path: Optional output path for simulation outputs.
+        ff: Force field to use, either 'amber' or 'charmm'.
+        equil_steps: Number of equilibration timesteps. Defaults to 1,250,000.
+        prod_steps: Number of production timesteps. Defaults to 250,000,000.
+        n_equil_cycles: Number of unrestrained equilibration cycles.
+        temperature: Simulation temperature in Kelvin. Defaults to 300.0.
+        eq_reporter_frequency: Reporter frequency during equilibration.
+        prod_reporter_frequency: Reporter frequency during production.
+        platform: OpenMM platform to use. Defaults to 'CUDA'.
+        device_ids: List of GPU device IDs to use. Defaults to [0].
+        force_constant: Harmonic restraint force constant in kcal/mol*Å².
+        implicit_solvent: GB model to use. Defaults to GBn2.
+        solute_dielectric: Solute dielectric constant. Defaults to 1.0.
+        solvent_dielectric: Solvent dielectric constant. Defaults to 78.5.
+
+    Example:
+        >>> sim = ImplicitSimulator(
+        ...     path='./simulation',
+        ...     implicit_solvent=GBn2,
+        ...     prod_steps=100_000_000
+        ... )
+        >>> sim.run()
     """
-    Implicit solvent simulator. Inherits from Simulator and overloads relevant
-    methods to support the slight differences in how implicit solvent is implemented
-    in OpenMM.
-    
-    Arguments:
-        path (PathLike): Path to simulation inputs, same as output path.
-        top_name (Optional[str]): Defaults to None. Optional topology file name. If not
-            provided, we will assume this is `system.prmtop`.
-        coor_name (Optional[str]): Defaults to None. Optional coordinate file name. If not
-            provided, we will assume this is `system.inpcrd`.
-        out_path (Optional[Path]): Defaults to None. Optional output path which is where we
-            will place the simulation outputs. If not provided, we will assume this is 
-            `self.path`.
-        ff (str): Switch for whether or not to utilize AMBER or CHARMM ff.
-        equil_steps (int): Defaults to 1,250,000 (2.5 ns at 2 fs timestep). Number of simulation 
-            timesteps to perform equilibration.
-        prod_steps (int): Defaults to 250,000,000 (1 µs at 4 fs timestep). Number of simulation 
-            timesteps to perform production MD.
-        n_equil_cycles (int): Defaults to 3 cycles. Number of additional unrestrained 
-            equilibration cycles to perform. Increasing this may triage unstable systems 
-            at the cost of more simulation time albeit this may be negligible in the 
-            grand scheme of things.
-        temperature (float): Defaults to 300.0. Temperature for simulation.
-        eq_reporter_frequency (int): Defaults to 1,000 timesteps. How often to write out to
-            the logs and trajectory files in equilibration.
-        prod_reporter_frequency (int): Defaults to 10,000 timesteps. How often to write out to
-            the logs and trajectory files in production.
-        platform (str): Defaults to CUDA. Which OpenMM platform to simulate with (options
-            include CUDA, CPU, OpenCL).
-        device_ids (list[int]): Defaults to [0]. Which accelerators to use (multiple GPU 
-            support is tenuous with OpenMM). Primarily used to distribute jobs to different
-            GPUs on a node of an HPC resource.
-        force_constant (float): Defaults to 10.0 kcal/mol*Å^2. Force constant to use for 
-            harmonic restraints during equilibration. Currently restraints are only applied
-            to protein backbone atoms.
-        implicit_solvent (Singleton): Defaults to GBn2. Which implicit solvent model to use.
-        solute_dielectric (float): Defaults to 1.0. Probably shouldn't change this.
-        solvent_dielectric (float): Defaults to 78.5. Also shouldn't change this.
-    """
-    def __init__(self, 
-                 path: str, 
-                 top_name: Optional[str]=None,
-                 coor_name: Optional[str]=None,
-                 out_path: Optional[Path]=None,
+
+    def __init__(self,
+                 path: str,
+                 top_name: Optional[str] = None,
+                 coor_name: Optional[str] = None,
+                 out_path: Optional[Path] = None,
                  ff: str = 'amber',
-                 equil_steps: int=1_250_000, 
-                 prod_steps: int=250_000_000, 
-                 n_equil_cycles: int=3,
-                 temperature: float=300.,
-                 eq_reporter_frequency: int=1_000,
-                 prod_reporter_frequency: int=10_000,
-                 platform: str='CUDA',
-                 device_ids: list[int]=[0],
-                 force_constant: float=10.,
-                 implicit_solvent: Singleton=GBn2,
-                 solute_dielectric: float=1.,
-                 solvent_dielectric: float=78.5,
+                 equil_steps: int = 1_250_000,
+                 prod_steps: int = 250_000_000,
+                 n_equil_cycles: int = 3,
+                 temperature: float = 300.,
+                 eq_reporter_frequency: int = 1_000,
+                 prod_reporter_frequency: int = 10_000,
+                 platform: str = 'CUDA',
+                 device_ids: list[int] = [0],
+                 force_constant: float = 10.,
+                 implicit_solvent: Singleton = GBn2,
+                 solute_dielectric: float = 1.,
+                 solvent_dielectric: float = 78.5,
                  **kwargs):
-        super().__init__(path=path, top_name=top_name, 
+        super().__init__(path=path, top_name=top_name,
                          coor_name=coor_name, out_path=out_path,
-                         ff=ff, equil_steps=equil_steps, 
-                         prod_steps=prod_steps, 
+                         ff=ff, equil_steps=equil_steps,
+                         prod_steps=prod_steps,
                          n_equil_cycles=n_equil_cycles,
                          temperature=temperature,
-                         eq_reporter_frequency=eq_reporter_frequency, 
+                         eq_reporter_frequency=eq_reporter_frequency,
                          prod_reporter_frequency=prod_reporter_frequency,
-                         platform=platform, device_ids=device_ids, 
+                         platform=platform, device_ids=device_ids,
                          force_constant=force_constant)
         self.solvent = implicit_solvent
         self.solute_dielectric = solute_dielectric
@@ -676,13 +680,14 @@ class ImplicitSimulator(Simulator):
         # solvent screening parameter for 150mM ions
         # k = 367.434915 * sqrt(conc. [M] / (solvent_dielectric * T))
         self.kappa = 367.434915 * np.sqrt(.15 / (solvent_dielectric * 300))
-    
+
     def load_amber_files(self) -> System:
-        """
-        Loads an OpenMM system object with implicit solvent parameters.
+        """Build an OpenMM system with implicit solvent.
+
+        Uses the specified GB model with ionic screening for 150mM salt.
 
         Returns:
-            (System): OpenMM system object.
+            OpenMM System configured for implicit solvent simulation.
         """
         if not hasattr(self, 'coordinate'):
             self.coordinate = AmberInpcrdFile(str(self.coor_file))
@@ -695,37 +700,37 @@ class ImplicitSimulator(Simulator):
                                             implicitSolvent=self.solvent,
                                             soluteDielectric=self.solute_dielectric,
                                             solventDielectric=self.solvent_dielectric,
-                                            implicitSolventKappa=self.kappa/nanometer)
-    
+                                            implicitSolventKappa=self.kappa / nanometer)
+
         return system
-        
+
     def equilibrate(self) -> Simulation:
-        """
-        Runs reduced equilibration protocol. Due to the faster convergence of
-        using implicit solvent we don't need to be quite as rigorous as with
-        explicit solvent system relaxation.
+        """Run reduced equilibration protocol for implicit solvent.
+
+        Due to faster convergence with implicit solvent, uses a simplified
+        equilibration protocol compared to explicit solvent.
 
         Returns:
-            (Simulation): OpenMM simulation object.
+            Equilibrated OpenMM Simulation object.
         """
         system = self.load_system()
-        system = self.add_backbone_posres(system, 
-                                          self.coordinate.positions, 
-                                          self.topology.topology.atoms(), 
+        system = self.add_backbone_posres(system,
+                                          self.coordinate.positions,
+                                          self.topology.topology.atoms(),
                                           self.indices,
                                           self.k)
-    
+
         simulation, integrator = self.setup_sim(system, dt=0.002)
-        
+
         simulation.context.setPositions(self.coordinate.positions)
         state = simulation.context.getState(getEnergy=True)
         print(f'Energy before minimization: {state.getPotentialEnergy()}')
         simulation.minimizeEnergy()
         state = simulation.context.getState(getEnergy=True)
         print(f'Energy after minimization: {state.getPotentialEnergy()}')
-        
-        simulation.reporters.append(StateDataReporter(str(self.eq_log), 
-                                                      self.eq_freq, 
+
+        simulation.reporters.append(StateDataReporter(str(self.eq_log),
+                                                      self.eq_freq,
                                                       step=True,
                                                       potentialEnergy=True,
                                                       speed=True,
@@ -734,26 +739,21 @@ class ImplicitSimulator(Simulator):
 
         simulation, integrator = self._heating(simulation, integrator)
         simulation = self._equilibrate(simulation)
-        
-        return simulation
-    
-    def production(self, 
-                   chkpt: PathLike, 
-                   restart: bool=False) -> None:
-        """
-        Performs production MD. Loads a new system, integrator and simulation object
-        and loads equilibration or past production checkpoint to allow either the
-        continuation of a past simulation or to inherit the outputs of equilibration.
 
-        Arguments:
-            chkpt (PathLike): The checkpoint file to load. Should be either the equilibration
-                checkpoint or a past production checkpoint.
-            restart (bool): Defaults to False. Flag to ensure we log the full simulation
-                to reporter log. Otherwise restarts will overwrite the original log file.
+        return simulation
+
+    def production(self,
+                   chkpt: PathLike,
+                   restart: bool = False) -> None:
+        """Run production MD for implicit solvent (no barostat).
+
+        Args:
+            chkpt: Path to checkpoint file.
+            restart: If True, append to existing files. Defaults to False.
         """
         system = self.load_system()
         simulation, _ = self.setup_sim(system, dt=0.004)
-        
+
         simulation.context.reinitialize(True)
 
         if restart:
@@ -767,64 +767,62 @@ class ImplicitSimulator(Simulator):
                                            log_file,
                                            str(self.restart),
                                            restart=restart)
-    
-        self.simulation = self._production(simulation) # save simulation object
+
+        self.simulation = self._production(simulation)  # save simulation object
+
 
 class CustomForcesSimulator(Simulator):
-    """
-    Simulator for utilizing custom user-defined forces. Inherits from Simulator while
-    providing a way to inject custom forces.
+    """Simulator with user-defined custom forces.
 
-    Arguments:
-        path (PathLike): Path to simulation inputs, same as output path.
-        custom_force_objects (list): ??
-        equil_steps (int): Defaults to 1,250,000 (2.5 ns). Number of simulation timesteps to
-            perform equilibration for (2fs timestep).
-        prod_steps (int): Defaults to 250,000,000 (1 µs). Number of simulation timesteps to
-            perform production MD for (4fs timestep).
-        n_equil_cycles (int): Defaults to 3 cycles. Number of additional unrestrained 
-            equilibration cycles to perform. Increasing this may triage unstable systems 
-            at the cost of more simulation time albeit this may be negligible in the 
-            grand scheme of things.
-        reporter_frequency (int): Defaults to 1,000 timesteps. How often to write out to
-            the logs and trajectory files in equilibration. X times less frequently during
-            production MD.
-        platform (str): Defaults to CUDA. Which OpenMM platform to simulate with (options
-            include CUDA, CPU, OpenCL).
-        device_ids (list[int]): Defaults to [0]. Which accelerators to use (multiple GPU 
-            support is tenuous with OpenMM). Primarily used to distribute jobs to different
-            GPUs on a node of an HPC resource.
-        force_constant (float): Defaults to 10.0 kcal/mol*Å^2. Force constant to use for 
-            harmonic restraints during equilibration. Currently restraints are only applied
-            to protein backbone atoms.
+    Inherits from Simulator and provides injection of custom OpenMM forces
+    for enhanced sampling or specialized simulations.
+
+    Args:
+        path: Path to simulation inputs.
+        custom_force_objects: List of OpenMM Force objects to add to system.
+        equil_steps: Number of equilibration timesteps. Defaults to 1,250,000.
+        prod_steps: Number of production timesteps. Defaults to 250,000,000.
+        n_equil_cycles: Number of unrestrained equilibration cycles.
+        reporter_frequency: Reporter frequency in timesteps. Defaults to 1,000.
+        platform: OpenMM platform to use. Defaults to 'CUDA'.
+        device_ids: List of GPU device IDs. Defaults to [0].
+        equilibration_force_constant: Restraint force constant in kcal/mol*Å².
+
+    Example:
+        >>> from openmm import CustomBondForce
+        >>> force = CustomBondForce("0.5*k*(r-r0)^2")
+        >>> force.addGlobalParameter("k", 1000)
+        >>> force.addGlobalParameter("r0", 0.3)
+        >>> sim = CustomForcesSimulator('./sim', [force])
+        >>> sim.run()
     """
+
     def __init__(self,
                  path: str,
                  custom_force_objects: list,
-                 equil_steps: int=1_250_000, 
-                 prod_steps: int=250_000_000, 
-                 n_equil_cycles: int=3,
-                 reporter_frequency: int=1_000,
-                 platform: str='CUDA',
-                 device_ids: list[int]=[0],
-                 equilibration_force_constant: float=10.):
+                 equil_steps: int = 1_250_000,
+                 prod_steps: int = 250_000_000,
+                 n_equil_cycles: int = 3,
+                 reporter_frequency: int = 1_000,
+                 platform: str = 'CUDA',
+                 device_ids: list[int] = [0],
+                 equilibration_force_constant: float = 10.):
         super().__init__(path, equil_steps, prod_steps, n_equil_cycles,
-                         reporter_frequency, platform, device_ids, 
+                         reporter_frequency, platform, device_ids,
                          equilibration_force_constant)
         self.custom_forces = custom_force_objects
 
     def load_amber_files(self) -> System:
-        """
-        Loads OpenMM system and adds in custom forces.
+        """Load OpenMM system and add custom forces.
 
         Returns:
-            (System): OpenMM system object with custom forces.
+            OpenMM System with custom forces added.
         """
         if not hasattr(self, 'coordinate'):
             self.coor_file = self.path / 'system.inpcrd'
             self.top_file = self.path / 'system.prmtop'
             self.coordinate = AmberInpcrdFile(str(self.coor_file))
-            self.topology = AmberPrmtopFile(str(self.top_file), 
+            self.topology = AmberPrmtopFile(str(self.top_file),
                                             periodicBoxVectors=self.coordinate.boxVectors)
 
         system = self.topology.createSystem(nonbondedMethod=PME,
@@ -837,43 +835,50 @@ class CustomForcesSimulator(Simulator):
 
         return system
 
-    def add_forces(self, 
-                   system: System) -> System:
-        """
-        Systematically adds all custom forces to provided system.
+    def add_forces(self, system: System) -> System:
+        """Add all custom forces to the system.
 
-        Arguments:
-            system (System): OpenMM system object.
+        Args:
+            system: OpenMM System object.
 
         Returns:
-            (System): OpenMM system object with custom forces added.
+            System with all custom forces added.
         """
         for custom_force in self.custom_forces:
             system.addForce(custom_force)
 
         return system
 
-class Minimizer:
-    """
-    Class for just performing energy minimization and writing out minimized structures.
 
-    Arguments:
-        topology (PathLike): Topology file which can be either a PDB or an AMBER prmtop.
-        coordinates (OptPath): Defaults to None. If using a prmtop, you need to provide
-            an inpcrd file for the coordinates. Otherwise these are also acquired from
-            the PDB used as topology.
-        out (PathLike): Defaults to min.pdb. The name of the output minimized PDB file.
-            The path is inherited from the parent path of the topology file.
-        platform (str): Defaults to OpenCL. Which OpenMM platform to run.
-        device_ids (list[int]): Accelerator IDs.
+class Minimizer:
+    """Simple energy minimization utility for molecular structures.
+
+    Supports AMBER, GROMACS, and PDB input formats. Performs energy
+    minimization and writes out the minimized structure as a PDB file.
+
+    Args:
+        topology: Path to topology file (prmtop, top, or pdb).
+        coordinates: Path to coordinate file (inpcrd, gro, or same pdb).
+        out: Output filename for minimized structure. Defaults to 'min.pdb'.
+        platform: OpenMM platform to use. Defaults to 'OpenCL'.
+        device_ids: List of GPU device IDs, or None for CPU. Defaults to [0].
+
+    Example:
+        >>> minimizer = Minimizer(
+        ...     topology='system.prmtop',
+        ...     coordinates='system.inpcrd',
+        ...     out='minimized.pdb'
+        ... )
+        >>> minimizer.minimize()
     """
+
     def __init__(self,
                  topology: PathLike,
                  coordinates: PathLike,
-                 out: PathLike='min.pdb',
-                 platform: str='OpenCL',
-                 device_ids: list[int] | None =[0]):
-        self.topology = Path(topology) 
+                 out: PathLike = 'min.pdb',
+                 platform: str = 'OpenCL',
+                 device_ids: list[int] | None = [0]):
+        self.topology = Path(topology)
         self.coordinates = Path(coordinates)
 
         self.path = self.topology.parent
@@ -885,19 +890,17 @@ class Minimizer:
             self.properties.update({'DeviceIndex': ','.join([str(x) for x in device_ids])})
 
     def minimize(self) -> None:
-        """
-        Loads an OpenMM system, builds simulation object and runs energy minimization.
-        Dumps final coordinates into output PDB file.
+        """Perform energy minimization and save structure.
 
-        Returns:
-            None
+        Loads the system, runs OpenMM energy minimization, and writes
+        the final coordinates to a PDB file.
         """
         system = self.load_files()
-        integrator = LangevinMiddleIntegrator(300*kelvin, 
-                                              1/picosecond, 
-                                              0.001*picoseconds)
-        simulation = Simulation(self.topology, 
-                                system, 
+        integrator = LangevinMiddleIntegrator(300 * kelvin,
+                                              1 / picosecond,
+                                              0.001 * picoseconds)
+        simulation = Simulation(self.topology,
+                                system,
                                 integrator,
                                 self.platform,
                                 self.properties)
@@ -908,19 +911,20 @@ class Minimizer:
 
         state = simulation.context.getState(getPositions=True)
         positions = state.getPositions()
-        
-        PDBFile.writeFile(self.topology.topology, 
-                          positions, 
-                          file=str(self.out), 
+
+        PDBFile.writeFile(self.topology.topology,
+                          positions,
+                          file=str(self.out),
                           keepIds=True)
 
-    def load_files(self) -> None:
-        """
-        Loads an OpenMM system depending on what file types you have provided
-        for the topology (AMBER, PDB, etc).
+    def load_files(self) -> System:
+        """Load system based on topology file extension.
 
         Returns:
-            None
+            OpenMM System object.
+
+        Raises:
+            FileNotFoundError: If no valid input files are found.
         """
         if self.topology.suffix in ['.prmtop', '.parm7']:
             system = self.load_amber()
@@ -933,16 +937,15 @@ class Minimizer:
                                     f'at path: {self.path}!')
 
         return system
-        
+
     def load_amber(self) -> System:
-        """
-        Loads AMBER input files into OpenMM System.
+        """Load AMBER input files into OpenMM System.
 
         Returns:
-            (System): OpenMM system object.
+            OpenMM System object from AMBER files.
         """
         self.coordinates = AmberInpcrdFile(str(self.coordinates))
-        self.topology = AmberPrmtopFile(str(self.topology), 
+        self.topology = AmberPrmtopFile(str(self.topology),
                                         periodicBoxVectors=self.coordinates.boxVectors)
 
         system = self.topology.createSystem(nonbondedMethod=NoCutoff,
@@ -951,34 +954,37 @@ class Minimizer:
         return system
 
     def load_gromacs(self) -> System:
-        """
-        Loads GROMACS input files into OpenMM System. UNTESTED!
+        """Load GROMACS input files into OpenMM System.
+
+        Note:
+            This method is untested and may require adjustments.
 
         Returns:
-            (System): OpenMM system object.
+            OpenMM System object from GROMACS files.
         """
         gro = list(self.path.glob('*.gro'))[0]
         self.coordinates = GromacsGroFile(str(gro))
-        self.topology = GromacsTopFile(str(self.topology), 
+        self.topology = GromacsTopFile(str(self.topology),
                                        includeDir='/usr/local/gromacs/share/gromacs/top')
 
-        system = self.topology.createSystem(nonbondedMethod=NoCutoff, 
+        system = self.topology.createSystem(nonbondedMethod=NoCutoff,
                                             constraints=HBonds)
 
         return system
 
     def load_pdb(self) -> System:
-        """
-        Loads PDB into OpenMM System. Beware the topology guesser.
+        """Load PDB file into OpenMM System.
+
+        Uses AMBER14 force field with automatic topology generation.
 
         Returns:
-            (System): OpenMM system object.
+            OpenMM System object from PDB file.
         """
         self.coordinates = PDBFile(str(self.topology))
         self.topology = self.coordinates.topology
         forcefield = ForceField('amber14-all.xml')
 
-        system = forcefield.createSystem(self.topology, 
+        system = forcefield.createSystem(self.topology,
                                          nonbondedMethod=NoCutoff,
                                          constraints=HBonds)
 

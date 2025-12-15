@@ -1,3 +1,10 @@
+"""Interface prediction Score from Aligned Errors (ipSAE) module.
+
+This module computes interaction prediction scores from pLDDT and PAE data,
+adapted from https://doi.org/10.1101/2025.02.10.637595. Supports outputs
+from structure prediction tools like Boltz and AlphaFold.
+"""
+
 from itertools import permutations
 import numpy as np
 from numpy import vectorize
@@ -8,25 +15,48 @@ from typing import Any, Union
 PathLike = Union[Path, str]
 OptPath = Union[Path, str, None]
 
-class ipSAE:
-    """
-    Compute the interaction prediction Score from Aligned Errors for a model.
-    Adapted from https://doi.org/10.1101/2025.02.10.637595. Currently supports
-    only outputs which provide plddt and pae data which limits us to Boltz and
-    AlphaFold.
 
-    Arguments:
-        structure_file (PathLike): Path to PDB/CIF model.
-        plddt_file (PathLike): Path to plddt npy file.
-        pae_file (PathLike): Path to pae npy file.
-        out_path (PathLike | None): Defaults to None. Path for outputs, or if None,
-            will use the parent path from the plddt file.
+class ipSAE:
+    """Compute interaction prediction Score from Aligned Errors.
+
+    Computes various model quality scores including pDockQ, pDockQ2,
+    LIS, ipTM, and ipSAE for structure predictions.
+
+    Attributes:
+        parser: ModelParser instance for structure file.
+        plddt_file: Path to pLDDT data file.
+        pae_file: Path to PAE data file.
+        path: Output directory path.
+        scores: Polars DataFrame of computed scores after run().
+
+    Args:
+        structure_file: Path to PDB/CIF model file.
+        plddt_file: Path to pLDDT numpy file (.npz with 'plddt' key).
+        pae_file: Path to PAE numpy file (.npz with 'pae' key).
+        out_path: Output directory path. If None, uses parent directory
+            of plddt_file.
+
+    Example:
+        >>> scorer = ipSAE('model.pdb', 'plddt.npz', 'pae.npz')
+        >>> scorer.run()
+        >>> print(scorer.scores)
     """
-    def __init__(self, 
-                 structure_file: PathLike,
-                 plddt_file: PathLike,
-                 pae_file: PathLike,
-                 out_path: OptPath=None):
+
+    def __init__(
+        self, 
+        structure_file: PathLike,
+        plddt_file: PathLike,
+        pae_file: PathLike,
+        out_path: OptPath = None
+    ):
+        """Initialize the ipSAE scorer.
+
+        Args:
+            structure_file: Path to structure file.
+            plddt_file: Path to pLDDT data file.
+            pae_file: Path to PAE data file.
+            out_path: Output directory path.
+        """
         self.parser = ModelParser(structure_file)
         self.plddt_file = Path(plddt_file)
         self.pae_file = Path(pae_file)
@@ -35,11 +65,10 @@ class ipSAE:
         self.path.mkdir(exist_ok=True)
 
     def parse_structure_file(self) -> None:
-        """
-        Runs parser to read in structure file and extract relevant details.
+        """Parse the structure file and extract relevant details.
 
-        Returns:
-            None
+        Runs the parser to read the structure file and classifies
+        chains as protein or nucleic acid.
         """
         self.parser.parse_structure_file()
         self.parser.classify_chains()
@@ -47,27 +76,26 @@ class ipSAE:
         self.token_array = np.array(self.parser.token_mask, dtype=bool)
 
     def prepare_scorer(self) -> None:
-        """
-        Prepares scorer for computing various scores.
+        """Initialize the ScoreCalculator for computing scores.
 
-        Returns:
-            None
+        Creates a ScoreCalculator instance with chain information
+        extracted from the parsed structure.
         """
         chains = np.array(self.parser.chains)
         chain_types = self.parser.chain_types
         residue_types = np.array([res['res'] for res in self.parser.residues])
 
-        self.scorer = ScoreCalculator(chains=chains,
-                                      chain_pair_type=chain_types,
-                                      n_residues=residue_types) 
+        self.scorer = ScoreCalculator(
+            chains=chains,
+            chain_pair_type=chain_types,
+            n_residues=residue_types
+        )
 
     def run(self) -> None:
-        """
-        Main logic of class. Parses structure file, computes distogram, unpacks
-        pLDDT and PAE, feeds data to scorer and saves out scores.
+        """Execute the complete ipSAE scoring workflow.
 
-        Returns:
-            None
+        Parses structure, computes distogram, loads pLDDT and PAE data,
+        runs the scorer, and saves results.
         """
         self.parse_structure_file()
 
@@ -83,56 +111,78 @@ class ipSAE:
         self.save_scores()
 
     def save_scores(self) -> None:
-        """
-        Saves scores dataframe to a parquet file.
-
-        Returns:
-            None
-        """
+        """Save scores DataFrame to a Parquet file."""
         self.scores.write_parquet(self.path / 'ipSAE_scores.parquet')
 
     def load_pLDDT_file(self) -> np.ndarray:
-        """
-        Loads pLDDT file and scales data by 100.
+        """Load and scale pLDDT data.
 
         Returns:
-            (np.ndarray): Scaled pLDDT array.
+            pLDDT array scaled to 0-100 range.
         """
         data = np.load(str(self.plddt_file))
         pLDDT_arr = np.array(data['plddt'] * 100.)
-
         return pLDDT_arr
 
     def load_PAE_file(self) -> np.ndarray:
-        """
-        Loads PAE file and returns data.
+        """Load PAE data from file.
 
         Returns:
-            (np.ndarray): Array of PAE values.
+            PAE array from the 'pae' key in the npz file.
         """
         data = np.load(str(self.pae_file))['pae']
         return data
 
-class ScoreCalculator:
-    """
-    Computes various model quality scores including: pDockQ, pDockQ2, LIS, ipTM and
-    the ipSAE score.
 
-    Arguments:
-        chains (np.ndarray): Array of chainIDs.
-        chain_pair_type (dict[str, str]): Dictionary mapping of chainID to chain type.
-        n_residues (int): Number of residues total in structure.
-        pdockq_cutoff (float): Defaults to 8.0 Å.
-        pae_cutoff (float): Defaults to 12.0 Å.
-        dist_cutoff (float): Defaults to 10.0 Å.
+class ScoreCalculator:
+    """Calculate model quality scores from structure predictions.
+
+    Computes pDockQ, pDockQ2, LIS, ipTM, and ipSAE scores for all
+    chain pairs in a structure.
+
+    Attributes:
+        chains: Array of chain IDs for each residue.
+        unique_chains: Unique chain IDs in the structure.
+        chain_pair_type: Dictionary mapping chain ID to type.
+        n_res: Array of residue types.
+        permuted: List of all chain pairs to evaluate.
+        scores: DataFrame of computed scores after compute_scores().
+
+    Args:
+        chains: Array of chain IDs.
+        chain_pair_type: Dictionary mapping chain ID to chain type
+            ('protein' or 'nucleic').
+        n_residues: Number of residues per chain.
+        pdockq_cutoff: Distance cutoff for pDockQ in Angstroms.
+            Defaults to 8.0.
+        pae_cutoff: PAE cutoff for ipSAE in Angstroms. Defaults to 12.0.
+        dist_cutoff: General distance cutoff in Angstroms. Defaults to 10.0.
+
+    Example:
+        >>> calc = ScoreCalculator(chains, chain_types, n_residues)
+        >>> calc.compute_scores(distances, plddt, pae)
+        >>> print(calc.scores)
     """
-    def __init__(self,
-                 chains: np.ndarray,
-                 chain_pair_type: dict[str, str],
-                 n_residues: int,
-                 pdockq_cutoff: float=8.,
-                 pae_cutoff: float=12.,
-                 dist_cutoff: float=10.):
+
+    def __init__(
+        self,
+        chains: np.ndarray,
+        chain_pair_type: dict[str, str],
+        n_residues: int,
+        pdockq_cutoff: float = 8.,
+        pae_cutoff: float = 12.,
+        dist_cutoff: float = 10.
+    ):
+        """Initialize the ScoreCalculator.
+
+        Args:
+            chains: Array of chain IDs.
+            chain_pair_type: Chain ID to type mapping.
+            n_residues: Residue type array.
+            pdockq_cutoff: pDockQ distance cutoff.
+            pae_cutoff: PAE cutoff.
+            dist_cutoff: General distance cutoff.
+        """
         self.chains = chains
         self.unique_chains = np.unique(chains)
         self.chain_pair_type = chain_pair_type
@@ -143,16 +193,21 @@ class ScoreCalculator:
 
         self.permute_chains()
 
-    def compute_scores(self,
-                       distances: np.ndarray,
-                       pLDDT: np.ndarray,
-                       PAE: np.ndarray) -> None:
-        """
-        Based on the input distance, pLDDT and PAE matrices, compute the pairwise pDockQ, pDockQ2,
-        LIS, ipTM and ipSAE scores.
+    def compute_scores(
+        self,
+        distances: np.ndarray,
+        pLDDT: np.ndarray,
+        PAE: np.ndarray
+    ) -> None:
+        """Compute all scores for all chain pairs.
 
-        Returns:
-            None
+        Calculates pDockQ, pDockQ2, LIS, ipTM, and ipSAE scores for
+        each permutation of chain pairs.
+
+        Args:
+            distances: Pairwise distance matrix between all residues.
+            pLDDT: Per-residue pLDDT values (0-100 scale).
+            PAE: Predicted aligned error matrix.
         """
         self.distances = distances
         self.pLDDT = pLDDT
@@ -166,29 +221,36 @@ class ScoreCalculator:
 
             results.append([chain1, chain2, pDockQ, pDockQ2, LIS, ipTM, ipSAE])
 
-        self.df = pl.DataFrame(np.array(results), schema={'chain1': str, 
-                                                          'chain2': str, 
-                                                          'pDockQ': float, 
-                                                          'pDockQ2': float,
-                                                          'LIS': float,
-                                                          'ipTM': float,
-                                                          'ipSAE': float})
+        self.df = pl.DataFrame(
+            np.array(results), 
+            schema={
+                'chain1': str, 
+                'chain2': str, 
+                'pDockQ': float, 
+                'pDockQ2': float,
+                'LIS': float,
+                'ipTM': float,
+                'ipSAE': float
+            }
+        )
         self.get_max_values()
 
-    def compute_pDockQ_scores(self,
-                              chain1: str,
-                              chain2: str) -> tuple[float, float]:
-        """
-        Computes both the pDockQ and pDockQ2 scores for the interface between two chains.
-        pDockQ is dependent solely on the pLDDT matrix while pDockQ2 is dependent on both
-        pLDDT and the PAE matrix.
+    def compute_pDockQ_scores(
+        self,
+        chain1: str,
+        chain2: str
+    ) -> tuple[float, float]:
+        """Compute pDockQ and pDockQ2 scores for a chain pair.
 
-        Arguments:
-            chain1 (str): The string name of the first chain.
-            chain2 (str): The string name of the first chain.
+        pDockQ depends solely on pLDDT, while pDockQ2 depends on both
+        pLDDT and PAE.
+
+        Args:
+            chain1: First chain identifier.
+            chain2: Second chain identifier.
 
         Returns:
-            (tuple[float, float]): A tuple of the pDockQ and pDockQ2 scores respectively.
+            Tuple of (pDockQ, pDockQ2) scores.
         """
         n_pairs = 0
         _sum = 0.
@@ -222,22 +284,21 @@ class ScoreCalculator:
 
         return pDockQ, pDockQ2
 
-    def compute_LIS(self,
-                    chain1: str, 
-                    chain2: str) -> float:
-        """
-        Computes Local Interaction Score (LIS) which is based on a subset of the 
-        predicted aligned error using a cutoff of 12. Values range in the interval 
-        (0, 1] and can be interpreted as how accurate a fold is within the error 
-        cutoff where a mean error of 0 yields a LIS value of 1 and a mean error
-        that approaches 12 has a LIS value that approaches 0.
-        Adapted from: https://doi.org/10.1101/2024.02.19.580970.
+    def compute_LIS(self, chain1: str, chain2: str) -> float:
+        """Compute Local Interaction Score (LIS) for a chain pair.
 
-        Arguments:
-            chain1 (str): The string name of the first chain.
-            chain2 (str): The string name of the second chain.
+        LIS is based on a subset of the predicted aligned error using
+        a cutoff of 12 Å. Values range in (0, 1] where 1 indicates
+        perfect accuracy.
+
+        Adapted from: https://doi.org/10.1101/2024.02.19.580970
+
+        Args:
+            chain1: First chain identifier.
+            chain2: Second chain identifier.
+
         Returns:
-            (float): The LIS value for both chains.
+            LIS value for the chain pair.
         """
         mask = (self.chains[:, None] == chain1) & (self.chains[None, :] == chain2)
         selected_pae = self.PAE[mask]
@@ -252,19 +313,22 @@ class ScoreCalculator:
 
         return LIS
 
-    def compute_ipTM_ipSAE(self,
-                           chain1: str,
-                           chain2: str) -> tuple[float, float]:
-        """
-        Computes the ipTM and ipSAE scores for a given pair of chains. These operations
-        are combined since they rely on very similar processing of the data.
+    def compute_ipTM_ipSAE(
+        self,
+        chain1: str,
+        chain2: str
+    ) -> tuple[float, float]:
+        """Compute ipTM and ipSAE scores for a chain pair.
 
-        Arguments:
-            chain1 (str): The first chain to compare.
-            chain2 (str): The second chain to compare.
+        These operations are combined as they rely on similar
+        data processing.
+
+        Args:
+            chain1: First chain identifier.
+            chain2: Second chain identifier.
 
         Returns:
-            (tuple[float]): A tuple containing the ipTM and ipSAE scores respectively.
+            Tuple of (ipTM, ipSAE) scores.
         """
         pair_type = 'protein'
         if 'nucleic' in [self.chain_pair_type[chain1], self.chain_pair_type[chain2]]:
@@ -294,14 +358,11 @@ class ScoreCalculator:
         return ipTM, ipSAE
 
     def get_max_values(self) -> None:
-        """
-        Because some scores like ipSAE are not symmetric, meaning A->B != B->A, we
-        take the maximal score for either direction to be the undirected score.
-        Here we scrape through the internal dataframe and keeps only the rows with
-        the maximal values.
+        """Extract maximum scores for undirected chain pairs.
 
-        Returns:
-            None
+        Because some scores like ipSAE are asymmetric (A->B != B->A),
+        takes the maximum score for either direction as the undirected
+        score.
         """
         rows = []
         processed = set()
@@ -321,13 +382,9 @@ class ScoreCalculator:
         self.scores = pl.concat(rows)
 
     def permute_chains(self) -> None:
-        """
-        Helper function that gives all permutations of chainID except
-        the pair (self, self) for each chainID. This also ensures that
-        if we have (A, B) we do not also store (B, A).
+        """Generate all permutations of chain pairs.
 
-        Returns:
-            None
+        Creates all unique ordered pairs of chains, excluding self-pairs.
         """
         permuted = set()
         for c1, c2 in permutations(self.unique_chains, 2):
@@ -338,68 +395,66 @@ class ScoreCalculator:
         self.permuted = list(permuted)
 
     @staticmethod
-    def pDockQ_score(x) -> float:
-        """
-        Computes pDockQ score per the following equation.
-        $pDockQ = \frac{0.724}{(1 + e^{-0.052 * (x - 152.611)}) + 0.018}$
+    def pDockQ_score(x: float) -> float:
+        """Compute pDockQ score.
 
-        Details on the pDockQ score at: https://doi.org/10.1038/s41467-022-28865-w
+        Formula: pDockQ = 0.724 / (1 + exp(-0.052 * (x - 152.611))) + 0.018
 
-        Arguments:
-            x (float): Mean pLDDT score scaled by the log10 number of residue pairs 
-                that meet pLDDT and distance cutoffs.
+        Reference: https://doi.org/10.1038/s41467-022-28865-w
+
+        Args:
+            x: Mean pLDDT scaled by log10 of the number of residue pairs
+                meeting pLDDT and distance cutoffs.
 
         Returns:
-            (float): pDockQ score
+            pDockQ score.
         """
         return 0.724 / (1 + np.exp(-0.052 * (x - 152.611))) + 0.018
 
     @staticmethod
-    def pDockQ2_score(x) -> float:
-        """
-        Computes pDockQ2 score per the following equation.
-        $pDockQ = \frac{1.31}{(1 + e^{-0.075 * (x - 84.733)}) + 0.005}$
+    def pDockQ2_score(x: float) -> float:
+        """Compute pDockQ2 score.
 
-        Details on the pDockQ2 score at: https://doi.org/10.1093/bioinformatics/btad424
+        Formula: pDockQ2 = 1.31 / (1 + exp(-0.075 * (x - 84.733))) + 0.005
 
-        Arguments:
-            x (float): Mean pLDDT score scaled by mean PAE score.
+        Reference: https://doi.org/10.1093/bioinformatics/btad424
+
+        Args:
+            x: Mean pLDDT scaled by mean PAE score.
 
         Returns:
-            (float): pDockQ2 score
+            pDockQ2 score.
         """
         return 1.31 / (1 + np.exp(-0.075 * (x - 84.733))) + 0.005
 
     @staticmethod
     @vectorize
-    def compute_pTM(x: float,
-                    d0: float) -> float:
-        """
-        Computes pTM score per the following equation.
-        $pTM = \frac{1.0}{(1 + (x / d0)^2)}$
+    def compute_pTM(x: float, d0: float) -> float:
+        """Compute pTM score.
 
-        Arguments:
-            x (float): pLDDT score
-            d0 (float): d0 parameter
+        Formula: pTM = 1.0 / (1 + (x / d0)^2)
+
+        Args:
+            x: pLDDT or PAE value.
+            d0: Distance parameter from compute_d0.
 
         Returns:
-            (float): pTM score
+            pTM score.
         """
         return 1. / (1 + (x / d0) ** 2)
 
     @staticmethod
-    def compute_d0(L: int,
-                   pair_type: str) -> float:
-        """
-        Computes d0 term per the following equation. 
-        $d0 = min(1.0, 1.24 * (L - 15)^}(\frac{1}{3})} - 1.8)$
+    def compute_d0(L: int, pair_type: str) -> float:
+        """Compute d0 parameter for pTM calculation.
 
-        Arguments:
-            L (int): Length of sequence up to 27 residues.
-            pair_type (str): Whether or not chain is a nucleic acid.
+        Formula: d0 = max(min_value, 1.24 * (L - 15)^(1/3) - 1.8)
+
+        Args:
+            L: Sequence length (minimum 27).
+            pair_type: 'protein' or 'nucleic_acid'.
 
         Returns:
-            (float): d0
+            d0 parameter value.
         """
         L = max(27, L)
 
@@ -411,16 +466,36 @@ class ScoreCalculator:
 
 
 class ModelParser:
-    """
-    Helper class to read in and process a structure file for downstream
-    scoring tasks. Capable of reading both PDB and CIF formats.
+    """Parse structure files to extract residue and atom information.
 
-    Arguments:
-        structure (PathLike): Path to PDB or CIF file.
+    Handles both PDB and CIF format files, extracting C-alpha, C-beta,
+    and nucleic acid backbone atom coordinates.
+
+    Attributes:
+        structure: Path to the structure file.
+        token_mask: List of token indicators for each residue.
+        residues: List of dictionaries containing residue information.
+        cb_residues: List of C-beta residue dictionaries.
+        chains: List of chain IDs for each residue.
+        chain_types: Dictionary mapping chain ID to type after
+            classify_chains().
+
+    Args:
+        structure: Path to PDB or CIF file.
+
+    Example:
+        >>> parser = ModelParser('model.pdb')
+        >>> parser.parse_structure_file()
+        >>> parser.classify_chains()
     """
-    def __init__(self, 
-                 structure: PathLike):
-        self.structure =Path(structure)
+
+    def __init__(self, structure: PathLike):
+        """Initialize the ModelParser.
+
+        Args:
+            structure: Path to PDB or CIF file.
+        """
+        self.structure = Path(structure)
 
         self.token_mask = []
         self.residues = []
@@ -428,13 +503,10 @@ class ModelParser:
         self.chains = []
 
     def parse_structure_file(self) -> None:
-        """
-        Identify filetype, and parses line by line, storing relevant data
-        for all C-alpha, C-beta and C1, C3 atoms for proteins and nucleic
-        acids alike.
+        """Parse the structure file and extract atom/residue data.
 
-        Returns:
-            None
+        Identifies file type and parses line by line, storing data for
+        C-alpha, C-beta, C1', and C3' atoms.
         """
         if self.structure.suffix == '.pdb':
             line_parser = self.parse_pdb_line
@@ -470,12 +542,10 @@ class ModelParser:
                     self.cb_residues.append(atom)
 
     def classify_chains(self) -> None:
-        """
-        Reads through residue data to assign the identity of each chain as
-        either protein (by default) or nucleic acid if an NA residue is detected.
+        """Classify chains as protein or nucleic acid.
 
-        Returns:
-            None
+        Reads through residue data to assign chain identity based on
+        whether nucleic acid residues are detected.
         """
         self.residue_types = np.array([res['res'] for res in self.residues])
         chains = np.unique(self.chains)
@@ -488,27 +558,23 @@ class ModelParser:
 
     @property
     def nucleic_acids(self) -> list[str]:
-        """
-        Stores the canonical resnames for RNA and DNA residues.
+        """Get canonical nucleic acid residue names.
 
         Returns:
-            (list[str]): List of nucleic acid resnames.
+            List of RNA and DNA residue names.
         """
         return ['DA', 'DC', 'DT', 'DG', 'A', 'C', 'U', 'G']
 
     @staticmethod
-    def parse_pdb_line(line: str, 
-                       *args) -> dict[str, Any]:
-        """
-        Parses a single line of a PDB file, extracting atom and residue information.
-        Processes this into a dictionary and returns the dict.
+    def parse_pdb_line(line: str, *args) -> dict[str, Any]:
+        """Parse a single line of a PDB file.
 
-        Arguments:
-            line (str): Actual line from PDB file.
-            *args: Just here so we can use the same API for PDB and CIF.
+        Args:
+            line: Line from the PDB file.
+            *args: Unused, for API compatibility with parse_cif_line.
 
         Returns:
-            (dict[str, Any]): Dictionary representation of data.
+            Dictionary with atom/residue information.
         """
         atom_num = line[6:11].strip()
         atom_name = line[12:16].strip()
@@ -519,21 +585,22 @@ class ModelParser:
         y = line[38:46].strip()
         z = line[46:54].strip()
 
-        return ModelParser.package_line(atom_num, atom_name, residue_name, chain_id, residue_id, x, y, z)
+        return ModelParser.package_line(
+            atom_num, atom_name, residue_name, 
+            chain_id, residue_id, x, y, z
+        )
 
     @staticmethod
-    def parse_cif_line(line: str, 
-                       fields: dict[str, int]) -> dict[str, Any]:
-        """
-        Parses a single line of a CIF file, extracting atom and residue information.
-        Processes this into a dictionary and returns the dict.
+    def parse_cif_line(line: str, fields: dict[str, int]) -> dict[str, Any]:
+        """Parse a single line of a CIF file.
 
-        Arguments:
-            line (str): Actual line from CIF file.
-            fields (dict[str, int]): Definition of where each field is found.
+        Args:
+            line: Line from the CIF file.
+            fields: Dictionary mapping field names to column indices.
 
         Returns:
-            (dict[str, Any]): Dictionary representation of data.
+            Dictionary with atom/residue information, or None if
+            residue_id is missing.
         """
         _split = line.split()
         atom_num = _split[fields['id']]
@@ -548,33 +615,36 @@ class ModelParser:
         if residue_id == '.':
             return None
 
-        return ModelParser.package_line(atom_num, atom_name, residue_name, chain_id, residue_id, x, y, z)
+        return ModelParser.package_line(
+            atom_num, atom_name, residue_name, 
+            chain_id, residue_id, x, y, z
+        )
 
     @staticmethod
-    def package_line(atom_num: str,
-                     atom_name: str,
-                     residue_name: str,
-                     chain_id: str,
-                     residue_id: str,
-                     x: str,
-                     y: str,
-                     z: str) -> dict[str, Any]:
-        """
-        Packs various information from a single line of a structure file into
-        a dictionary to maintain consistency.
+    def package_line(
+        atom_num: str,
+        atom_name: str,
+        residue_name: str,
+        chain_id: str,
+        residue_id: str,
+        x: str,
+        y: str,
+        z: str
+    ) -> dict[str, Any]:
+        """Package parsed line data into a dictionary.
 
-        Arguments:
-            atom_num (str): Atom index.
-            atom_name (str): Atom name.
-            residue_name (str): Resname.
-            chain_id (str): ChainID.
-            residue_id (str): ResID.
-            x (str): X coordinate.
-            y (str): Y coordinate.
-            z (str): Z coordinate.
+        Args:
+            atom_num: Atom index.
+            atom_name: Atom name (e.g., 'CA', 'CB').
+            residue_name: Residue name (e.g., 'ALA').
+            chain_id: Chain identifier.
+            residue_id: Residue sequence number.
+            x: X coordinate as string.
+            y: Y coordinate as string.
+            z: Z coordinate as string.
 
         Returns:
-            (dict[str, Any]): Dictionary representation of data.
+            Dictionary containing parsed atom/residue data.
         """
         return {
             'atom_num': int(atom_num),

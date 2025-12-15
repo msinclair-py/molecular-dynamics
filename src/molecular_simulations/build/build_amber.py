@@ -1,4 +1,15 @@
 #!/usr/bin/env python
+"""AMBER system building module.
+
+This module provides classes for building molecular systems using AmberTools.
+Supports both implicit and explicit solvent setups with automatic ionization
+and neutralization.
+
+Classes:
+    ImplicitSolvent: Build implicit solvent systems with AMBER force fields.
+    ExplicitSolvent: Build explicit solvent cubic boxes with 150mM NaCl.
+"""
+
 import logging
 from openmm.app import PDBFile
 import os
@@ -12,23 +23,63 @@ OptPath = Union[str, Path, None]
 
 logger = logging.getLogger(__name__)
 
+
 class ImplicitSolvent:
+    """Build an implicit solvent system using AmberTools.
+
+    Produces topology and coordinate files for implicit solvent simulations
+    using tleap with user-specified force fields.
+
+    Args:
+        path: Directory path for output files. If None, uses parent of pdb.
+        pdb: Path to input PDB file.
+        protein: Whether to load protein force field (ff19SB). Defaults to True.
+        rna: Whether to load RNA force field (Shaw). Defaults to False.
+        dna: Whether to load DNA force field (OL21). Defaults to False.
+        phos_protein: Whether to load phosphorylated protein force field.
+            Defaults to False.
+        mod_protein: Whether to load modified amino acid force field.
+            Defaults to False.
+        out: Output filename. If None, uses 'system.pdb'. Defaults to None.
+        delete_temp_file: Whether to delete temporary tleap input files.
+            Defaults to True.
+        amberhome: Path to AMBER installation. If None, uses AMBERHOME
+            environment variable. Defaults to None.
+        **kwargs: Additional attributes to set on the instance.
+
+    Attributes:
+        path: Resolved Path object for output directory.
+        pdb: Resolved Path to input PDB file.
+        out: Resolved Path for output files.
+        tleap: Path to tleap executable.
+        pdb4amber: Path to pdb4amber executable.
+        ffs: List of force field files to load.
+
+    Raises:
+        ValueError: If AMBERHOME is not set and amberhome is None.
+
+    Example:
+        >>> builder = ImplicitSolvent(
+        ...     path='./build',
+        ...     pdb='protein.pdb',
+        ...     protein=True
+        ... )
+        >>> builder.build()
     """
-    Class for building a system using ambertools. Produces explicit solvent cubic box
-    with user-specified padding which has been neutralized and ionized with 150mM NaCl.
-    """
-    def __init__(self, 
-                 path: OptPath, 
-                 pdb: str, 
-                 protein: bool=True,
-                 rna: bool=False, 
-                 dna: bool=False, 
-                 phos_protein: bool=False,
-                 mod_protein: bool=False, 
-                 out: OptPath=None, 
-                 delete_temp_file: bool=True, 
-                 amberhome: Optional[str]=None, 
+
+    def __init__(self,
+                 path: OptPath,
+                 pdb: str,
+                 protein: bool = True,
+                 rna: bool = False,
+                 dna: bool = False,
+                 phos_protein: bool = False,
+                 mod_protein: bool = False,
+                 out: OptPath = None,
+                 delete_temp_file: bool = True,
+                 amberhome: Optional[str] = None,
                  **kwargs):
+        """Initialize the ImplicitSolvent builder."""
         if path is None:
             self.path = Path(pdb).parent
         elif isinstance(path, str):
@@ -44,7 +95,7 @@ class ImplicitSolvent:
         if out is not None:
             self.out = self.path / out
         else:
-            self.out = self.path / 'system.pdb' 
+            self.out = self.path / 'system.pdb'
 
         self.out = self.out.resolve()
         self.delete = delete_temp_file
@@ -60,29 +111,25 @@ class ImplicitSolvent:
 
         switches = [protein, rna, dna, phos_protein, mod_protein]
         ffs = [
-            'leaprc.protein.ff19SB', 
-            'leaprc.RNA.Shaw', 
+            'leaprc.protein.ff19SB',
+            'leaprc.RNA.Shaw',
             'leaprc.DNA.OL21',
             'leaprc.phosaa19SB',
             'leaprc.protein.ff14SB_modAA'
         ]
-        
+
         self.ffs = [
             ff for ff, switch in zip(ffs, switches) if switch
         ]
-        
+
         for key, val in kwargs.items():
             setattr(self, key, val)
 
     def build(self) -> None:
-        """
-        Orchestrate the various things that need to happen in order
-        to produce an explicit solvent system. This includes running
-        `pdb4amber`, computing the periodic box size, number of ions
-        needed and running `tleap` to make the final system.
+        """Orchestrate the implicit solvent system build.
 
-        Returns:
-            None
+        Runs tleap to produce topology (.prmtop) and coordinate (.inpcrd)
+        files for the input structure.
         """
         logger.info('Build start: implicit solvent',
                     extra={'pdb': str(self.pdb), 'out': str(self.out)})
@@ -90,13 +137,11 @@ class ImplicitSolvent:
         logger.info('Build finished')
 
     def tleap_it(self) -> None:
-        """
-        While more painful, tleap is more stable for system building.
-        Runs the input PDB through tleap with the FF19SB protein forcefield
-        and whichever other forcefields were turned on.
+        """Run tleap to build the system.
 
-        Returns:
-            None
+        Runs the input PDB through tleap with FF19SB protein force field
+        and any other enabled force fields. Sets mbondi3 radii for
+        implicit solvent calculations.
         """
         ffs = '\n'.join([f'source {ff}' for ff in self.ffs])
         tleap_in = f"""
@@ -109,92 +154,119 @@ class ImplicitSolvent:
         """
 
         self.temp_tleap(tleap_in)
-    
-    def write_leap(self, 
-                   inp: str) -> Path:
-        """
-        Writes out a tleap input file and returns the path
-        to the file.
+
+    def write_leap(self, inp: str) -> Path:
+        """Write a tleap input file.
+
+        Args:
+            inp: The tleap input file contents as a string.
 
         Returns:
-            (Path): Path to tleap input file.
+            Path to the written tleap input file.
         """
         leap_file = f'{self.path}/tleap.in'
         with open(leap_file, 'w') as outfile:
             outfile.write(inp)
-            
+
         return Path(leap_file)
 
-    def temp_tleap(self,
-                   inp: str) -> None:
-        """
-        Writes a temporary file for tleap and then runs tleap. This
-        makes handling parallel tleap runs much simpler as we are avoiding
-        the different workers overwriting tleap inputs and getting confused.
+    def temp_tleap(self, inp: str) -> None:
+        """Run tleap with a temporary input file.
 
-        Arguments:
-            inp (str): The tleap input file contents as a single string.
+        Writes a temporary file for tleap and executes it. This approach
+        simplifies parallel tleap runs by avoiding input file conflicts
+        between different workers.
 
-        Returns:
-            None
+        Args:
+            inp: The tleap input file contents as a string.
         """
-        with tempfile.NamedTemporaryFile(mode='w+', 
-                                         suffix='.in', 
-                                         delete=self.delete, 
+        with tempfile.NamedTemporaryFile(mode='w+',
+                                         suffix='.in',
+                                         delete=self.delete,
                                          dir=str(self.path)) as temp_file:
             temp_file.write(inp)
             temp_file.flush()
             tleap_command = f'{self.tleap} -f {temp_file.name}'
             subprocess.run(tleap_command, shell=True, cwd=str(self.path), check=True,
                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    
+
+
 class ExplicitSolvent(ImplicitSolvent):
+    """Build an explicit solvent system using AmberTools.
+
+    Produces an explicit solvent cubic box with user-specified padding,
+    neutralized and ionized with 150mM NaCl.
+
+    Args:
+        path: Directory path for output files.
+        pdb: Path to input PDB file.
+        padding: Padding around solute in Angstroms. Defaults to 10.0.
+        protein: Whether to load protein force field. Defaults to True.
+        rna: Whether to load RNA force field. Defaults to False.
+        dna: Whether to load DNA force field. Defaults to False.
+        phos_protein: Whether to load phosphorylated protein force field.
+            Defaults to False.
+        mod_protein: Whether to load modified amino acid force field.
+            Defaults to False.
+        polarizable: Whether to use polarizable force field (ff15ipq/SPC-Eb).
+            Defaults to False.
+        delete_temp_file: Whether to delete temporary files. Defaults to True.
+        amberhome: Path to AMBER installation. Defaults to None.
+        **kwargs: Additional attributes to set on the instance.
+
+    Attributes:
+        pad: Padding value in Angstroms.
+        water_box: Water box type ('OPCBOX' or 'SPCBOX').
+
+    Example:
+        >>> builder = ExplicitSolvent(
+        ...     path='./build',
+        ...     pdb='protein.pdb',
+        ...     padding=12.0
+        ... )
+        >>> builder.build()
     """
-    Class for building a system using ambertools. Produces explicit solvent cubic box
-    with user-specified padding which has been neutralized and ionized with 150mM NaCl.
-    """
-    def __init__(self, 
-                 path: PathLike, 
-                 pdb: PathLike, 
-                 padding: float=10., 
-                 protein: bool=True,
-                 rna: bool=False, 
-                 dna: bool=False, 
-                 phos_protein: bool=False,
-                 mod_protein: bool=False, 
-                 polarizable: bool=False, 
-                 delete_temp_file: bool=True,
-                 amberhome: Optional[str]=None, 
+
+    def __init__(self,
+                 path: PathLike,
+                 pdb: PathLike,
+                 padding: float = 10.,
+                 protein: bool = True,
+                 rna: bool = False,
+                 dna: bool = False,
+                 phos_protein: bool = False,
+                 mod_protein: bool = False,
+                 polarizable: bool = False,
+                 delete_temp_file: bool = True,
+                 amberhome: Optional[str] = None,
                  **kwargs):
-        super().__init__(path=path, 
-                         pdb=pdb, 
-                         protein=protein, 
-                         rna=rna, 
-                         dna=dna, 
-                         phos_protein=phos_protein, 
-                         mod_protein=mod_protein, 
+        """Initialize the ExplicitSolvent builder."""
+        super().__init__(path=path,
+                         pdb=pdb,
+                         protein=protein,
+                         rna=rna,
+                         dna=dna,
+                         phos_protein=phos_protein,
+                         mod_protein=mod_protein,
                          out=None,
                          delete_temp_file=delete_temp_file,
-                         amberhome=amberhome, 
+                         amberhome=amberhome,
                          **kwargs)
         self.pad = padding
         self.ffs.extend(['leaprc.water.opc'])
         self.water_box = 'OPCBOX'
-        
+
         if polarizable:
             self.ffs[0] = 'leaprc.protein.ff15ipq'
             self.ffs[-1] = 'leaprc.water.spceb'
             self.water_box = 'SPCBOX'
-    
-    def build(self) -> None:
-        """
-        Orchestrate the various things that need to happen in order
-        to produce an explicit solvent system. This includes running
-        `pdb4amber`, computing the periodic box size, number of ions
-        needed and running `tleap` to make the final system.
 
-        Returns:
-            None
+    def build(self) -> None:
+        """Orchestrate the explicit solvent system build.
+
+        Runs pdb4amber to prepare the structure, computes box dimensions,
+        calculates ion numbers for 150mM concentration, and runs tleap
+        to assemble the final solvated system.
         """
         logger.info('Build started: explicit solvent',
                     extra={'pdb': str(self.pdb), 'out': str(self.out)})
@@ -206,30 +278,23 @@ class ExplicitSolvent(ImplicitSolvent):
         logger.info('Build finished')
 
     def prep_pdb(self) -> None:
-        """
-        Runs input PDB through `pdb4amber` to ensure it is compliant enough
-        that tleap won't freak out on us later. Removes any explicit hydrogens
-        from the input structure to avoid name mismatches.
+        """Prepare the input PDB using pdb4amber.
 
-        Returns:
-            None
+        Runs pdb4amber to ensure tleap compatibility. Removes explicit
+        hydrogens from the input to avoid naming mismatches.
         """
         cmd = f'{self.pdb4amber} -i {self.pdb} -o {self.path}/protein.pdb -y'
         subprocess.run(cmd, shell=True, cwd=str(self.path), check=True,
                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         self.pdb = f'{self.path}/protein.pdb'
-        
+
     def assemble_system(self, dim: float, num_ions: int) -> None:
-        """
-        Build system in tleap.
+        """Build the solvated system in tleap.
 
-        Arguments:
-            dim (float): Longest dimension in Angstrom.
-            num_ions (int): Explicit number of ions to achieve 150mM.
-
-        Returns:
-            None
+        Args:
+            dim: Box dimension (longest axis + padding) in Angstroms.
+            num_ions: Number of Na+/Cl- ion pairs for 150mM concentration.
         """
         tleap_ffs = '\n'.join([f'source {ff}' for ff in self.ffs])
         out_pdb = self.out
@@ -252,58 +317,52 @@ class ExplicitSolvent(ImplicitSolvent):
         saveamberparm PROT {out_top} {out_coor}
         quit
         """
-        
+
         self.temp_tleap(tleap_complex)
 
     def get_pdb_extent(self) -> int:
-        """
-        Identifies the longest axis of the protein in terms of X/Y/Z
-        projection. Not super accurate but likely good enough for determining
-        PBC box size. Returns longest axis length + 2 times the padding
-        to account for +/- padding.
+        """Calculate the required box dimension.
+
+        Identifies the longest axis of the protein based on X/Y/Z
+        coordinate projections. Not highly accurate but sufficient
+        for determining periodic box size.
 
         Returns:
-            (int): Longest dimension with 2 times padding in Angstrom.
+            Longest dimension plus twice the padding, in Angstroms.
         """
         lines = [line for line in open(self.pdb).readlines() if 'ATOM' in line]
         xs, ys, zs = [], [], []
-        
+
         for line in lines:
             xs.append(float(line[30:38].strip()))
             ys.append(float(line[38:46].strip()))
             zs.append(float(line[46:54].strip()))
-        
+
         xtent = (max(xs) - min(xs))
         ytent = (max(ys) - min(ys))
         ztent = (max(zs) - min(zs))
-        
-        return int(max([xtent, ytent, ztent]) + 2 * self.pad)
-    
-    def clean_up_directory(self) -> None:
-        """
-        Remove leap log. This is placed wherever the script calling it
-        runs and likely will throw errors if multiple systems are
-        being iteratively built.
 
-        Returns:
-            None
+        return int(max([xtent, ytent, ztent]) + 2 * self.pad)
+
+    def clean_up_directory(self) -> None:
+        """Organize output directory.
+
+        Moves intermediate files to a 'build' subdirectory, keeping
+        only the final .prmtop and .inpcrd files in the main directory.
         """
         (self.path / 'build').mkdir(exist_ok=True)
         for f in self.path.glob('*'):
             if not any([ext in f.name for ext in ['.prmtop', '.inpcrd', 'build']]):
                 f.rename(f.parent / 'build' / f.name)
-        
+
     @staticmethod
     def get_ion_numbers(volume: float) -> int:
-        """
-        Returns the number of Chloride? ions required to achieve 150mM
-        concentration for a given volume. The number of Sodium counter
-        ions should be equivalent.
+        """Calculate ion count for 150mM NaCl concentration.
 
-        Arguments:
-            volume (float): Volume of box in cubic Angstrom.
+        Args:
+            volume: Box volume in cubic Angstroms.
 
         Returns:
-            (int): Number of ions for 150mM NaCl.
+            Number of each ion type (Na+ and Cl-) needed for 150mM.
         """
         return round(volume * 10e-6 * 9.03)

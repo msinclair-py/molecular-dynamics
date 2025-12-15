@@ -1,3 +1,10 @@
+"""MM-P(G)BSA calculation module.
+
+This module provides a reconstructed implementation of MM-P(G)BSA from AMBER,
+with improved documentation and parallelization options. Supports frame-level
+parallelization for efficient processing of long trajectories.
+"""
+
 from concurrent.futures import as_completed, ThreadPoolExecutor, wait, ALL_COMPLETED
 from dataclasses import dataclass
 import json
@@ -11,10 +18,8 @@ import subprocess
 import time
 from typing import Literal, Optional, Union
         
-# This is simply to enable higher level parallelism by parsl/academy
-# Numpy by default allows all threads to be used and in agentic settings
-# we have seen oversubscription of threads and some calculations fail to
-# to write out. These settings must be set BEFORE importing numpy
+# Thread settings for higher level parallelism (Parsl/Academy)
+# Must be set BEFORE importing numpy
 os.environ.setdefault('OPENBLAS_NUM_THREADS', '1')
 os.environ.setdefault('MKL_NUM_THREADS', '1')
 os.environ.setdefault('OMP_NUM_THREADS', '1')
@@ -24,17 +29,22 @@ PathLike = Union[Path, str]
 
 logger = logging.getLogger(__name__)
 
-def _run_energy_calculation(args: tuple[str],
-                            max_retries: int=3) -> tuple[Path, bool, str]:
+
+def _run_energy_calculation(
+    args: tuple[str],
+    max_retries: int = 3
+) -> tuple[Path, bool, str]:
     """Worker function for parallel energy calculations.
-    Must be module level for ThreadPoolExecutor pickling.
+
+    Must be module-level for ThreadPoolExecutor pickling.
 
     Args:
-        args (tuple): Tuple of (mmpbsa_binary, mdin_path, prmtop, pdb, traj_chunk, output_path, cwd)
-        max_retries (int): Number of retry attempts for failed calculations
+        args: Tuple of (mmpbsa_binary, mdin_path, prmtop, pdb, 
+            traj_chunk, output_path, cwd).
+        max_retries: Number of retry attempts for failed calculations.
 
     Returns:
-        (Path): Path to the output file.
+        Tuple of (output_path, success_bool, error_message).
     """
     mmpbsa_binary, mdin, prm, pdb, trj, out, cwd = args
     cmd = f'{mmpbsa_binary} -O -i {mdin} -p {prm} -c {pdb} -y {trj} -o {out}'
@@ -43,8 +53,10 @@ def _run_energy_calculation(args: tuple[str],
 
     for attempt in range(max_retries):
         try:
-            result = subprocess.run(cmd, shell=True, cwd=str(cwd), 
-                                    capture_output=True, text=True)
+            result = subprocess.run(
+                cmd, shell=True, cwd=str(cwd), 
+                capture_output=True, text=True
+            )
 
             if expected_output.exists() and expected_output.stat().st_size > 0:
                 with open(expected_output, 'r') as f:
@@ -65,16 +77,30 @@ def _run_energy_calculation(args: tuple[str],
             error = f'Exception: {e}'
 
         if attempt < max_retries - 1:
-            logger.warning(f'Energy calculation {out} failed (attempt {attempt + 1}/{max_retries})')
+            logger.warning(
+                f'Energy calculation {out} failed (attempt {attempt + 1}/{max_retries})'
+            )
             logger.warning(f'Error: {error}')
             time.sleep(2 ** attempt)
 
     return (out, False, error)
 
-def _run_sasa_calculation(args: tuple[str],
-                          max_retries: int=3) -> tuple[Path, bool, str]:
+
+def _run_sasa_calculation(
+    args: tuple[str],
+    max_retries: int = 3
+) -> tuple[Path, bool, str]:
     """Worker function for parallel SASA calculations.
-    Must be module level for ThreadPoolExecutor pickling."""
+
+    Must be module-level for ThreadPoolExecutor pickling.
+
+    Args:
+        args: Tuple of (cpptraj_binary, sasa_script_path, cwd).
+        max_retries: Number of retry attempts.
+
+    Returns:
+        Tuple of (script_path, success_bool, error_message).
+    """
     cpptraj_binary, sasa_script, cwd = args
 
     # Parse expected output from script
@@ -90,13 +116,19 @@ def _run_sasa_calculation(args: tuple[str],
     
     for attempt in range(max_retries):
         try:
-            result = subprocess.run(f'{cpptraj_binary} -i {sasa_script}', shell=True, cwd=str(cwd),
-                                    capture_output=True, text=True)
+            result = subprocess.run(
+                f'{cpptraj_binary} -i {sasa_script}', 
+                shell=True, cwd=str(cwd),
+                capture_output=True, text=True
+            )
             if expected_output and expected_output.exists():
                 if expected_output.stat().st_size > 0:
                     with open(expected_output, 'r') as f:
                         lines = f.readlines()
-                        data_lines = [l for l in lines if l.strip() and not l.strip().startswith('#')]
+                        data_lines = [
+                            l for l in lines 
+                            if l.strip() and not l.strip().startswith('#')
+                        ]
                         if len(data_lines) > 0:
                             return (sasa_script, True, '')
                         else:
@@ -115,13 +147,32 @@ def _run_sasa_calculation(args: tuple[str],
             error = f'Exception: {e}'
 
         if attempt < max_retries - 1:
-            logger.warning(f'SASA calculation {sasa_script} failed (attempt {attempt+1}/{max_retries})')
+            logger.warning(
+                f'SASA calculation {sasa_script} failed (attempt {attempt+1}/{max_retries})'
+            )
             time.sleep(2 ** attempt)
 
     return (script_path, False, error)
 
+
 @dataclass
 class MMPBSA_settings:
+    """Settings dataclass for MMPBSA calculations.
+
+    Attributes:
+        top: Path to topology file.
+        dcd: Path to trajectory file.
+        selections: List of residue selections for receptor and ligand.
+        first_frame: First frame to analyze.
+        last_frame: Last frame to analyze (-1 for all).
+        stride: Frame stride.
+        n_cpus: Number of parallel processes.
+        out: Output prefix/path.
+        solvent_probe: Probe radius for SASA.
+        offset: SASA offset parameter.
+        gb_surften: GB surface tension parameter.
+        gb_surfoff: GB surface offset parameter.
+    """
     top: PathLike
     dcd: PathLike
     selections: list[str]
@@ -132,69 +183,104 @@ class MMPBSA_settings:
     out: str = 'mmpbsa'
     solvent_probe: float = 1.4
     offset: int = 0
-    gb_surften: float=0.0072
-    gb_surfoff: float=0.
+    gb_surften: float = 0.0072
+    gb_surfoff: float = 0.
+
 
 class MMPBSA(MMPBSA_settings):
-    """
-    This is an experiment in patience. What follows is a reconstruction of the various
-    pieces of code that run MM-P(G)BSA from AMBER but written in a more digestible manner
-    with actual documentation. Herein we have un-CLI'd what should never have been a
-    CLI and piped together the correct pieces of the ambertools ecosystem to perform
-    MM-P(G)BSA and that alone. Your trajectory is required to be concatenated into a single
-    continuous trajectory - or you can run this serially over each by instancing this class
-    for each trajectory you have. In this way we have also disentangled the requirement to
-    parallelize by use of MPI, allowing the user to choose their own parallelization/scaling
-    scheme.
+    """Perform MM-P(G)BSA calculations with parallelization support.
 
-    Arguments:
-        top (PathLike): Input topology for a solvated system. Should match the input trajectory.
-        dcd (PathLike): Input trajectory. Can be DCD format or MDCRD already.
-        selections (list[str]): A list of residue ID selections for the receptor and ligand
-            in that order. Should be formatted for cpptraj (e.g. `:1-10`).
-        first_frame (int): Defaults to 0. The first frame of the input trajectory to begin
-            the calculations on.
-        last_frame (int): Defaults to -1. Optional final frame to cut trajectory at. If -1,
-            acts as a flag to run the whole trajectory.
-        stride (int): Defaults to 1. The number of frames to stride the trajectory by.
-        n_cpus (int): Number of parallel processes
-        out (str): The prefix name or path for output files.
-        solvent_probe (float): Defaults to 1.4Å. The probe radius to use for SA calculations.
-        offset (int): Defaults to 0Å. I don't know what this does.
-        gb_surften (float): Defaults to 0.0072.
-        gb_surfoff (float): Defaults to 0.0.
-        parallel_mode (str): 'frame' for frame-level parallelization (recommended),
-                             'system' for system-level parallelization,
-                             'hybrid' for both (most aggressive)
+    A reconstructed implementation of AMBER's MM-P(G)BSA workflow with
+    improved documentation and parallelization options. Supports both
+    Generalized Born (GB) and Poisson-Boltzmann (PB) solvation methods.
+
+    Attributes:
+        path: Working directory for calculations.
+        fh: FileHandler instance for file management.
+        analyzer: OutputAnalyzer instance for parsing results.
+        free_energy: Final binding free energy after run().
+
+    Args:
+        top: Path to solvated system topology (prmtop).
+        dcd: Path to trajectory file (DCD or MDCRD).
+        selections: List of two residue ID selections for receptor and
+            ligand, formatted for cpptraj (e.g., ':1-10').
+        first_frame: First frame to analyze. Defaults to 0.
+        last_frame: Last frame (-1 for all). Defaults to -1.
+        stride: Frame stride. Defaults to 1.
+        n_cpus: Number of parallel processes. Defaults to 1.
+        out: Output prefix or path. Defaults to 'mmpbsa'.
+        solvent_probe: Probe radius for SASA in Angstroms. Defaults to 1.4.
+        offset: SASA offset. Defaults to 0.
+        gb_surften: GB surface tension. Defaults to 0.0072.
+        gb_surfoff: GB surface offset. Defaults to 0.0.
+        amberhome: Path to AMBERHOME. If None, uses $AMBERHOME env var.
+        parallel_mode: 'frame' for frame-level parallelization (recommended),
+            'serial' for sequential processing.
+        **kwargs: Additional keyword arguments stored as attributes.
+
+    Example:
+        >>> mmpbsa = MMPBSA(
+        ...     'system.prmtop', 
+        ...     'traj.dcd',
+        ...     [':1-100', ':101-150'],
+        ...     n_cpus=4
+        ... )
+        >>> mmpbsa.run()
+        >>> print(mmpbsa.free_energy)
     """
-    def __init__(self,
-                 top: PathLike,
-                 dcd: PathLike,
-                 selections: list[str],
-                 first_frame: int=0,
-                 last_frame: int=-1,
-                 stride: int=1,
-                 n_cpus: int=1,
-                 out: str='mmpbsa',
-                 solvent_probe: float=1.4,
-                 offset: int=0,
-                 gb_surften: float=0.0072,
-                 gb_surfoff: float=0.,
-                 amberhome: Optional[str]=None,
-                 parallel_mode: Literal['frame', 'serial'] = 'frame',
-                 **kwargs):
-        super().__init__(top=top, 
-                         dcd=dcd, 
-                         selections=selections, 
-                         first_frame=first_frame, 
-                         last_frame=last_frame, 
-                         stride=stride, 
-                         n_cpus=n_cpus,
-                         out=out, 
-                         solvent_probe=solvent_probe, 
-                         offset=offset, 
-                         gb_surften=gb_surften, 
-                         gb_surfoff=gb_surfoff)
+
+    def __init__(
+        self,
+        top: PathLike,
+        dcd: PathLike,
+        selections: list[str],
+        first_frame: int = 0,
+        last_frame: int = -1,
+        stride: int = 1,
+        n_cpus: int = 1,
+        out: str = 'mmpbsa',
+        solvent_probe: float = 1.4,
+        offset: int = 0,
+        gb_surften: float = 0.0072,
+        gb_surfoff: float = 0.,
+        amberhome: Optional[str] = None,
+        parallel_mode: Literal['frame', 'serial'] = 'frame',
+        **kwargs
+    ):
+        """Initialize the MMPBSA calculator.
+
+        Args:
+            top: Path to topology file.
+            dcd: Path to trajectory file.
+            selections: Receptor and ligand selections.
+            first_frame: Starting frame.
+            last_frame: Ending frame.
+            stride: Frame stride.
+            n_cpus: Number of CPUs.
+            out: Output path/prefix.
+            solvent_probe: SASA probe radius.
+            offset: SASA offset.
+            gb_surften: GB surface tension.
+            gb_surfoff: GB surface offset.
+            amberhome: AMBER installation path.
+            parallel_mode: Parallelization strategy.
+            **kwargs: Additional attributes.
+        """
+        super().__init__(
+            top=top, 
+            dcd=dcd, 
+            selections=selections, 
+            first_frame=first_frame, 
+            last_frame=last_frame, 
+            stride=stride, 
+            n_cpus=n_cpus,
+            out=out, 
+            solvent_probe=solvent_probe, 
+            offset=offset, 
+            gb_surften=gb_surften, 
+            gb_surfoff=gb_surfoff
+        )
         self.parallel_mode = parallel_mode
         self.top = Path(self.top).resolve()
         self.traj = Path(self.dcd).resolve()
@@ -208,7 +294,7 @@ class MMPBSA(MMPBSA_settings):
 
         self.cpptraj = 'cpptraj'
         self.mmpbsa_py_energy = 'mmpbsa_py_energy'
-        if amberhome is None: # we are overriding AMBERHOME or using another env's install
+        if amberhome is None:
             if 'AMBERHOME' in os.environ:
                 amberhome = os.environ['AMBERHOME']
             else:
@@ -237,22 +323,22 @@ class MMPBSA(MMPBSA_settings):
 
         for key, value in kwargs.items():
             setattr(self, key, value)
-            
 
     def run(self) -> None:
+        """Execute the complete MM-PBSA workflow.
+
+        Runs file preparation, energy calculations, and result analysis
+        using the configured parallelization mode.
         """
-        Main logic of MM-PBSA with parallelization.
-        
-        Depending on parallel_mode:
-        - 'frame': Splits trajectory into chunks, processes in parallel
-        """
-        logger.debug(f'Preparing MM-PBSA calculation with {self.n_cpus} CPUs (mode: {self.parallel_mode})')
+        logger.debug(
+            f'Preparing MM-PBSA calculation with {self.n_cpus} CPUs '
+            f'(mode: {self.parallel_mode})'
+        )
         gb_mdin, pb_mdin = self.write_mdins()
 
         if self.parallel_mode == 'frame':
             self._run_frame_parallel(gb_mdin, pb_mdin)
         else:
-            # Fallback to serial
             self._run_serial(gb_mdin, pb_mdin)
 
         logger.debug('Collating results.')
@@ -261,7 +347,12 @@ class MMPBSA(MMPBSA_settings):
         self.free_energy = self.analyzer.free_energy
 
     def _run_serial(self, gb_mdin: Path, pb_mdin: Path) -> None:
-        """Original serial implementation."""
+        """Run calculations sequentially.
+
+        Args:
+            gb_mdin: Path to GB input file.
+            pb_mdin: Path to PB input file.
+        """
         for (prefix, top, traj, pdb) in self.fh.files:
             logger.debug(f'Computing energy terms for {prefix.name}.')
             self.calculate_sasa(prefix, top, traj)
@@ -269,9 +360,17 @@ class MMPBSA(MMPBSA_settings):
             self.calculate_energy(prefix, top, traj, pdb, pb_mdin, 'pb')
 
     def _run_frame_parallel(self, gb_mdin: Path, pb_mdin: Path) -> None:
-        """
-        Frame-level parallelization: split trajectory into chunks, process in parallel.
-        This provides the best speedup for long trajectories.
+        """Run calculations with frame-level parallelization.
+
+        Splits trajectory into chunks and processes in parallel,
+        providing the best speedup for long trajectories.
+
+        Args:
+            gb_mdin: Path to GB input file.
+            pb_mdin: Path to PB input file.
+
+        Raises:
+            RuntimeError: If any calculations fail.
         """
         # Collect all calculation tasks
         energy_tasks = []
@@ -310,8 +409,6 @@ class MMPBSA(MMPBSA_settings):
                 futures.append(executor.submit(_run_sasa_calculation, task))
 
             logger.debug(f'Submitted {len(futures)} SASA futures, waiting for completion...')
-
-            # Wait for ALL to complete before proceeding
             done, _ = wait(futures, return_when=ALL_COMPLETED)
 
             for future in done:
@@ -337,8 +434,6 @@ class MMPBSA(MMPBSA_settings):
                 futures.append(executor.submit(_run_energy_calculation, task))
 
             logger.debug(f'Submitted {len(futures)} Energy futures, waiting for completion...')
-
-            # Wait for ALL to complete before proceeding
             done, _ = wait(futures, return_when=ALL_COMPLETED)
 
             for future in done:
@@ -354,12 +449,26 @@ class MMPBSA(MMPBSA_settings):
 
         # Combine Energy results
         self._combine_energy_chunks()
-
         self._verify_combined_outputs()
 
-    def _write_sasa_script(self, prefix: Path, prm: Path, trj: Path, 
-                          chunk_idx: int = 0) -> Path:
-        """Write a SASA calculation script for a trajectory chunk."""
+    def _write_sasa_script(
+        self, 
+        prefix: Path, 
+        prm: Path, 
+        trj: Path, 
+        chunk_idx: int = 0
+    ) -> Path:
+        """Write a SASA calculation script for a trajectory chunk.
+
+        Args:
+            prefix: Output prefix path.
+            prm: Path to topology file.
+            trj: Path to trajectory chunk.
+            chunk_idx: Index of this chunk.
+
+        Returns:
+            Path to the generated script file.
+        """
         sasa = self.path / f'sasa_{prefix.name}_chunk{chunk_idx}.in'
         out_file = f'{prefix.name}_chunk{chunk_idx}_surf.dat'
         sasa_in = [
@@ -373,40 +482,34 @@ class MMPBSA(MMPBSA_settings):
         return sasa
 
     def _combine_sasa_chunks(self) -> None:
-        """Combine SASA results from all chunks into single files (in correct frame order)."""
+        """Combine SASA results from all chunks in correct frame order."""
         def extract_chunk_idx(filepath: Path) -> int:
-            """Extract chunk index from filename for proper numerical sorting."""
             match = re.search(r'_chunk(\d+)_', filepath.name)
             return int(match.group(1)) if match else 0
         
         for system in ['complex', 'receptor', 'ligand']:
             combined_data = []
             chunk_files = list(self.path.glob(f'{system}_chunk*_surf.dat'))
-            # Sort numerically by chunk index, not lexicographically
             chunk_files.sort(key=extract_chunk_idx)
             
             for chunk_file in chunk_files:
                 with open(chunk_file) as f:
                     lines = f.readlines()
                     if combined_data:
-                        # Skip header for subsequent chunks
                         combined_data.extend(lines[1:])
                     else:
                         combined_data.extend(lines)
             
-            # Write combined file
             output = self.path / f'{system}_surf.dat'
             with open(output, 'w') as f:
                 f.writelines(combined_data)
             
-            # Clean up chunk files
             for chunk_file in chunk_files:
                 chunk_file.unlink()
 
     def _combine_energy_chunks(self) -> None:
-        """Combine energy results from all chunks into single files (in correct frame order)."""
+        """Combine energy results from all chunks in correct frame order."""
         def extract_chunk_idx(filepath: Path) -> int:
-            """Extract chunk index from filename for proper numerical sorting."""
             match = re.search(r'_chunk(\d+)_', filepath.name)
             return int(match.group(1)) if match else 0
         
@@ -414,7 +517,6 @@ class MMPBSA(MMPBSA_settings):
             for level in ['gb', 'pb']:
                 combined_data = []
                 chunk_files = list(self.path.glob(f'{system}_chunk*_{level}.mdout'))
-                # Sort numerically by chunk index, not lexicographically
                 chunk_files.sort(key=extract_chunk_idx)
                 
                 for chunk_file in chunk_files:
@@ -422,29 +524,25 @@ class MMPBSA(MMPBSA_settings):
                         content = f.read()
                         combined_data.append(content)
                 
-                # Write combined file (mdout format allows concatenation of frame data)
                 output = self.path / f'{system}_{level}.mdout'
                 with open(output, 'w') as f:
                     f.write('\n'.join(combined_data))
                 
-                # Clean up chunk files
                 for chunk_file in chunk_files:
                     chunk_file.unlink()
 
-    def calculate_sasa(self,
-                       pre: str,
-                       prm: PathLike,
-                       trj: PathLike) -> None:
-        """
-        Runs the molsurf command in cpptraj to compute the SASA of a given system.
+    def calculate_sasa(
+        self,
+        pre: str,
+        prm: PathLike,
+        trj: PathLike
+    ) -> None:
+        """Calculate SASA using cpptraj's molsurf command.
 
-        Arguments:
-            pre (str): Prefix for output SASA file.
-            prm (PathLike): Path to prmtop file.
-            trj (PathLike): Path to CRD trajectory file.
-
-        Returns:
-            None
+        Args:
+            pre: Prefix for output SASA file.
+            prm: Path to prmtop file.
+            trj: Path to CRD trajectory file.
         """
         sasa = self.fh.path / 'sasa.in'
         sasa_in = [
@@ -457,45 +555,51 @@ class MMPBSA(MMPBSA_settings):
         
         self.fh.write_file(sasa_in, sasa)
 
-        subprocess.run(f'{self.cpptraj} -i {sasa}', shell=True, cwd=str(self.path),
-                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(
+            f'{self.cpptraj} -i {sasa}', 
+            shell=True, 
+            cwd=str(self.path),
+            stdout=subprocess.DEVNULL, 
+            stderr=subprocess.DEVNULL
+        )
         sasa.unlink()
     
-    def calculate_energy(self,
-                         pre: str,
-                         prm: PathLike,
-                         trj: PathLike,
-                         pdb: PathLike, 
-                         mdin: PathLike,
-                         suf: str) -> None:
-        """
-        Runs mmpbsa_py_energy, an undocumented binary file which somehow mysteriously 
-        computes the energy of a system. This software is not only undocumented but is
-        a binary which we cannot inspect ourselves.
-        
-        Arguments:
-            pre (str): Prefix for output file.
-            prm (PathLike): Path to prmtop file.
-            trj (PathLike): Path to CRD trajectory file.
-            pdb (PathLike): Path to PDB file.
-            mdin (PathLike): Configuration file for the program.
-            suf (str): Suffix for output file.
+    def calculate_energy(
+        self,
+        pre: str,
+        prm: PathLike,
+        trj: PathLike,
+        pdb: PathLike, 
+        mdin: PathLike,
+        suf: str
+    ) -> None:
+        """Run mmpbsa_py_energy to compute system energy.
 
-        Returns:
-            None
+        Args:
+            pre: Prefix for output file.
+            prm: Path to prmtop file.
+            trj: Path to CRD trajectory file.
+            pdb: Path to PDB file.
+            mdin: Path to configuration file.
+            suf: Suffix for output file ('gb' or 'pb').
         """
-        cmd = f'{self.mmpbsa_py_energy} -O -i {mdin} -p {prm} -c {pdb} -y {trj} -o {pre}_{suf}.mdout'
-        subprocess.run(cmd, shell=True, cwd=str(self.path), 
-                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        cmd = (
+            f'{self.mmpbsa_py_energy} -O -i {mdin} -p {prm} '
+            f'-c {pdb} -y {trj} -o {pre}_{suf}.mdout'
+        )
+        subprocess.run(
+            cmd, 
+            shell=True, 
+            cwd=str(self.path), 
+            stdout=subprocess.DEVNULL, 
+            stderr=subprocess.DEVNULL
+        )
     
     def write_mdins(self) -> tuple[Path, Path]:
-        """
-        Writes out the configuration files that are to be fed to mmpbsa_py_energy.
-        These are also undocumented and I took the parameters from the location
-        in which they are hardcoded in ambertools.
+        """Write configuration files for mmpbsa_py_energy.
 
         Returns:
-            (tuple[Path, Path]): Tuple of paths to the GB mdin and the PB mdin.
+            Tuple of (gb_mdin_path, pb_mdin_path).
         """
         gb = self.fh.path / 'gb_mdin'
         gb_mdin = [
@@ -506,7 +610,6 @@ class MMPBSA(MMPBSA_settings):
             f'surften = {self.gb_surften}',
             'rgbmax = 25.0'
         ]
-
         self.fh.write_file(gb_mdin, gb)
 
         pb = self.fh.path / 'pb_mdin'
@@ -535,33 +638,35 @@ class MMPBSA(MMPBSA_settings):
             'cavity_surften = 0.0378',
             'cavity_offset = -0.5692'
         ]
-
         self.fh.write_file(pb_mdin, pb)
 
         return gb, pb
 
     def _verify_combined_outputs(self) -> None:
-        """Verify all required output files exist and have valid content.
-        Raises RuntimeError if any files are missing or invalid"""
+        """Verify all required output files exist with valid content.
+
+        Raises:
+            RuntimeError: If any files are missing or invalid.
+        """
         missing_files = []
         empty_files = []
         invalid_files = []
         
         for system in ['complex', 'receptor', 'ligand']:
-            # Check SASA file
             sasa_file = self.path / f'{system}_surf.dat'
             if not sasa_file.exists():
                 missing_files.append(str(sasa_file))
             elif sasa_file.stat().st_size == 0:
                 empty_files.append(str(sasa_file))
             else:
-                # Verify it has data lines
                 with open(sasa_file) as f:
-                    data_lines = [l for l in f if l.strip() and not l.strip().startswith('#')]
+                    data_lines = [
+                        l for l in f 
+                        if l.strip() and not l.strip().startswith('#')
+                    ]
                     if len(data_lines) == 0:
                         invalid_files.append(f'{sasa_file} (no data lines)')
             
-            # Check energy files
             for level in ['gb', 'pb']:
                 energy_file = self.path / f'{system}_{level}.mdout'
                 if not energy_file.exists():
@@ -569,7 +674,6 @@ class MMPBSA(MMPBSA_settings):
                 elif energy_file.stat().st_size == 0:
                     empty_files.append(str(energy_file))
                 else:
-                    # Verify it has BOND lines (energy data)
                     with open(energy_file) as f:
                         content = f.read()
                         if ' BOND' not in content:
@@ -588,16 +692,44 @@ class MMPBSA(MMPBSA_settings):
 
 
 class OutputAnalyzer:
+    """Analyze and summarize MM-PBSA output files.
+
+    Parses energy output files and computes binding free energies
+    for both GB and PB solvation methods.
+
+    Attributes:
+        path: Working directory path.
+        surften: Surface tension parameter.
+        offset: SASA offset parameter.
+        free_energy: Final [mean, std] after parse_outputs().
+        gb: Polars DataFrame of GB results.
+        pb: Polars DataFrame of PB results.
+
+    Args:
+        path: Path to output directory.
+        surface_tension: GB surface tension. Defaults to 0.0072.
+        sasa_offset: SASA offset. Defaults to 0.0.
+        _tolerance: Tolerance for sanity checks. Defaults to 0.005.
+        log: Whether to log results. Defaults to True.
     """
-    Analyzes the outputs from an MM-PBSA run. Stores data in a Polars dataframe
-    internally, and writes out data in the form of json/plain text.
-    """
-    def __init__(self, 
-                 path: PathLike,
-                 surface_tension: float=0.0072,
-                 sasa_offset: float=0.,
-                 _tolerance: float = 0.005,
-                 log: bool=True):
+
+    def __init__(
+        self, 
+        path: PathLike,
+        surface_tension: float = 0.0072,
+        sasa_offset: float = 0.,
+        _tolerance: float = 0.005,
+        log: bool = True
+    ):
+        """Initialize the OutputAnalyzer.
+
+        Args:
+            path: Output directory path.
+            surface_tension: GB surface tension.
+            sasa_offset: SASA offset.
+            _tolerance: Sanity check tolerance.
+            log: Whether to log results.
+        """
         self.path = Path(path)
         self.surften = surface_tension
         self.offset = sasa_offset
@@ -612,12 +744,7 @@ class OutputAnalyzer:
         self.solvent_contributions = ['EGB', 'ESURF', 'EPB', 'ECAVITY']
 
     def parse_outputs(self) -> None:
-        """
-        Parse all the output files.
-
-        Returns:
-            None
-        """        
+        """Parse all output files and compute binding free energies."""
         self.gb = pl.DataFrame()
         self.pb = pl.DataFrame()
 
@@ -633,84 +760,88 @@ class OutputAnalyzer:
 
         all_cols = list(set(self.gb.columns + self.pb.columns))
         self.contributions = {
-                'G gas': [col for col in all_cols
-                          if col not in self.solvent_contributions], 
-                'G solv': [col for col in all_cols
-                          if col in self.solvent_contributions]
-            }
+            'G gas': [
+                col for col in all_cols
+                if col not in self.solvent_contributions
+            ], 
+            'G solv': [
+                col for col in all_cols
+                if col in self.solvent_contributions
+            ]
+        }
         
         self.check_bonded_terms()
         self.generate_summary()
         self.compute_dG()
 
-    def read_sasa(self,
-                  _file: PathLike) -> np.ndarray:
-        """
-        Reads in the results of the cpptraj SASA calculation and returns the
-        per-frame SASA scaled by a hardcoded value for surface tension that is
-        a mostly undocumented heuristic.
+    def read_sasa(self, _file: PathLike) -> np.ndarray:
+        """Read cpptraj SASA calculation results.
 
-        Arguments:
-            _file (PathLike): Path to a file containing the SASA data.
+        Args:
+            _file: Path to SASA data file.
 
         Returns:
-            (np.ndarray): A numpy array of the per-frame rescaled SASA energies.
+            Polars Series of rescaled SASA energies.
         """
-        df = pd.read_csv(_file, sep='\s+') # read in dataframe
+        df = pd.read_csv(_file, sep=r'\s+')
         sasa = df.iloc[:, -1].to_numpy(dtype=float) * self.surften + self.offset
-
         return pl.Series('ESURF', sasa)
 
-    def read_GB(self,
-                _file: PathLike,
-                system: str) -> pl.DataFrame:
-        """
-        Read in the GB mdout files and returns a Polars dataframe of the values
-        for each term for every frame. Also adds a `system` label to more easily
-        compute summary statistics later.
+    def read_GB(self, _file: PathLike, system: str) -> pl.DataFrame:
+        """Read GB mdout file and parse energy terms.
 
-        Arguments:
-            _file (PathLike): Energy data file path.
-            system (str): String label for which system we are processing (e.g. complex).
+        Args:
+            _file: Path to GB energy file.
+            system: System label ('complex', 'receptor', or 'ligand').
 
         Returns:
-            (pl.DataFrame): Polars dataframe containing the parsed energy data.
+            Polars DataFrame of parsed energy data.
         """
-        gb_terms = ['BOND', 'ANGLE', 'DIHED', 'VDWAALS', 'EEL',
-                    'EGB', '1-4 VDW', '1-4 EEL', 'RESTRAINT', 'ESURF']
+        gb_terms = [
+            'BOND', 'ANGLE', 'DIHED', 'VDWAALS', 'EEL',
+            'EGB', '1-4 VDW', '1-4 EEL', 'RESTRAINT', 'ESURF'
+        ]
         data = {gb_term: [] for gb_term in gb_terms}
 
         lines = open(_file, 'r').readlines()
-
         return self.parse_energy_file(lines, data, system)
 
-    def read_PB(self,
-                _file: PathLike,
-                system: str) -> pl.DataFrame:
-        """
-        Read in the PB mdout files and returns a Polars dataframe of the values
-        for each term for every frame. Also adds a `system` label to more easily
-        compute summary statistics later.
+    def read_PB(self, _file: PathLike, system: str) -> pl.DataFrame:
+        """Read PB mdout file and parse energy terms.
 
-        Arguments:
-            _file (PathLike): Energy data file path.
-            system (str): String label for which system we are processing (e.g. complex).
+        Args:
+            _file: Path to PB energy file.
+            system: System label ('complex', 'receptor', or 'ligand').
 
         Returns:
-            (pl.DataFrame): Polars dataframe containing the parsed energy data.
+            Polars DataFrame of parsed energy data.
         """
-        pb_terms = ['BOND', 'ANGLE', 'DIHED', 'VDWAALS', 'EEL',
-                    'EPB', '1-4 VDW', '1-4 EEL', 'RESTRAINT',
-                    'ECAVITY', 'EDISPER']
+        pb_terms = [
+            'BOND', 'ANGLE', 'DIHED', 'VDWAALS', 'EEL',
+            'EPB', '1-4 VDW', '1-4 EEL', 'RESTRAINT',
+            'ECAVITY', 'EDISPER'
+        ]
         data = {pb_term: [] for pb_term in pb_terms}
 
         lines = open(_file, 'r').readlines()
-
         return self.parse_energy_file(lines, data, system)
     
-    def parse_energy_file(self, file_contents: list[str],
-                         data: dict[str, list], system: str) -> pl.DataFrame:
-        """Parse energy file contents."""
+    def parse_energy_file(
+        self, 
+        file_contents: list[str],
+        data: dict[str, list], 
+        system: str
+    ) -> pl.DataFrame:
+        """Parse energy file contents.
+
+        Args:
+            file_contents: Lines from the energy file.
+            data: Dictionary to populate with energy values.
+            system: System label.
+
+        Returns:
+            Polars DataFrame of energy data.
+        """
         for line in file_contents:
             if '=' in line and any(key in line for key in data.keys()):
                 parsed = self.parse_line(line)
@@ -722,56 +853,11 @@ class OutputAnalyzer:
         df = df.with_columns(pl.lit(system).alias('system'))
         return df
 
-    def parse_energy_file_OLD(self,
-                          file_contents: list[str],
-                          data: dict[str, list],
-                          system: str) -> pl.DataFrame:
-        """
-        Parses the contents of an energy calculation using a dictionary of
-        energy terms to extract theory-level observables (e.g. EGB vs EPB).
-
-        Arguments:
-            file_contents (list[str]): A list of each line from an energy calculation.
-            data (dict[str, list]): The relevant energy terms to be scraped from input.
-            system (str): The name of the system which will be included as an additional
-                kv pair in the returned dataframe. This ensures we can track which portion
-                of the calculation we are accounting for (e.g. complex, receptor, ligand).
-        Returns:
-            (pl.DataFrame): A Polars dataframe of shape (n_frames, n_calculations + system).
-        """
-        idx = 0
-        n_frames = 0
-        while idx < len(file_contents):
-            if file_contents[idx].startswith(' BOND'):
-                for _ in range(4): # number of lines to read. DO NOT CHANGE!!!
-                    line = file_contents[idx]
-                    parsed = self.parse_line(line)
-                    for key, val in parsed:
-                        data[key].append(val)
-
-                    idx += 1
-
-            if 'Processing frame' in file_contents[idx]:
-                n_frames = int(file_contents[idx].strip().split()[-1])
-
-            idx +=1 
-
-        data['system'] = [system] * n_frames
-        
-        return pl.DataFrame(
-            {key: np.array(val) for key, val in data.items()}
-        )
-
     def check_bonded_terms(self) -> None:
-        """
-        Performs a sanity check on the bonded terms which should perfectly cancel out
-        (e.g. complex = receptor + ligand). If this is not the case something horrible
-        has happened and we can't trust the non-bonded energies either. Additionally
-        sets a few terms we will need later such as the number of frames as given by
-        the dataframe height and sqrt(n_frames).
+        """Verify bonded terms cancel correctly between systems.
 
-        Returns:
-            None
+        Raises:
+            ValueError: If bonded terms don't cancel.
         """
         bonded = ['BOND', 'ANGLE', 'DIHED', '1-4 VDW', '1-4 EEL']
         
@@ -800,13 +886,7 @@ class OutputAnalyzer:
         self.square_root_N = np.sqrt(self.n_frames)
 
     def generate_summary(self) -> None:
-        """
-        Summarizes all processed energy data into a single polars dataframe
-        and dumps it to a json file.
-
-        Returns:
-            None
-        """
+        """Generate and save summary statistics to JSON file."""
         full_statistics = {sys: {} for sys in self.systems}
         for theory, level in zip([self.gb, self.pb], self.levels):
             for system in self.systems:
@@ -817,23 +897,29 @@ class OutputAnalyzer:
                     mean = sys.select(pl.mean(col)).item()
                     stdev = sys.select(pl.std(col)).item()
                     
-                    stats[col] = {'mean': mean, 
-                                  'std': stdev, 
-                                  'err': stdev / self.square_root_N}
+                    stats[col] = {
+                        'mean': mean, 
+                        'std': stdev, 
+                        'err': stdev / self.square_root_N
+                    }
 
                 for energy, contributors in self.contributions.items():
                     pooled_data = sys.select(
                         pl.col([col for col in sys.columns if col in contributors])
                     ).to_numpy().flatten()
 
-                    stats[energy] = {'mean': np.mean(pooled_data),
-                                     'std': np.std(pooled_data),
-                                     'err': np.std(pooled_data) / self.square_root_N}
+                    stats[energy] = {
+                        'mean': np.mean(pooled_data),
+                        'std': np.std(pooled_data),
+                        'err': np.std(pooled_data) / self.square_root_N
+                    }
 
                 total_data = sys.to_numpy().flatten()
-                stats['total'] = {'mean': np.mean(total_data),
-                                  'std': np.std(total_data),
-                                  'err': np.std(total_data) / self.square_root_N}
+                stats['total'] = {
+                    'mean': np.mean(total_data),
+                    'std': np.std(total_data),
+                    'err': np.std(total_data) / self.square_root_N
+                }
 
                 full_statistics[system][level] = stats
         
@@ -841,14 +927,7 @@ class OutputAnalyzer:
             json.dump(full_statistics, fout, indent=4)
 
     def compute_dG(self) -> None:
-        """
-        For each energy dataframe (GB/PB) compute the ∆G of binding by subtracting out
-        relevant contributions in accordance with how this is done under the hood of the
-        MMPBSA code.
-
-        Returns:
-            None
-        """
+        """Compute binding free energy (ΔG) for GB and PB methods."""
         differences = []
         for theory, level in zip([self.gb, self.pb], self.levels):
             diff_cols = [col for col in theory.columns if col != 'system']
@@ -862,8 +941,10 @@ class OutputAnalyzer:
 
             gas_solv_phase = []
             for energy, contributors in self.contributions.items():
-                indices = [i for i, diff_col in enumerate(diff_cols) 
-                           if diff_col in contributors]
+                indices = [
+                    i for i, diff_col in enumerate(diff_cols) 
+                    if diff_col in contributors
+                ]
                 contribution = np.sum(diff_arr[:, indices], axis=1)
                 gas_solv_phase.append(contribution)
 
@@ -882,23 +963,16 @@ class OutputAnalyzer:
             data = np.vstack((means, stds, errs))
             
             differences.append(pl.DataFrame(
-                {diff_cols[i]: data[:,i] for i in range(len(diff_cols))}
+                {diff_cols[i]: data[:, i] for i in range(len(diff_cols))}
             ))
         
         self.pretty_print(differences)
 
-    def pretty_print(self,
-                     dfs: list[pl.DataFrame]) -> None:
-        """
-        Ingests a list of Polars dataframes for GB and PB and prints their contents
-        in a human-readable form to STDIN. Also saves out the energies to a plain
-        text file called `deltaG.txt`.
+    def pretty_print(self, dfs: list[pl.DataFrame]) -> None:
+        """Print and save formatted energy results.
 
-        Arguments:
-            dfs (list[pl.DataFrame]): List of dataframes for GB and PB.
-
-        Returns:
-            None
+        Args:
+            dfs: List of DataFrames for GB and PB results.
         """
         print_statement = []
         log_statement = []
@@ -940,12 +1014,13 @@ class OutputAnalyzer:
 
     @staticmethod
     def parse_line(line) -> tuple[list[str], list[float]]:
-        """
-        Parses a line from mmpbsa_energy to get the various energy terms and values.
+        """Parse an energy line from mmpbsa_energy output.
+
+        Args:
+            line: Line from the energy output file.
 
         Returns:
-            (tuple[list[str], list[float]]): A tuple containing the list of energy
-                term names and corresponding energy values.
+            Zip iterator of (term_names, values).
         """
         eq_split = line.split('=')
         
@@ -966,21 +1041,57 @@ class OutputAnalyzer:
 
 
 class FileHandler:
+    """Handle file preprocessing for MM-PBSA calculations.
+
+    Manages trajectory conversion, topology slicing, and file organization.
+
+    Attributes:
+        top: Path to topology file.
+        traj: Path to trajectory file.
+        path: Working directory.
+        selections: Receptor and ligand selections.
+        topologies: List of generated topology paths.
+        trajectories: List of generated trajectory paths.
+        pdbs: List of generated PDB paths.
+        trajectory_chunks: Dictionary of chunked trajectories.
+
+    Args:
+        top: Path to topology file.
+        traj: Path to trajectory file.
+        path: Working directory.
+        sels: Residue selections.
+        first: First frame.
+        last: Last frame.
+        stride: Frame stride.
+        cpptraj_binary: Path to cpptraj executable.
+        n_chunks: Number of trajectory chunks.
     """
-    Performs preprocessing for MM-PBSA runs and manages the pathing to all file
-    inputs. Additionally used to write out various cpptraj input files by the
-    MMPBSA class.
-    """
-    def __init__(self,
-                 top: Path,
-                 traj: Path,
-                 path: Path,
-                 sels: list[str],
-                 first: int,
-                 last: int,
-                 stride: int,
-                 cpptraj_binary: PathLike,
-                 n_chunks: int=1):
+
+    def __init__(
+        self,
+        top: Path,
+        traj: Path,
+        path: Path,
+        sels: list[str],
+        first: int,
+        last: int,
+        stride: int,
+        cpptraj_binary: PathLike,
+        n_chunks: int = 1
+    ):
+        """Initialize the FileHandler.
+
+        Args:
+            top: Topology file path.
+            traj: Trajectory file path.
+            path: Working directory.
+            sels: Selections list.
+            first: First frame.
+            last: Last frame.
+            stride: Frame stride.
+            cpptraj_binary: cpptraj path.
+            n_chunks: Number of chunks.
+        """
         self.top = top
         self.traj = traj
         self.path = path
@@ -1000,18 +1111,14 @@ class FileHandler:
             self._count_frames()
             self._split_trajectories()
         else:
-            for system, traj in zip(['complex', 'receptor', 'ligand'], self.trajectories):
+            for system, traj in zip(
+                ['complex', 'receptor', 'ligand'], 
+                self.trajectories
+            ):
                 self.trajectory_chunks[system] = [traj]
 
     def prepare_topologies(self) -> None:
-        """
-        Slices out each sub-topology for the desolvated complex, receptor and
-        ligand using cpptraj due to the difficulty of working with AMBER FF
-        files otherwise (including PARMED).
-
-        Returns:
-            None
-        """
+        """Slice sub-topologies for complex, receptor, and ligand."""
         self.topologies = [
             self.path / 'complex.prmtop',
             self.path / 'receptor.prmtop',
@@ -1037,28 +1144,25 @@ class FileHandler:
             'quit'
         ]
         
-        script = self.path  / 'cpptraj.in'
+        script = self.path / 'cpptraj.in'
         self.write_file('\n'.join(cpptraj_in), script)
-        subprocess.call(f'{self.cpptraj} -i {script}', shell=True, cwd=str(self.path),
-                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.call(
+            f'{self.cpptraj} -i {script}', 
+            shell=True, 
+            cwd=str(self.path),
+            stdout=subprocess.DEVNULL, 
+            stderr=subprocess.DEVNULL
+        )
         script.unlink()
         
     def prepare_trajectories(self) -> None:
-        """
-        Converts DCD trajectory to AMBER CRD format which is explicitly
-        required by MM-G(P)BSA.
-
-        Returns:
-            None
-        """
+        """Convert DCD trajectory to AMBER CRD format."""
         self.trajectories = [path.with_suffix('.crd') for path in self.topologies]
         self.pdbs = [path.with_suffix('.pdb') for path in self.topologies]
         
         frame_control = f'start {self.ff}'
-
         if self.lf > -1:
             frame_control += f' stop {self.lf}'
-        
         frame_control += f' offset {self.stride}'
         
         cpptraj_in = [
@@ -1099,16 +1203,18 @@ class FileHandler:
 
         name = self.path / 'mdcrd.in'
         self.write_file('\n'.join(cpptraj_in), name)
-        subprocess.call(f'{self.cpptraj} -i {name}', shell=True, cwd=str(self.path),
-                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
+        subprocess.call(
+            f'{self.cpptraj} -i {name}', 
+            shell=True, 
+            cwd=str(self.path),
+            stdout=subprocess.DEVNULL, 
+            stderr=subprocess.DEVNULL
+        )
         name.unlink()
 
     def _count_frames(self) -> None:
-        """Count the total number of frames in the processed trajectory."""
-        # Use cpptraj to count frames
+        """Count total frames in the processed trajectory."""
         count_script = self.path / 'count_frames.in'
-        count_out = self.path / 'frame_count.dat'
 
         script_content = [
             f'parm {self.topologies[0]}',
@@ -1125,7 +1231,6 @@ class FileHandler:
             capture_output=True, text=True
         )
 
-        # Parse frame count from cpptraj output
         for line in result.stdout.split('\n'):
             if 'frames' in line.lower() and 'total' in line.lower():
                 parts = line.split()
@@ -1134,16 +1239,14 @@ class FileHandler:
                         self.total_frames = int(part)
                         break
 
-        # Fallback: count lines in trajectory (for ASCII formats) or use file size heuristic
         if not hasattr(self, 'total_frames'):
-            # Try to infer from first trajectory file
             self.total_frames = self._estimate_frames()
 
         count_script.unlink(missing_ok=True)
         logger.debug(f'Total frames in trajectory: {self.total_frames}')
 
     def _estimate_frames(self) -> int:
-        """Estimate frame count by running a quick cpptraj analysis."""
+        """Estimate frame count by running cpptraj analysis."""
         script = self.path / 'estimate_frames.in'
         script_content = [
             f'parm {self.topologies[0]}',
@@ -1161,23 +1264,21 @@ class FileHandler:
 
         script.unlink(missing_ok=True)
 
-        # Parse output for frame count
         for line in result.stdout.split('\n'):
             if 'frames' in line.lower():
                 for word in line.split():
                     if word.isdigit():
                         return int(word)
 
-        # Default fallback
         return 100
 
     def _split_trajectories(self) -> None:
         """Split trajectories into chunks for parallel processing."""
-        actual_chunks = min(self.n_chunks, self.total_frames) # in case we have fewer frames than resources
+        actual_chunks = min(self.n_chunks, self.total_frames)
 
         if actual_chunks < self.n_chunks:
             logger.warning(
-                f'Requested {self.n_chunks} chunks but only {self.total_frames} frames.'
+                f'Requested {self.n_chunks} chunks but only {self.total_frames} frames. '
                 f'Using {actual_chunks} chunks (some CPUs will be idle)'
             )
 
@@ -1190,17 +1291,15 @@ class FileHandler:
             ['complex', 'receptor', 'ligand']
         )):
             for chunk_idx in range(actual_chunks):
-                start_frame = chunk_idx * frames_per_chunk + 1  # cpptraj is 1-indexed
+                start_frame = chunk_idx * frames_per_chunk + 1
 
                 if chunk_idx == actual_chunks - 1:
-                    # Last chunk gets remaining frames
                     end_frame = self.total_frames
                 else:
                     end_frame = (chunk_idx + 1) * frames_per_chunk
 
                 chunk_traj = self.path / f'{system}_chunk{chunk_idx}.crd'
 
-                # Create chunk trajectory
                 split_script = self.path / f'split_{system}_{chunk_idx}.in'
                 script_content = [
                     f'parm {top}',
@@ -1220,24 +1319,28 @@ class FileHandler:
                 split_script.unlink()
                 self.trajectory_chunks[system].append(chunk_traj)
 
-        logger.debug(f'Split trajectories into {actual_chunks} chunks of ~{frames_per_chunk} frames each.')
+        logger.debug(
+            f'Split trajectories into {actual_chunks} chunks '
+            f'of ~{frames_per_chunk} frames each.'
+        )
 
     @property
     def files(self) -> tuple[list[str]]:
-        """
-        Returns a zip generator containing the output paths, topologies,
-        trajectories and pdbs for each system. This is done to ensure we
-        have the correct order for housekeeping reasons.
+        """Get file paths for each system.
 
         Returns:
-            (tuple[list[str]]): System order, topologies, trajectories and pdbs.
+            Zip of (prefix, topology, trajectory, pdb) for each system.
         """
         _order = [self.path / prefix for prefix in ['complex', 'receptor', 'ligand']]
         return zip(_order, self.topologies, self.trajectories, self.pdbs)
 
     @property
     def files_chunked(self) -> list[tuple]:
-        """Returns file info with chunked trajectories for parallel processing."""
+        """Get file paths with chunked trajectories.
+
+        Returns:
+            List of (prefix, topology, trajectory_chunks, pdb) tuples.
+        """
         result = []
         for system, top, pdb in zip(
             ['complex', 'receptor', 'ligand'],
@@ -1251,18 +1354,12 @@ class FileHandler:
         return result
 
     @staticmethod
-    def write_file(lines: list[str],
-                   filepath: PathLike) -> None:
-        """
-        Given an input of either a list of strings or a single string,
-        write input to file. If a list, join by newline characters.
+    def write_file(lines: list[str], filepath: PathLike) -> None:
+        """Write lines to a file.
 
-        Arguments:
-            lines (list[str]): Input to be written to file.
-            filepath (PathLike): Path to the file to be written.
-
-        Returns:
-            None
+        Args:
+            lines: Input lines (list or string).
+            filepath: Output file path.
         """
         if isinstance(lines, list):
             lines = '\n'.join(lines)

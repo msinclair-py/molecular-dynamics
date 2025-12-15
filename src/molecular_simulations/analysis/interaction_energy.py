@@ -1,3 +1,10 @@
+"""Interaction energy calculation module.
+
+This module provides tools for computing linear interaction energies
+between specified chains and other simulation components using OpenMM.
+Supports both static models and dynamic trajectory analysis.
+"""
+
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from openmm import *
@@ -17,45 +24,92 @@ from typing import Dict, List, Tuple, Union
 
 PathLike = Union[Path, str]
 
+
 class InteractionEnergy(ABC):
+    """Abstract base class for interaction energy calculations.
+
+    Defines the interface for all interaction energy calculation classes.
+    """
+
     def __init__(self):
+        """Initialize the InteractionEnergy base class."""
         pass
 
     @abstractmethod
     def compute(self):
+        """Compute the interaction energy.
+
+        Must be implemented by subclasses.
+        """
         pass
 
     @abstractmethod
     def energy(self):
+        """Get the computed energy.
+
+        Must be implemented by subclasses.
+        """
         pass
 
     @abstractmethod
     def get_selection(self):
+        """Get the atom selection for energy calculation.
+
+        Must be implemented by subclasses.
+        """
         pass
 
-class StaticInteractionEnergy(InteractionEnergy):
-    """
-    Computes the linear interaction energy between specified chain and other simulation
-    components. Can specify a range of residues in chain to limit calculation to. Works on
-    a static model but can be adapted to run on dynamics data.
 
-    Inputs:
-        pdb (str): Path to input PDB file
-        chain (str): Defaults to A. The chain for which to compute the energy between.
-            Computes energy between this chain and all other components in PDB file.
-            Set to a whitespace if there are no chains in your PDB.
-        platform (str): Defaults to CUDA. Supports running on GPU for speed.
-        first_residue (int | None): Defaults to None. If set, will restrict the 
-            calculation to residues beginning with resid `first_residue`.
-        last_residue (int | None): Defaults to None. If set, will restrict the 
-            calculation to residues ending with resid `last_residue`.
+class StaticInteractionEnergy(InteractionEnergy):
+    """Compute linear interaction energy for a static model.
+
+    Computes the linear interaction energy between a specified chain and
+    other simulation components. Can specify a range of residues to limit
+    the calculation. Works on a static model but can be adapted for
+    trajectory data.
+
+    Attributes:
+        pdb: Path to the input PDB file.
+        chain: Chain identifier for interaction calculations.
+        platform: OpenMM platform for computation.
+        lj: Lennard-Jones energy after compute().
+        coulomb: Coulombic energy after compute().
+        selection: Atom indices for the selected chain.
+
+    Args:
+        pdb: Path to input PDB file.
+        chain: Chain identifier for energy calculation. Computes energy
+            between this chain and all other components. Use whitespace
+            if there are no chains. Defaults to 'A'.
+        platform: OpenMM platform name. Defaults to 'CUDA'.
+        first_residue: If set, restricts calculation to residues starting
+            from this resid. Defaults to None.
+        last_residue: If set, restricts calculation to residues ending
+            at this resid. Defaults to None.
+
+    Example:
+        >>> ie = StaticInteractionEnergy('complex.pdb', chain='B')
+        >>> ie.compute()
+        >>> print(f"LJ: {ie.lj}, Coulomb: {ie.coulomb}")
     """
-    def __init__(self, 
-                 pdb: str, 
-                 chain: str='A', 
-                 platform: str='CUDA',
-                 first_residue: Union[int, None]=None, 
-                 last_residue: Union[int, None]=None):
+
+    def __init__(
+        self, 
+        pdb: str, 
+        chain: str = 'A', 
+        platform: str = 'CUDA',
+        first_residue: Union[int, None] = None, 
+        last_residue: Union[int, None] = None
+    ):
+        """Initialize the StaticInteractionEnergy calculator.
+
+        Args:
+            pdb: Path to input PDB file.
+            chain: Chain identifier for calculation.
+            platform: OpenMM platform name.
+            first_residue: Starting residue for calculation.
+            last_residue: Ending residue for calculation.
+        """
         self.pdb = pdb
         self.chain = chain
         self.platform = Platform.getPlatformByName(platform)
@@ -63,43 +117,45 @@ class StaticInteractionEnergy(InteractionEnergy):
         self.last = last_residue
         
     def get_system(self) -> System:
-        """
-        Builds implicit solvent OpenMM system.
+        """Build an implicit solvent OpenMM system.
+
+        Loads the PDB file and creates an OpenMM system with GB/n2
+        implicit solvent model. Automatically fixes the PDB if needed.
 
         Returns:
-            (System): OpenMM system object.
+            OpenMM System object configured with implicit solvent.
         """
         pdb = PDBFile(self.pdb)
         positions, topology = pdb.positions, pdb.topology
         forcefield = ForceField('amber14-all.xml', 'implicit/gbn2.xml')
         try:
-            system = forcefield.createSystem(topology,
-                                             soluteDielectric=1.,
-                                             solventDielectric=80.)
+            system = forcefield.createSystem(
+                topology,
+                soluteDielectric=1.,
+                solventDielectric=80.
+            )
         except ValueError:
             positions, topology = self.fix_pdb()
-            system = forcefield.createSystem(topology,
-                                             soluteDielectric=1.,
-                                             solventDielectric=80.)
+            system = forcefield.createSystem(
+                topology,
+                soluteDielectric=1.,
+                solventDielectric=80.
+            )
 
         self.positions = positions
         self.get_selection(topology)
 
         return system
 
-    def compute(self, 
-                positions: Union[np.ndarray, None]=None) -> None:
-        """
-        Compute interaction energy of system. Can optionally provide atomic
-        positions such that this operation can be scaled onto a trajectory of
-        frames rather than a static model.
+    def compute(self, positions: Union[np.ndarray, None] = None) -> None:
+        """Compute interaction energy of the system.
 
-        Arguments:
-            positions (np.ndarray | None): Defaults to None. If provided, inject
-                the positions into the OpenMM context.
+        Computes both Lennard-Jones and Coulombic interaction energies
+        between the selected chain and all other atoms.
 
-        Returns:
-            None
+        Args:
+            positions: Optional atomic positions to use instead of
+                those from the PDB file. Useful for trajectory analysis.
         """
         self.lj = None
         self.coulomb = None
@@ -120,11 +176,19 @@ class StaticInteractionEnergy(InteractionEnergy):
                     charge, sigma, epsilon = force.getParticleParameters(i)
                     force.setParticleParameters(i, 0, 0, 0)
                     if i in self.selection:
-                        force.addParticleParameterOffset("solute_coulomb_scale", i, charge, 0, 0)
-                        force.addParticleParameterOffset("solute_lj_scale", i, 0, sigma, epsilon)
+                        force.addParticleParameterOffset(
+                            "solute_coulomb_scale", i, charge, 0, 0
+                        )
+                        force.addParticleParameterOffset(
+                            "solute_lj_scale", i, 0, sigma, epsilon
+                        )
                     else:
-                        force.addParticleParameterOffset("solvent_coulomb_scale", i, charge, 0, 0)
-                        force.addParticleParameterOffset("solvent_lj_scale", i, 0, sigma, epsilon)
+                        force.addParticleParameterOffset(
+                            "solvent_coulomb_scale", i, charge, 0, 0
+                        )
+                        force.addParticleParameterOffset(
+                            "solvent_lj_scale", i, 0, sigma, epsilon
+                        )
 
                 for i in range(force.getNumExceptions()):
                     p1, p2, chargeProd, sigma, epsilon = force.getExceptionParameters(i)
@@ -133,8 +197,7 @@ class StaticInteractionEnergy(InteractionEnergy):
             else:
                 force.setForceGroup(2)
         
-        integrator = VerletIntegrator(0.001*picosecond)
-
+        integrator = VerletIntegrator(0.001 * picosecond)
         context = Context(system, integrator, self.platform)
         context.setPositions(positions)
         
@@ -151,48 +214,53 @@ class StaticInteractionEnergy(InteractionEnergy):
         self.coulomb = coul_final.value_in_unit(kilocalories_per_mole)
         self.lj = lj_final.value_in_unit(kilocalories_per_mole)
     
-    def get_selection(self, 
-                      topology: Topology) -> None:
-        """
-        Using the poorly documented OpenMM selection language, get indices of
-        atoms that we want to isolate for pairwise interaction energy calculation.
+    def get_selection(self, topology: Topology) -> None:
+        """Get indices of atoms for pairwise interaction calculation.
 
-        Arguments:
-            topology (Topology): OpenMM topology object.
+        Uses OpenMM's selection capabilities to identify atoms in the
+        specified chain and residue range.
 
-        Returns:
-            None
+        Args:
+            topology: OpenMM Topology object.
         """
         if self.first is None and self.last is None:
-            selection = [a.index 
-                        for a in topology.atoms() 
-                        if a.residue.chain.id == self.chain]
+            selection = [
+                a.index 
+                for a in topology.atoms() 
+                if a.residue.chain.id == self.chain
+            ]
         elif self.first is not None and self.last is None:
-            selection = [a.index
-                        for a in topology.atoms()
-                        if a.residue.chain.id == self.chain 
-                        and int(self.first) <= int(a.residue.id)]
+            selection = [
+                a.index
+                for a in topology.atoms()
+                if a.residue.chain.id == self.chain 
+                and int(self.first) <= int(a.residue.id)
+            ]
         elif self.first is None:
-            selection = [a.index
-                        for a in topology.atoms()
-                        if a.residue.chain.id == self.chain 
-                        and int(self.last) >= int(a.residue.id)]
+            selection = [
+                a.index
+                for a in topology.atoms()
+                if a.residue.chain.id == self.chain 
+                and int(self.last) >= int(a.residue.id)
+            ]
         else:
-            selection = [a.index
-                        for a in topology.atoms()
-                        if a.residue.chain.id == self.chain 
-                        and int(self.first) <= int(a.residue.id) <= int(self.last)]
+            selection = [
+                a.index
+                for a in topology.atoms()
+                if a.residue.chain.id == self.chain 
+                and int(self.first) <= int(a.residue.id) <= int(self.last)
+            ]
 
         self.selection = selection
 
     def fix_pdb(self) -> None:
-        """
-        Using the OpenMM adjacent tool, PDBFixer, repair input PDB by adding
-        hydrogens, and missing atoms such that we can actually construct an
-        OpenMM system.
+        """Repair the input PDB using PDBFixer.
+
+        Adds missing residues, atoms, and hydrogens to create a
+        complete structure suitable for OpenMM.
 
         Returns:
-            None
+            Tuple of (positions, topology) after fixing.
         """
         fixer = PDBFixer(filename=self.pdb)
         fixer.findMissingResidues()
@@ -204,36 +272,32 @@ class StaticInteractionEnergy(InteractionEnergy):
     
     @property
     def interactions(self) -> np.ndarray:
-        """
-        Places the LJ and coulombic energies into an array of shape (1, 2).
+        """Get LJ and Coulombic energies as an array.
 
         Returns:
-            (np.ndarray): Energy array.
+            Array of shape (2, 1) containing [lj, coulomb] energies.
         """
         return np.vstack([self.lj, self.coulomb])
 
     @staticmethod
-    def energy(context: Context, 
-               solute_coulomb_scale: int=0, 
-               solute_lj_scale: int=0, 
-               solvent_coulomb_scale: int=0, 
-               solvent_lj_scale: int=0) -> float:
-        """
-        Computes the potential energy for provided context object.
+    def energy(
+        context: Context, 
+        solute_coulomb_scale: int = 0, 
+        solute_lj_scale: int = 0, 
+        solvent_coulomb_scale: int = 0, 
+        solvent_lj_scale: int = 0
+    ) -> float:
+        """Compute potential energy for the given context.
 
-        Arguments:
-            context (Context): OpenMM context object.
-            solute_coulomb_scale (int): Defaults to 0. If 1 we will consider solute
-                contributions to coulombic non-bonded energy.
-            solute_lj_scale (int): Defaults to 0. If 1 we will consider solute
-                contributions to LJ non-bonded energy.
-            solvent_coulomb_scale (int): Defaults to 0. If 1 we will consider solvent
-                contributions to coulombic non-bonded energy.
-            solvent_lj_scale (int): Defaults to 0. If 1 we will consider solvent
-                contributions to LJ non-bonded energy.
+        Args:
+            context: OpenMM Context object.
+            solute_coulomb_scale: Scale for solute Coulombic energy (0 or 1).
+            solute_lj_scale: Scale for solute LJ energy (0 or 1).
+            solvent_coulomb_scale: Scale for solvent Coulombic energy (0 or 1).
+            solvent_lj_scale: Scale for solvent LJ energy (0 or 1).
 
         Returns:
-            (float): Computed energy term.
+            Computed energy term with units.
         """
         context.setParameter("solute_coulomb_scale", solute_coulomb_scale)
         context.setParameter("solute_lj_scale", solute_lj_scale)
@@ -241,77 +305,117 @@ class StaticInteractionEnergy(InteractionEnergy):
         context.setParameter("solvent_lj_scale", solvent_lj_scale)
         return context.getState(getEnergy=True, groups={0}).getPotentialEnergy()
 
-class InteractionEnergyFrame(StaticInteractionEnergy):
-    """
-    Inherits from StaticInteractionEnergy and overloads `get_system` to allow for
-    more easily running this analysis on a trajectory of frames. Requires the
-    OpenMM system and topology to be built externally and passed in rather than
-    beginning from a PDB file.
 
-    Arguments:
-        system (System): OpenMM system object.
-        top (Topology): OpenMM topology object.
-        chain (str): Defaults to A. The chain for which to compute the energy between.
-            Computes energy between this chain and all other components in PDB file.
-            Set to a whitespace if there are no chains in your PDB.
-        platform (str): Defaults to CUDA. Supports running on GPU for speed.
-        first_residue (int | None): Defaults to None. If set, will restrict the 
-            calculation to residues beginning with resid `first_residue`.
-        last_residue (int | None): Defaults to None. If set, will restrict the 
-            calculation to residues ending with resid `last_residue`.
+class InteractionEnergyFrame(StaticInteractionEnergy):
+    """Interaction energy calculator for trajectory frames.
+
+    Inherits from StaticInteractionEnergy and overloads get_system to
+    allow for easier trajectory analysis. Requires the OpenMM system
+    and topology to be built externally.
+
+    Args:
+        system: Pre-built OpenMM System object.
+        top: OpenMM Topology object.
+        chain: Chain identifier for calculation. Defaults to 'A'.
+        platform: OpenMM platform name. Defaults to 'CUDA'.
+        first_residue: Starting residue for calculation. Defaults to None.
+        last_residue: Ending residue for calculation. Defaults to None.
+
+    Example:
+        >>> system = build_system(topology)
+        >>> ie = InteractionEnergyFrame(system, topology, chain='A')
+        >>> ie.compute(positions)
     """
-    def __init__(self, 
-                 system: System, 
-                 top: Topology, 
-                 chain: str='A', 
-                 platform: str='CUDA',
-                 first_residue: Union[int, None]=None, 
-                 last_residue: Union[int, None]=None):
+
+    def __init__(
+        self, 
+        system: System, 
+        top: Topology, 
+        chain: str = 'A', 
+        platform: str = 'CUDA',
+        first_residue: Union[int, None] = None, 
+        last_residue: Union[int, None] = None
+    ):
+        """Initialize the InteractionEnergyFrame calculator.
+
+        Args:
+            system: Pre-built OpenMM System object.
+            top: OpenMM Topology object.
+            chain: Chain identifier for calculation.
+            platform: OpenMM platform name.
+            first_residue: Starting residue for calculation.
+            last_residue: Ending residue for calculation.
+        """
         super().__init__('', chain, platform, first_residue, last_residue)
         self.system = system
         self.top = top
 
     def get_system(self) -> System:
-        """
-        Sets self.selection via self.get_selection and returns existing OpenMM
+        """Return the pre-built OpenMM system.
+
+        Sets self.selection via get_selection and returns the existing
         system object.
 
         Returns:
-            (System): OpenMM system object.
+            The pre-built OpenMM System object.
         """
         self.get_selection(self.top)
         return self.system
 
-class DynamicInteractionEnergy:
-    """
-    Class for obtaining interaction energies of a trajectory. Utilizes the 
-    InteractionEnergyFrame child class to run per-frame energy calculations 
-    and orchestrates the trajectory operations.
 
-    Arguments:
-        top (PathLike): Path to prmtop topology file.
-        traj (PathLike): Path to DCD trajectory file.
-        stride (int): Defaults to 1. The stride with which to move through the trajectory.
-        chain (str): Defaults to A. The chain for which to compute the energy between.
-            Computes energy between this chain and all other components in PDB file.
-            Set to a whitespace if there are no chains in your PDB.
-        platform (str): Defaults to CUDA. Supports running on GPU for speed.
-        first_residue (int | None): Defaults to None. If set, will restrict the 
-            calculation to residues beginning with resid `first_residue`.
-        last_residue (int | None): Defaults to None. If set, will restrict the 
-            calculation to residues ending with resid `last_residue`.
-        progress_bar (bool): Defaults to False. If True a tqdm progress bar will
-            display progress.
+class DynamicInteractionEnergy:
+    """Compute interaction energies over a trajectory.
+
+    Uses InteractionEnergyFrame to run per-frame energy calculations
+    and orchestrates trajectory operations.
+
+    Attributes:
+        system: OpenMM System object.
+        coordinates: Trajectory coordinate array.
+        stride: Frame stride for calculations.
+        energies: Energy array after compute_energies().
+        IE: InteractionEnergyFrame instance.
+
+    Args:
+        top: Path to prmtop topology file.
+        traj: Path to DCD trajectory file.
+        stride: Stride for moving through trajectory. Defaults to 1.
+        chain: Chain identifier for calculation. Defaults to 'A'.
+        platform: OpenMM platform name. Defaults to 'CUDA'.
+        first_residue: Starting residue for calculation. Defaults to None.
+        last_residue: Ending residue for calculation. Defaults to None.
+        progress_bar: Whether to display a tqdm progress bar.
+            Defaults to False.
+
+    Example:
+        >>> die = DynamicInteractionEnergy('system.prmtop', 'traj.dcd')
+        >>> die.compute_energies()
+        >>> print(die.energies.shape)  # (n_frames, 2)
     """
-    def __init__(self, 
-                 top: PathLike, 
-                 traj: PathLike, 
-                 stride: int=1, 
-                 chain: str='A', 
-                 platform: str='CUDA',
-                 first_residue: Union[int, None]=None,
-                 last_residue: Union[int, None]=None,
-                 progress_bar: bool=False):
+
+    def __init__(
+        self, 
+        top: PathLike, 
+        traj: PathLike, 
+        stride: int = 1, 
+        chain: str = 'A', 
+        platform: str = 'CUDA',
+        first_residue: Union[int, None] = None,
+        last_residue: Union[int, None] = None,
+        progress_bar: bool = False
+    ):
+        """Initialize the DynamicInteractionEnergy calculator.
+
+        Args:
+            top: Path to topology file.
+            traj: Path to trajectory file.
+            stride: Frame stride.
+            chain: Chain identifier.
+            platform: OpenMM platform name.
+            first_residue: Starting residue.
+            last_residue: Ending residue.
+            progress_bar: Whether to show progress.
+        """
         top = Path(top)
         traj = Path(traj)
         self.system = self.build_system(top)
@@ -319,15 +423,16 @@ class DynamicInteractionEnergy:
         self.stride = stride
         self.progress = progress_bar
 
-        self.IE = InteractionEnergyFrame(self.system, self.top, chain, 
-                                         platform, first_residue, last_residue)
+        self.IE = InteractionEnergyFrame(
+            self.system, self.top, chain, 
+            platform, first_residue, last_residue
+        )
 
     def compute_energies(self) -> None:
-        """
-        Computes the energy for each frame in trajectory, storing internally.
+        """Compute energies for each frame in the trajectory.
 
-        Returns:
-            None
+        Stores results in self.energies with shape (n_frames, 2)
+        where columns are [LJ, Coulomb].
         """
         n_frames = self.coordinates.shape[0] // self.stride
         self.energies = np.zeros((n_frames, 2))
@@ -347,53 +452,54 @@ class DynamicInteractionEnergy:
         if self.progress:
             pbar.close()
     
-    def build_system(self, 
-                     top: PathLike) -> System:
-        """
-        Builds OpenMM system for both pdb and prmtop topology files.
+    def build_system(self, top: PathLike) -> System:
+        """Build an OpenMM system from the topology file.
 
-        Arguments:
-            top (PathLike): Path to topology file.
+        Handles both PDB and prmtop topology files.
+
+        Args:
+            top: Path to topology file.
 
         Returns:
-            (System): OpenMM system object.
+            OpenMM System object.
+
+        Raises:
+            NotImplementedError: If topology file type is not supported.
         """
         if top.suffix == '.pdb':
             top = PDBFile(str(top)).topology
             self.top = top
             forcefield = ForceField('amber14-all.xml', 'implicit/gbn2.xml')
-            return forcefield.createSystem(top, 
-                                           soluteDielectric=1., 
-                                           solventDielectric=78.5)
+            return forcefield.createSystem(
+                top, 
+                soluteDielectric=1., 
+                solventDielectric=78.5
+            )
         elif top.suffix == '.prmtop':
             top = AmberPrmtopFile(str(top))
             self.top = top
-            return top.createSystem(nonbondedMethod=CutoffNonPeriodic,
-                                    nonbondedCutoff=2. * nanometers,
-                                    constraints=HBonds)
+            return top.createSystem(
+                nonbondedMethod=CutoffNonPeriodic,
+                nonbondedCutoff=2. * nanometers,
+                constraints=HBonds
+            )
         else:
-            raise NotImplementedError(f'Error! Topology type {top} not implemented!')
+            raise NotImplementedError(
+                f'Error! Topology type {top} not implemented!'
+            )
 
-    def load_traj(self, 
-                  top: PathLike, 
-                  traj: PathLike) -> np.ndarray:
-        """
-        Loads trajectory into mdtraj and extracts full coordinate array.
+    def load_traj(self, top: PathLike, traj: PathLike) -> np.ndarray:
+        """Load trajectory into mdtraj and extract coordinates.
 
-        Arguments:
-            top (PathLike): Path to topology file.
-            traj (PathLike): Path to trajectory file.
+        Args:
+            top: Path to topology file.
+            traj: Path to trajectory file.
 
         Returns:
-            (np.ndarray): Coordinate array of shape (n_frames, n_atoms, 3)
+            Coordinate array with shape (n_frames, n_atoms, 3).
         """
         return md.load(str(traj), top=str(top)).xyz
 
     def setup_pbar(self) -> None:
-        """
-        Builds tqdm progress bar.
-
-        Returns:
-            None
-        """
+        """Build a tqdm progress bar for trajectory iteration."""
         self.pbar = tqdm(total=self.coordinates.shape[0], position=0, leave=False)

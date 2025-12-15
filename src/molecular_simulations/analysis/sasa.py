@@ -1,3 +1,10 @@
+"""Solvent-Accessible Surface Area (SASA) analysis module.
+
+This module computes SASA using the Shrake-Rupley algorithm, implemented
+as MDAnalysis AnalysisBase classes for ease of use and built-in parallelism.
+Adapted from BioPython and MDTraj implementations.
+"""
+
 import MDAnalysis as mda
 from MDAnalysis.analysis.base import AnalysisBase
 from MDAnalysis.core import groups
@@ -8,33 +15,67 @@ import warnings
 
 warnings.filterwarnings('ignore')
 
-class SASA(AnalysisBase):
-    """
-    Computes solvent-accessible surface area using the Shrake-Rupley algorithm.
-    Code is adapted from the biopython and mdtraj implementations as well as an
-    unmerged PR from MDAnalysis. Implemented as an instance of AnalysisBase to 
-    support ease of deployment and baked-in parallelism.
 
-    Arguments:
-        ag (mda.AtomGroup): AtomGroup for which to perform SASA.
-        probe_radius (float): Defaults to 1.4Å. This is pretty standard and should not
-            be altered in most cases.
-        n_points (int): Defaults to 256. Number of points to place on each sphere, where
-            a higher number is more costly but accurate.
+class SASA(AnalysisBase):
+    """Compute solvent-accessible surface area using Shrake-Rupley algorithm.
+
+    Implements SASA calculation as an MDAnalysis AnalysisBase instance,
+    supporting ease of deployment and built-in parallelism. Code is adapted
+    from BioPython and MDTraj implementations as well as an unmerged PR
+    from MDAnalysis.
+
+    Attributes:
+        ag: The AtomGroup being analyzed.
+        probe_radius: Probe radius for SASA calculation.
+        n_points: Number of points on each atomic sphere.
+        radii: Array of atomic radii (VDW + probe).
+        max_radii: Maximum pairwise radius sum.
+        results.sasa: Per-residue SASA values after run().
+
+    Args:
+        ag: AtomGroup for which to compute SASA.
+        probe_radius: Probe radius in Angstroms. Defaults to 1.4 Å
+            (standard water probe).
+        n_points: Number of points on each sphere. Higher values are
+            more accurate but slower. Defaults to 256.
+        **kwargs: Additional arguments passed to AnalysisBase.
+
+    Raises:
+        TypeError: If ag is an UpdatingAtomGroup.
+        ValueError: If the Universe has no 'elements' property.
+
+    Example:
+        >>> u = mda.Universe('system.prmtop', 'traj.dcd')
+        >>> sasa = SASA(u.select_atoms('protein'))
+        >>> sasa.run()
+        >>> print(sasa.results.sasa)
     """
-    def __init__(self, 
-                 ag: mda.AtomGroup,
-                 probe_radius: float=1.4,
-                 n_points: int=256,
-                 **kwargs):
+
+    def __init__(
+        self, 
+        ag: mda.AtomGroup,
+        probe_radius: float = 1.4,
+        n_points: int = 256,
+        **kwargs
+    ):
+        """Initialize the SASA analysis.
+
+        Args:
+            ag: AtomGroup to analyze.
+            probe_radius: Probe radius in Angstroms.
+            n_points: Number of sphere points.
+            **kwargs: Arguments for AnalysisBase.
+        """
         if isinstance(ag, groups.UpdatingAtomGroup):
             raise TypeError('UpdatingAtomGroups are not valid for SASA!')
         
         super(SASA, self).__init__(ag.universe.trajectory, **kwargs)
         
         if not hasattr(ag, 'elements'):
-            raise ValueError('Cannot assign atomic radii:'
-                             'Universe has no `elements` property!')
+            raise ValueError(
+                'Cannot assign atomic radii: '
+                'Universe has no `elements` property!'
+            )
 
         self.ag = ag
         self.probe_radius = probe_radius
@@ -50,11 +91,13 @@ class SASA(AnalysisBase):
         self.sphere = self.get_sphere()
 
     def get_sphere(self) -> np.ndarray:
-        """
-        Returns a fibonacci unit sphere for a given number of points.
+        """Generate a Fibonacci unit sphere.
+
+        Creates evenly distributed points on a unit sphere using the
+        Fibonacci spiral method.
 
         Returns:
-            (np.ndarray): Array of points in fibonacci sphere.
+            Array of shape (n_points, 3) with unit sphere coordinates.
         """
         dl = np.pi * (3 - np.sqrt(5))
         dz = 2. / self.n_points
@@ -71,16 +114,14 @@ class SASA(AnalysisBase):
 
         return xyz
 
-    def measure_sasa(self,
-                     ag: mda.AtomGroup) -> float:
-        """
-        Measures the SASA of input atomgroup.
+    def measure_sasa(self, ag: mda.AtomGroup) -> float:
+        """Measure SASA of an AtomGroup in the current frame.
 
-        Arguments:
-            ag (mda.AtomGroup): MDAnalysis AtomGroup.
+        Args:
+            ag: MDAnalysis AtomGroup to measure.
 
         Returns:
-            (float): SASA value.
+            Array of per-atom SASA values.
         """
         kdt = KDTree(ag.positions, 10)
 
@@ -91,9 +132,11 @@ class SASA(AnalysisBase):
             available = self.points_available.copy()
             kdt_sphere = KDTree(sphere, 10)
 
-            for j in kdt.query_ball_point(ag.positions[i], 
-                                          self.max_radii, 
-                                          workers=-1):
+            for j in kdt.query_ball_point(
+                ag.positions[i], 
+                self.max_radii, 
+                workers=-1
+            ):
                 if j == i:
                     continue
                 if self.radii[j] < (self.radii[i] + self.radii[j]):
@@ -109,24 +152,17 @@ class SASA(AnalysisBase):
         return 4 * np.pi * self.radii**2 * points / self.n_points
 
     def _prepare(self):
-        """
-        Preprocessing step that is run before analyzing the trajectory.
-        Initializes the results array.
+        """Prepare for analysis by initializing results array.
 
-        Returns:
-            None
+        Called automatically before trajectory iteration.
         """
         self.results.sasa = np.zeros(self.ag.n_residues)
-
         self.points_available = set(range(self.n_points))
 
     def _single_frame(self):
-        """
-        Operations called on each frame. Measures SASA for each atom and sums
-        them per-residue, placing the results into internal output array.
+        """Process a single trajectory frame.
 
-        Returns:
-            None
+        Measures SASA for each atom and sums per-residue.
         """
         area = self.measure_sasa(self.ag)
         result = np.zeros(self.ag.n_residues)
@@ -136,59 +172,75 @@ class SASA(AnalysisBase):
         self.results.sasa += result
 
     def _conclude(self):
-        """
-        Post-processing step to average the SASA per-frame.
+        """Post-process results by averaging over frames.
 
-        Returns:
-            None
+        Called automatically after trajectory iteration.
         """
         if self.n_frames != 0:
             self.results.sasa /= self.n_frames
+
             
 class RelativeSASA(SASA):
-    """
-    Computese Relative SASA for a specified atomgroup. Relative SASA is defined
-    by the measured SASA divided by the maximum accessible surface area and for
-    proteins we define this as within a tripeptide context so as to not overestimate
-    SASA of the amide linkage and its neighbors.
+    """Compute relative SASA for an AtomGroup.
 
-    Arguments:
-        ag (mda.AtomGroup): AtomGroup for which to perform SASA.
-        probe_radius (float): Defaults to 1.4Å. This is pretty standard and should not
-            be altered in most cases.
-        n_points (int): Defaults to 256. Number of points to place on each sphere, where
-            a higher number is more costly but accurate.
+    Relative SASA is defined as measured SASA divided by maximum
+    accessible surface area. For proteins, this is computed in a
+    tripeptide context to avoid overestimating SASA of the amide
+    linkage and its neighbors.
+
+    Attributes:
+        results.sasa: Absolute SASA values.
+        results.relative_area: Relative SASA values (0-1 scale).
+
+    Args:
+        ag: AtomGroup for SASA calculation.
+        probe_radius: Probe radius in Angstroms. Defaults to 1.4 Å.
+        n_points: Number of sphere points. Defaults to 256.
+        **kwargs: Additional arguments for AnalysisBase.
+
+    Raises:
+        ValueError: If the Universe has no 'bonds' property.
+
+    Example:
+        >>> u = mda.Universe('system.prmtop', 'traj.dcd')
+        >>> rsasa = RelativeSASA(u.select_atoms('protein'))
+        >>> rsasa.run()
+        >>> print(rsasa.results.relative_area)
     """
-    def __init__(self, 
-                 ag: mda.AtomGroup,
-                 probe_radius: float=1.4,
-                 n_points: int=256,
-                 **kwargs):
+
+    def __init__(
+        self, 
+        ag: mda.AtomGroup,
+        probe_radius: float = 1.4,
+        n_points: int = 256,
+        **kwargs
+    ):
+        """Initialize the RelativeSASA analysis.
+
+        Args:
+            ag: AtomGroup to analyze.
+            probe_radius: Probe radius in Angstroms.
+            n_points: Number of sphere points.
+            **kwargs: Arguments for AnalysisBase.
+        """
         if not hasattr(ag, 'bonds'):
             raise ValueError('Universe has no `bonds` property!')
         super(RelativeSASA, self).__init__(ag, probe_radius, n_points, **kwargs)
 
     def _prepare(self):
-        """
-        Preprocessing step that is run before analyzing the trajectory.
-        Initializes the results array.
+        """Prepare for analysis by initializing results arrays.
 
-        Returns:
-            None
+        Called automatically before trajectory iteration.
         """
         self.results.sasa = np.zeros(self.ag.n_residues)
         self.results.relative_area = np.zeros(self.ag.n_residues)
-
         self.points_available = set(range(self.n_points))
 
     def _single_frame(self):
-        """
-        Operations called on each frame. Measures SASA for each atom and sums
-        them per-residue. Then computes the exposed area of each tripeptide 
-        and stores the ratio of SASA / exposed area in output array.
+        """Process a single trajectory frame.
 
-        Returns:
-            None
+        Measures SASA and computes relative SASA using tripeptide
+        reference for each residue.
         """
         area = self.measure_sasa(self.ag)
         result = np.zeros(self.ag.n_residues)
@@ -198,7 +250,9 @@ class RelativeSASA(SASA):
         self.results.sasa += result
 
         for res_index in self.ag.residues.resindices:
-            tri_peptide = self.ag.select_atoms(f'byres (bonded resindex {res_index})')
+            tri_peptide = self.ag.select_atoms(
+                f'byres (bonded resindex {res_index})'
+            )
 
             if len(tri_peptide) == 0:
                 continue
@@ -212,14 +266,14 @@ class RelativeSASA(SASA):
             if exposed_area != 0.:
                 result[res_index] /= exposed_area
 
-        self.results.relative_area += np.array([result[_id] for _id in self.ag.residues.resindices])
+        self.results.relative_area += np.array([
+            result[_id] for _id in self.ag.residues.resindices
+        ])
 
     def _conclude(self):
-        """
-        Post-processing step to average the SASA per-frame.
+        """Post-process results by averaging over frames.
 
-        Returns:
-            None
+        Called automatically after trajectory iteration.
         """
         if self.n_frames != 0:
             self.results.sasa /= self.n_frames

@@ -1,3 +1,13 @@
+"""Interface-based system building module for DeepDriveMD.
+
+This module provides the InterfaceBuilder class for building molecular
+systems targeting specific protein-protein interfaces, with support for
+DeepDriveMD enhanced sampling simulations.
+
+Classes:
+    InterfaceBuilder: Build systems for interface-targeted simulations.
+"""
+
 from .build_amber import ExplicitSolvent
 import MDAnalysis as mda
 import numpy as np
@@ -8,64 +18,117 @@ import yaml
 PathLike = Union[Path, str]
 Config = dict[str, Any]
 
+
 class InterfaceBuilder(ExplicitSolvent):
-    def __init__(self, 
-                 path: PathLike, 
+    """Build systems for driving binding to specific protein interfaces.
+
+    For a given target/binder pair, builds systems for driving binding to
+    each of the supplied interfaces using DeepDriveMD. Includes writing
+    the required YAML configuration files for running DeepDrive simulations.
+
+    Args:
+        path: Base directory path for output files.
+        pdb: Path to input PDB file.
+        interfaces: Dictionary of interface configurations, keyed by site
+            name (e.g., 'site0'). Each interface should contain:
+            'contact_sel', 'distance_sel', 'vector', and 'com'.
+        target: Path to target protein structure.
+        binder: Path to binder protein structure.
+        padding: Padding around solute in Angstroms. Defaults to 10.0.
+        protein: Whether to load protein force field. Defaults to True.
+        rna: Whether to load RNA force field. Defaults to False.
+        dna: Whether to load DNA force field. Defaults to False.
+        polarizable: Whether to use polarizable force field.
+            Defaults to False.
+
+    Attributes:
+        interfaces: Dictionary of interface site configurations.
+        target: MDAnalysis AtomGroup for the target protein.
+        binder: Path to binder structure file.
+        root: Root output directory based on target name.
+        com: Center of mass of the target protein.
+
+    Example:
+        >>> interfaces = {
+        ...     'site0': {
+        ...         'contact_sel': 'resid 10-50',
+        ...         'distance_sel': 'resid 10-50',
+        ...         'vector': [10.0, 0.0, 0.0],
+        ...         'com': [50.0, 50.0, 50.0]
+        ...     }
+        ... }
+        >>> builder = InterfaceBuilder(
+        ...     path='./build',
+        ...     pdb='complex.pdb',
+        ...     interfaces=interfaces,
+        ...     target='target.pdb',
+        ...     binder='binder.pdb'
+        ... )
+        >>> builder.build_all()
+    """
+
+    def __init__(self,
+                 path: PathLike,
                  pdb: str,
                  interfaces: Config,
                  target: PathLike,
                  binder: PathLike,
-                 padding: float=10.,
-                 protein: bool=True,
-                 rna: bool=False,
-                 dna: bool=False,
-                 polarizable: bool=False):
-        """
-        For a given target/binder pair, build systems for driving binding to
-        each of the supplied interfaces using DeepDriveMD. Includes writing
-        out the required yaml files for running DeepDrive.
-        """
+                 padding: float = 10.,
+                 protein: bool = True,
+                 rna: bool = False,
+                 dna: bool = False,
+                 polarizable: bool = False):
+        """Initialize the InterfaceBuilder."""
         super().__init__(path, pdb, padding, protein, rna, dna, polarizable)
         self.interfaces = interfaces
         self.target = mda.Universe(target).select_atoms('all')
         self.binder = binder
-        self.root = self.path / target.name[:-4] 
+        self.root = self.path / target.name[:-4]
         self.com = self.target.center_of_mass()
-    
-    def build_all(self):
-        """
-        Iterates through each interface site for a given target and
-        builds the corresponding system for the supplied miniprotein
-        binder.
+
+    def build_all(self) -> None:
+        """Build systems for all interface sites.
+
+        Iterates through each interface site for the target and builds
+        the corresponding solvated system with the binder positioned
+        near the interface.
         """
         for site in self.interfaces.keys():
             # set pathing for this target/binder/site
             self.yaml_out = self.root / site / self.binder.name[:-4]
-            self.out = self.yaml_out / 'ddmd' 
+            self.out = self.yaml_out / 'ddmd'
             self.out.mkdir(parents=True, exist_ok=True)
             self.out = self.out / 'system'
             self.build_dir = self.yaml_out / 'build'
             self.build_dir.mkdir(parents=True, exist_ok=True)
-            self.pdb = self.build_dir / 'protein.pdb' # need full path to leverage parent methods
+            self.pdb = self.build_dir / 'protein.pdb'
 
             cont_sel, dist_sel, vector, com, input_shape = self.parse_interface(site)
 
-            binder = self.place_binder(np.array(vector, dtype=np.float32), 
+            binder = self.place_binder(np.array(vector, dtype=np.float32),
                                        np.array(com, dtype=np.float32))
             self.merge_proteins(binder)
 
             self.path = self.build_dir
             self.build()
-            
+
             self.write_ddmd_yaml(cont_sel, dist_sel)
             self.write_cvae_yaml(input_shape)
 
-    def place_binder(self, 
-                     vector: np.ndarray, 
-                     com: np.ndarray) -> None:
-        """
-        Move binder nearby to the interface as defined by `vector`. Returns
-        an MDAnalysis AtomGroup for the binder.
+    def place_binder(self,
+                     vector: np.ndarray,
+                     com: np.ndarray) -> mda.AtomGroup:
+        """Position the binder near the target interface.
+
+        Translates the binder structure to be positioned near the
+        interface as defined by the displacement vector.
+
+        Args:
+            vector: Displacement vector from interface center of mass.
+            com: Center of mass of the interface region.
+
+        Returns:
+            MDAnalysis AtomGroup containing the repositioned binder.
         """
         u = mda.Universe(self.binder)
         sel = u.select_atoms('all')
@@ -76,36 +139,50 @@ class InterfaceBuilder(ExplicitSolvent):
 
         return sel
 
-    def merge_proteins(self,
-                       binder: mda.AtomGroup) -> None:
-        """
-        Merges the target and binder AtomGroups and writes out
-        a unified PDB at `self.pdb` so as to leverage the existing
-        pipeline for building explicit solvent systems.
+    def merge_proteins(self, binder: mda.AtomGroup) -> None:
+        """Merge target and binder into a single structure.
+
+        Combines the target and binder AtomGroups and writes a unified
+        PDB file for subsequent system building.
+
+        Args:
+            binder: MDAnalysis AtomGroup for the positioned binder.
         """
         merged_atoms = mda.Merge(self.target, binder)
-        
+
         with mda.Writer(self.pdb) as W:
             W.write(merged_atoms)
 
-    def parse_interface(self, 
-                        site: str='site0') -> Config:
-        """
-        Returns the relevant data for the current interface site.
+    def parse_interface(self, site: str = 'site0') -> tuple:
+        """Extract configuration data for an interface site.
+
+        Args:
+            site: Name of the interface site to parse. Defaults to 'site0'.
+
+        Returns:
+            Tuple containing (contact_sel, distance_sel, vector, com,
+            input_shape) for the specified interface site.
         """
         s = self.interfaces[site]
         N = len(s['contact_sel'][18:].split())
         inp_shape = (1, N, N)
         ret = [data for data in s.values()]
         ret.append(inp_shape)
-        return ret # contact_sel, distance_sel, vector, com, inp_shape
+        return ret  # contact_sel, distance_sel, vector, com, inp_shape
 
     def write_ddmd_yaml(self,
                         contact_selection: str,
                         distance_selection: str) -> None:
-        """
-        Writes the simulation options yaml for a DeepDriveMD
-        simulation.
+        """Write the DeepDriveMD simulation configuration YAML.
+
+        Creates the prod.yaml file containing all settings for running
+        a DeepDriveMD enhanced sampling simulation.
+
+        Args:
+            contact_selection: MDAnalysis selection string for contact
+                calculations.
+            distance_selection: MDAnalysis selection string for distance
+                calculations.
         """
         yaml_settings = {
             'simulation_input_dir': 'ddmd',
@@ -142,11 +219,15 @@ class InterfaceBuilder(ExplicitSolvent):
         with open(self.yaml_out / 'prod.yaml', 'w') as f:
             yaml.dump(yaml_settings, f)
 
-    def write_cvae_yaml(self,
-                        input_shape: list[int]) -> None:
-        """
-        Writes the CVAE options yaml for a DeepDriveMD
-        simulation.
+    def write_cvae_yaml(self, input_shape: tuple[int, ...]) -> None:
+        """Write the CVAE model configuration YAML.
+
+        Creates the cvae-prod-settings.yaml file containing neural
+        network architecture and training hyperparameters.
+
+        Args:
+            input_shape: Shape of input tensor for the CVAE model,
+                typically (1, N, N) for contact matrices.
         """
         yaml_settings = {
             'input_shape': input_shape,

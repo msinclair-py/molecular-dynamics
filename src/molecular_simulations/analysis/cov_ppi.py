@@ -1,3 +1,10 @@
+"""Covariance-based protein-protein interaction analysis.
+
+This module provides tools for analyzing protein-protein interactions based
+on covariance analysis of molecular dynamics trajectories. Adapted from
+https://www.biorxiv.org/content/10.1101/2025.03.24.644990v1.full.pdf
+"""
+
 from collections import defaultdict
 import json
 import matplotlib.pyplot as plt
@@ -14,46 +21,75 @@ PathLike = Union[Path, str]
 Results = dict[str, dict[str, float]]
 TaskTree = tuple[list[Callable], list[str]]
 
-class PPInteractions:
-    """Code herein adapted from: 
-        https://www.biorxiv.org/content/10.1101/2025.03.24.644990v1.full.pdf
-    Takes an input topology file and trajectory file, and highlights relevant
-    interactions between two selections. To this end we first compute the 
-    covariance matrix between the two selections, filter out all interactions
-    which occur too far apart (11Å for positive covariance, 13Å for negative
-    covariance), and examines each based on a variety of distance and angle
-    cutoffs defined in the literature.
 
-    Arguments:
-        top (PathLike): Path to topology file.
-        traj (PathLike): Path to trajectory file.
-        out (PathLike): Path to outputs.
-        sel1 (str): Defaults to 'chainID A'. MDAnalysis selection string for the
-            first selection.
-        sel2 (str): Defaults to 'chainID B'. MDAnalysis selection string for the
-            second selection.
-        cov_cutoff (tuple[float]): Defaults to (11., 13.). Tuple of the distance
-            cutoffs to use for positive and negative covariance respectively.
-        sb_cutoff (float): Defaults to 6.0Å. Distance cutoff for salt bridges.
-        hbond_cutoff (float): Defaults to 3.5Å. Distance cutoff for hydrogen bonds.
-        hbond_angle (float): Defaults to 30.0 degrees. Angle cutoff for hydrogen bonds.
-        hydrophobic_cutoff (float): Defaults to 8.0Å. Distance cutoff for hydrophobic
-            interactions.
-        plot (bool): Defaults to True. Whether or not to plot results. Saves plots
-            at the output directory.
+class PPInteractions:
+    """Analyze protein-protein interactions using covariance analysis.
+
+    Takes an input topology and trajectory file, computes the covariance
+    matrix between two selections, filters interactions by distance
+    (11Å for positive covariance, 13Å for negative covariance), and
+    evaluates each based on distance and angle cutoffs for various
+    interaction types.
+
+    Attributes:
+        u: MDAnalysis Universe object.
+        n_frames: Number of frames in the trajectory.
+        out: Output path for results.
+        mapping: Residue index to resID mapping for both selections.
+
+    Args:
+        top: Path to topology file.
+        traj: Path to trajectory file.
+        out: Path to output results file.
+        sel1: MDAnalysis selection string for the first selection.
+            Defaults to 'chainID A'.
+        sel2: MDAnalysis selection string for the second selection.
+            Defaults to 'chainID B'.
+        cov_cutoff: Distance cutoffs for positive and negative covariance
+            filtering respectively. Defaults to (11.0, 13.0) Angstroms.
+        sb_cutoff: Distance cutoff for salt bridges. Defaults to 6.0 Å.
+        hbond_cutoff: Distance cutoff for hydrogen bonds. Defaults to 3.5 Å.
+        hbond_angle: Angle cutoff for hydrogen bonds in degrees.
+            Defaults to 30.0 degrees.
+        hydrophobic_cutoff: Distance cutoff for hydrophobic interactions.
+            Defaults to 8.0 Å.
+        plot: Whether to generate and save plots. Defaults to True.
+
+    Example:
+        >>> ppi = PPInteractions('complex.prmtop', 'traj.dcd', 'results.json')
+        >>> ppi.run()
     """
-    def __init__(self, 
-                 top: PathLike, 
-                 traj: PathLike,
-                 out: PathLike,
-                 sel1: str='chainID A',
-                 sel2: str='chainID B',
-                 cov_cutoff: tuple[float]=(11., 13.),
-                 sb_cutoff: float=6.,
-                 hbond_cutoff: float=3.5,
-                 hbond_angle: float=30.,
-                 hydrophobic_cutoff: float=8.,
-                 plot: bool=True):
+
+    def __init__(
+        self, 
+        top: PathLike, 
+        traj: PathLike,
+        out: PathLike,
+        sel1: str = 'chainID A',
+        sel2: str = 'chainID B',
+        cov_cutoff: tuple[float] = (11., 13.),
+        sb_cutoff: float = 6.,
+        hbond_cutoff: float = 3.5,
+        hbond_angle: float = 30.,
+        hydrophobic_cutoff: float = 8.,
+        plot: bool = True
+    ):
+        """Initialize the protein-protein interaction analyzer.
+
+        Args:
+            top: Path to topology file.
+            traj: Path to trajectory file.
+            out: Path to output results file.
+            sel1: MDAnalysis selection string for first selection.
+            sel2: MDAnalysis selection string for second selection.
+            cov_cutoff: Tuple of distance cutoffs for (positive, negative)
+                covariance.
+            sb_cutoff: Salt bridge distance cutoff in Angstroms.
+            hbond_cutoff: Hydrogen bond distance cutoff in Angstroms.
+            hbond_angle: Hydrogen bond angle cutoff in degrees.
+            hydrophobic_cutoff: Hydrophobic interaction cutoff in Angstroms.
+            plot: Whether to generate plots.
+        """
         self.u = mda.Universe(top, traj)
         self.n_frames = len(self.u.trajectory)
         self.out = out
@@ -67,12 +103,11 @@ class PPInteractions:
         self.plot = plot
 
     def run(self) -> None:
-        """Main function that runs the workflow. Obtains a covariance matrix,
-        screens for close interactions, evaluates each pairwise interaction
-        for each amino acid and report the contact probability of each.
+        """Execute the full interaction analysis workflow.
 
-        Returns:
-            None
+        Obtains a covariance matrix, screens for close interactions,
+        evaluates each pairwise interaction, and reports contact
+        probabilities. Optionally generates plots.
         """
         cov = self.get_covariance()
         positive, negative = self.interpret_covariance(cov)
@@ -91,21 +126,26 @@ class PPInteractions:
         if self.plot:
             self.plot_results(results)
 
-    def compute_interactions(self,
-                             res1: int,
-                             res2: int) -> Results:
-        """Ingests two resIDs, generates MDAnalysis AtomGroups for each, identifies
-        relevant non-bonded interactions (HBonds, saltbridge, hydrophobic) and
-        computes each. Returns a dict containing the proportion of simulation time
-        that each interaction is engaged.
+    def compute_interactions(
+        self,
+        res1: int,
+        res2: int
+    ) -> Results:
+        """Compute interaction probabilities between two residues.
 
-        Arguments:
-            res1 (int): ResID for a residue in sel1.
-            res2 (int): ResID for a residue in sel2.
+        Generates MDAnalysis AtomGroups for each residue, identifies
+        relevant non-bonded interactions (hydrogen bonds, salt bridges,
+        hydrophobic), and computes the fraction of simulation time each
+        interaction is engaged.
+
+        Args:
+            res1: ResID for a residue in sel1.
+            res2: ResID for a residue in sel2.
 
         Returns:
-            (Results): A nested dictionary containing the results of each interaction
-                type.
+            Nested dictionary containing the results of each interaction
+            type. Keys are residue pair names, values are dictionaries
+            mapping interaction type to probability.
         """
         grp1 = self.u.select_atoms(f'{self.sel1} and resid {res1}')
         grp2 = self.u.select_atoms(f'{self.sel2} and resid {res2}')
@@ -125,17 +165,20 @@ class PPInteractions:
         return data
 
     def get_covariance(self) -> np.ndarray:
-        """
-        Loop over all C-alpha atoms and compute the positional
+        """Compute the positional covariance matrix between selections.
+
+        Loops over all C-alpha atoms and computes the positional
         covariance using the functional form:
-            C = <(R1 - <R1>)(R2 - <R2>)T>
-        where each element corresponds to the ensemble average movement
+            C = <(R1 - <R1>)(R2 - <R2>)^T>
+
+        where each element corresponds to the ensemble average movement:
             C_ij = <deltaR_i * deltaR_j>
-        with the magnitude being the strength of correlation and the sign
-        corresponding to positive and negative correlation respectively.
+
+        The magnitude indicates correlation strength and the sign
+        indicates positive or negative correlation.
 
         Returns:
-            (np.ndarray): Covariance matrix.
+            Covariance matrix with shape (N_residues_sel1, N_residues_sel2).
         """
         p1_ca = self.u.select_atoms('chainID A and name CA')
         N = p1_ca.n_residues
@@ -181,18 +224,19 @@ class PPInteractions:
 
         return C
 
-    def res_map(self,
-                ag1: mda.AtomGroup,
-                ag2: mda.AtomGroup) -> None:
-        """Map covariance matrix indices to AtomGroup resIDs so that we are
-        examining the correct pairs of residues.
+    def res_map(
+        self,
+        ag1: mda.AtomGroup,
+        ag2: mda.AtomGroup
+    ) -> None:
+        """Create mapping from covariance matrix indices to resIDs.
 
-        Arguments:
-            ag1 (mda.AtomGroup): AtomGroup of the first selection.
-            ag2 (mda.AtomGroup): AtomGroup of the second selection.
+        Maps covariance matrix indices to AtomGroup resIDs to ensure
+        correct residue pairs are examined.
 
-        Returns:
-            None
+        Args:
+            ag1: AtomGroup of the first selection.
+            ag2: AtomGroup of the second selection.
         """
         mapping = {'ag1': {}, 'ag2': {}}
         for i, resid in enumerate(ag1.resids):
@@ -203,17 +247,18 @@ class PPInteractions:
 
         self.mapping = mapping
 
-    def interpret_covariance(self,
-                             cov_mat: np.ndarray) -> tuple[tuple[int, int]]:
-        """Identify pairs of residues with positive or negative correlations.
-        Returns a tuple comprised of pairs for each.
+    def interpret_covariance(
+        self,
+        cov_mat: np.ndarray
+    ) -> tuple[tuple[int, int]]:
+        """Identify residue pairs with positive or negative correlations.
 
-        Arguments:
-            cov_mat (np.ndarray): Covariance matrix.
+        Args:
+            cov_mat: Covariance matrix from get_covariance().
 
         Returns:
-            (tuple[tuple[int, int]]): Tuple of positively and negatively correlated
-                pairs of residues coming from each selection.
+            Tuple of two lists: (positive_pairs, negative_pairs).
+            Each pair is a tuple of (resID_sel1, resID_sel2).
         """
         pos_corr = np.where(cov_mat > 0.)
         neg_corr = np.where(cov_mat < 0.)
@@ -239,18 +284,22 @@ class PPInteractions:
 
         return positive, negative
 
-    def identify_interaction_type(self,
-                                  res1: str,
-                                  res2: str) -> TaskTree:
-        """Identifies what analyses to compute for a given pair of protein
-        residues (i.e. hydrophobic interactions, hydrogen bonds, saltbridges).
+    def identify_interaction_type(
+        self,
+        res1: str,
+        res2: str
+    ) -> TaskTree:
+        """Determine which analyses to compute for a residue pair.
 
-        Arguments:
-            res1 (str): 3-letter code resname for a residue from selection 1.
-            res2 (str): 3-letter code resname for a residue from selection 2.
+        Identifies what analyses to compute based on residue types
+        (hydrophobic interactions, hydrogen bonds, salt bridges).
+
+        Args:
+            res1: 3-letter code resname for a residue from selection 1.
+            res2: 3-letter code resname for a residue from selection 2.
 
         Returns:
-            (TaskTree): Tuple containing list of function calls and list of labels.
+            Tuple containing (list of function calls, list of labels).
         """
         int_types = {
             'TYR': {'funcs': [self.analyze_hbond], 'label': ['hbond']}, 
@@ -286,19 +335,21 @@ class PPInteractions:
 
         return functions, labels
 
-    def analyze_saltbridge(self,
-                           res1: mda.AtomGroup,
-                           res2: mda.AtomGroup) -> float:
-        """Uses a simple distance cutoff to highlight the occupancy of 
-        saltbridge between two residues. Returns the fraction of
-        simulation time spent engaged in saltbridge.
+    def analyze_saltbridge(
+        self,
+        res1: mda.AtomGroup,
+        res2: mda.AtomGroup
+    ) -> float:
+        """Calculate salt bridge occupancy between two residues.
 
-        Arguments:
-            res1 (mda.AtomGroup): AtomGroup for a residue from selection 1.
-            res2 (mda.AtomGroup): AtomGroup for a residue from selection 2.
+        Uses a simple distance cutoff to determine salt bridge formation.
+
+        Args:
+            res1: AtomGroup for a residue from selection 1.
+            res2: AtomGroup for a residue from selection 2.
 
         Returns:
-            (float): Proportion of simulation time spent in salt bridge.
+            Proportion of simulation time spent in salt bridge contact.
         """
         pos = ['LYS', 'ARG']
         neg = ['ASP', 'GLU']
@@ -333,20 +384,23 @@ class PPInteractions:
         
         return n_frames / self.n_frames
 
-    def analyze_hbond(self,
-                      res1: mda.AtomGroup,
-                      res2: mda.AtomGroup) -> float:
-        """Identifies all potential donor/acceptor atoms between two
-        residues. Culls this list based on distance array across simulation
-        and then evaluates each pair over the trajectory utilizing a
-        distance and angle cutoff.
+    def analyze_hbond(
+        self,
+        res1: mda.AtomGroup,
+        res2: mda.AtomGroup
+    ) -> float:
+        """Calculate hydrogen bond occupancy between two residues.
 
-        Arguments:
-            res1 (mda.AtomGroup): AtomGroup for a residue from selection 1.
-            res2 (mda.AtomGroup): AtomGroup for a residue from selection 2.
+        Identifies all potential donor/acceptor atoms, filters by distance,
+        then evaluates each pair over the trajectory using distance and
+        angle cutoffs.
+
+        Args:
+            res1: AtomGroup for a residue from selection 1.
+            res2: AtomGroup for a residue from selection 2.
 
         Returns:
-            (float): Proportion of simulation time spent in hydrogen bond.
+            Proportion of simulation time spent in hydrogen bond contact.
         """
         donors, acceptors = self.survey_donors_acceptors(res1, res2)
 
@@ -356,19 +410,22 @@ class PPInteractions:
 
         return n_frames / self.n_frames
 
-    def analyze_hydrophobic(self,
-                            res1: mda.AtomGroup,
-                            res2: mda.AtomGroup) -> float:
-        """Uses a simple distance cutoff to highlight the occupancy of 
-        hydrophobic interaction between two residues. Returns the fraction of
-        simulation time spent engaged in interaction.
+    def analyze_hydrophobic(
+        self,
+        res1: mda.AtomGroup,
+        res2: mda.AtomGroup
+    ) -> float:
+        """Calculate hydrophobic interaction occupancy between residues.
 
-        Arguments:
-            res1 (mda.AtomGroup): AtomGroup for a residue from selection 1.
-            res2 (mda.AtomGroup): AtomGroup for a residue from selection 2.
+        Uses a simple distance cutoff between carbon atoms to determine
+        hydrophobic contact.
+
+        Args:
+            res1: AtomGroup for a residue from selection 1.
+            res2: AtomGroup for a residue from selection 2.
 
         Returns:
-            (float): Proportion of simulation time spent in interaction.
+            Proportion of simulation time spent in hydrophobic contact.
         """
         h1 = self.u.select_atoms('resname DUMMY')
         h2 = self.u.select_atoms('resname DUMMY')
@@ -389,21 +446,24 @@ class PPInteractions:
 
         return n_frames / self.n_frames
 
-    def survey_donors_acceptors(self,
-                                res1: mda.AtomGroup,
-                                res2: mda.AtomGroup) -> tuple[mda.AtomGroup]:
-        """First pass distance threshhold to identify potential Hydrogen bonds.
-        Should be followed by querying HBond angles but this serves to reduce
-        our search space and time complexity. Only returns donors/acceptors which
-        are within the distance cutoff in at least a single frame.
+    def survey_donors_acceptors(
+        self,
+        res1: mda.AtomGroup,
+        res2: mda.AtomGroup
+    ) -> tuple[mda.AtomGroup]:
+        """Identify potential hydrogen bond donors and acceptors.
 
-        Arguments:
-            res1 (mda.AtomGroup): AtomGroup for a residue from selection 1.
-            res2 (mda.AtomGroup): AtomGroup for a residue from selection 2.
+        First-pass distance threshold to identify potential hydrogen bonds.
+        Should be followed by querying H-bond angles but this serves to
+        reduce the search space.
+
+        Args:
+            res1: AtomGroup for a residue from selection 1.
+            res2: AtomGroup for a residue from selection 2.
 
         Returns:
-            (tuple[mda.AtomGroup]): Tuple of AtomGroups for residues which pass
-                crude distance cutoff for hydrogen bond donors/acceptors.
+            Tuple of (donors, acceptors) AtomGroups containing atoms
+            that pass the crude distance cutoff.
         """
         donors = self.u.select_atoms('resname DUMMY')
         acceptors = self.u.select_atoms('resname DUMMY')
@@ -427,20 +487,23 @@ class PPInteractions:
 
         return donors[don_contacts], acceptors[acc_contacts]
 
-    def evaluate_hbond(self,
-                       donor: mda.AtomGroup,
-                       acceptor: mda.AtomGroup) -> int:
-        """Evaluates whether there is a defined hydrogen bond between any
-        donor and acceptor atoms in a given frame. Must pass a distance
-        cutoff as well as an angle cutoff. Returns early when a legal
-        HBond is detected.
+    def evaluate_hbond(
+        self,
+        donor: mda.AtomGroup,
+        acceptor: mda.AtomGroup
+    ) -> int:
+        """Evaluate hydrogen bond formation in the current frame.
 
-        Arguments:
-            donor (mda.AtomGroup): AtomGroup of HBond donor.
-            acceptor (mda.AtomGroup): AtomGroup of HBond acceptor.
+        Checks whether there is a defined hydrogen bond between any
+        donor and acceptor atoms using distance and angle criteria.
+        Returns early when a valid H-bond is detected.
+
+        Args:
+            donor: AtomGroup of potential H-bond donors.
+            acceptor: AtomGroup of potential H-bond acceptors.
 
         Returns:
-            (int): 1 if legal hbond found, else 0
+            1 if a valid hydrogen bond is found, else 0.
         """
         for d in donor.atoms:
             pos1 = d.position
@@ -461,28 +524,24 @@ class PPInteractions:
 
         return 0
 
-    def save(self,
-             results: Results) -> None:
-        """Save results as a json file.
+    def save(self, results: Results) -> None:
+        """Save results to a JSON file.
 
-        Arguments:
-            results (Results): Dictionary of results to be saved.
-
-        Returns:
-            None
+        Args:
+            results: Dictionary of results to be saved.
         """
         with open(self.out, 'w') as fout:
             json.dump(results, fout, indent=4)
     
-    def plot_results(self,
-                     results: Results) -> None:
-        """Plot results.
+    def plot_results(self, results: Results) -> None:
+        """Generate and save plots of the results.
 
-        Arguments:
-            results (Results): Dictionary of results to be plotted.
+        Creates bar plots for each combination of covariance type
+        (positive/negative) and interaction type (hydrophobic,
+        hydrogen bond, salt bridge).
 
-        Returns:
-            None
+        Args:
+            results: Dictionary of results to be plotted.
         """
         df = self.parse_results(results)
         
@@ -494,7 +553,7 @@ class PPInteractions:
                     (pl.col('Covariance') == cov_type) & (pl.col(int_type) > 0.)
                 )
 
-                if not data.empty:
+                if not data.is_empty():
                     name = f'{cov_type.capitalize()}_Covariance_'
                     name += f'{"_".join(int_type.split(" "))}.png'
 
@@ -504,16 +563,18 @@ class PPInteractions:
                         plot / name
                     )
     
-    def parse_results(self, 
-                      results: Results) -> pl.DataFrame:
-        """Prepares results for plotting. Removes any entries which are
-        all 0. and returns as a pandas DataFrame for easier plotting.
-        
-        Arguments:
-            results (Results): Dictionary of results to be prepped.
+    def parse_results(self, results: Results) -> pl.DataFrame:
+        """Prepare results for plotting.
+
+        Removes entries with all-zero interactions and converts to
+        a Polars DataFrame for easier plotting.
+
+        Args:
+            results: Dictionary of results to be prepped.
 
         Returns:
-            (pl.DataFrame): Polars dataframe of results.
+            Polars DataFrame with columns for residue pair, interaction
+            probabilities, and covariance type.
         """
         data_rows = []
         for cov_type, pair_dict in results.items():
@@ -531,21 +592,20 @@ class PPInteractions:
 
         return pl.DataFrame(data_rows)
     
-    def make_plot(self, 
-                  data: pl.DataFrame,
-                  column: str,
-                  name: PathLike,
-                  fs: int=15) -> None:
-        """Generates a seaborn barplot from a dataframe for a specified column.
+    def make_plot(
+        self, 
+        data: pl.DataFrame,
+        column: str,
+        name: PathLike,
+        fs: int = 15
+    ) -> None:
+        """Generate a bar plot for a specified interaction type.
 
-        Arguments:
-            data (pl.DataFrame): Polars dataframe of data.
-            column (str): Label for desired column.
-            name (PathLike): Path to file to save plot to.
-            fs (int): Defaults to 15. Size of font for plot.
-
-        Returns:
-            None
+        Args:
+            data: Polars DataFrame of data.
+            column: Column name for the interaction type to plot.
+            name: Path to save the plot.
+            fs: Font size for plot labels. Defaults to 15.
         """
         fig, ax = plt.subplots(1, 1, figsize=(6, 5))
 

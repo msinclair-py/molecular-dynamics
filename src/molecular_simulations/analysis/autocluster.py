@@ -1,3 +1,9 @@
+"""Automated clustering module for molecular dynamics data.
+
+This module provides tools for automatic clustering of molecular dynamics
+trajectory data using KMeans++ with dimensionality reduction.
+"""
+
 import json
 import numpy as np
 from pathlib import Path
@@ -11,24 +17,40 @@ from typing import Any, Type, TypeVar, Union
 PathLike = Union[Path, str]
 _T = TypeVar('_T')
 
-class GenericDataloader:
-    """Loads any generic data stored in numpy arrays and stores the full
-    dataset. Capable of loading data with variable row lengths but must
-    be consistent in the columnar dimension.
 
-    Arguments:
-        data_files (list[PathLike]): List of paths to input data files.
+class GenericDataloader:
+    """Loads generic data stored in numpy arrays.
+
+    Stores the full dataset and is capable of loading data with variable
+    row lengths but must be consistent in the columnar dimension.
+
+    Attributes:
+        files: List of paths to the loaded data files.
+        data_array: The concatenated data array.
+        shapes: List of shapes of the original data files.
+
+    Args:
+        data_files: List of paths to input data files (.npy format).
+
+    Example:
+        >>> loader = GenericDataloader(['data1.npy', 'data2.npy'])
+        >>> print(loader.data.shape)
     """
-    def __init__(self,
-                 data_files: list[PathLike]):
+
+    def __init__(self, data_files: list[PathLike]):
+        """Initialize the dataloader with a list of data files.
+
+        Args:
+            data_files: List of paths to input data files (.npy format).
+        """
         self.files = data_files
         self.load_data()
 
     def load_data(self) -> None:
-        """Lumps data into one large array.
+        """Load and concatenate data from all files into one array.
 
-        Returns:
-            None
+        Lumps data into one large array by vertical stacking. If the
+        resulting array has more than 2 dimensions, it is reshaped to 2D.
         """
         self.data_array = []
         self.shapes = []
@@ -48,21 +70,21 @@ class GenericDataloader:
 
     @property
     def data(self) -> np.ndarray:
-        """Property for storing data array.
+        """Return the internal data array.
 
         Returns:
-            (np.ndarray): Internal data array.
+            The concatenated and reshaped data array.
         """
         return self.data_array
 
     @property
     def shape(self) -> tuple[int]:
-        """Property for storing shapes of input data.
-        
+        """Return the shape(s) of the input data.
+
         Returns:
-            (tuple[int]): Shape of each individual data file, or if they have 
-                different shapes, the shape of each based on the order they were
-                provided to this class.
+            If all input files have the same shape, returns that shape.
+            Otherwise, returns a list of shapes in the order the files
+            were provided.
         """
         if len(set(self.shapes)) == 1:
             return self.shapes[0]
@@ -71,17 +93,34 @@ class GenericDataloader:
 
 
 class PeriodicDataloader(GenericDataloader):
-    """Decomposes periodic data using sin and cos, returning double the features.
+    """Dataloader that decomposes periodic data using sin and cos.
+
+    Extends GenericDataloader to handle periodic data by decomposing
+    each feature into sin and cos components, effectively doubling
+    the number of features.
+
+    Args:
+        data_files: List of paths to input data files containing
+            periodic data (e.g., dihedral angles).
+
+    Example:
+        >>> loader = PeriodicDataloader(['dihedrals.npy'])
+        >>> # Original 10 features become 20 features
     """
-    def __init__(self,
-                 data_files: list[PathLike]):
+
+    def __init__(self, data_files: list[PathLike]):
+        """Initialize the periodic dataloader.
+
+        Args:
+            data_files: List of paths to input data files.
+        """
         super().__init__(data_files)
         
     def load_data(self) -> None:
-        """Loads file of input periodic data.
+        """Load periodic data and remove periodicity.
 
-        Returns:
-            None
+        Loads each file, applies the periodicity removal transformation,
+        and stores the results.
         """
         self.data_array = []
         self.shapes = []
@@ -93,17 +132,20 @@ class PeriodicDataloader(GenericDataloader):
 
         self.data_array = np.vstack(self.data_array)
 
-    def remove_periodicity(self,
-                           arr: np.ndarray) -> np.ndarray:
-        """Removes periodicity from each feature using sin and cos. Each
-        column is expanded into two such that the indices become
-        i -> 2*i, 2*i + 1.
+    def remove_periodicity(self, arr: np.ndarray) -> np.ndarray:
+        """Remove periodicity from each feature using sin and cos.
 
-        Arguments:
-            arr (np.ndarray): Data to perform decomposition on.
+        Each column is expanded into two columns such that the indices
+        become i -> 2*i, 2*i + 1. This preserves the circular nature
+        of periodic variables like angles.
+
+        Args:
+            arr: Data array with periodic features. Shape should be
+                (n_samples, n_features).
 
         Returns:
-            (np.ndarray): New array which should be shape (arr.shape[0], arr.shape[1] * 2).
+            New array with shape (arr.shape[0], arr.shape[1] * 2) where
+            each original feature is replaced by its cos and sin values.
         """
         n_features = arr.shape[1]
         return_arr = np.zeros((arr.shape[0], n_features * 2))
@@ -116,32 +158,62 @@ class PeriodicDataloader(GenericDataloader):
 
 
 class AutoKMeans:
-    """Performs automatic clustering using KMeans++ including dimensionality 
-    reduction of the feature space.
+    """Automatic clustering using KMeans++ with dimensionality reduction.
 
-    Arguments:
-        data_directory (PathLike): Directory where data files can be found.
-        pattern (str): Optional filename pattern to select out subset of npy files
-            using glob. 
-        dataloader (Type[_T]): Defaults to GenericDataLoader. Which dataloader to use.
-        max_clusters (int): Defaults to 10. The maximum number of clusters to test
-            during parameter sweep.
-        stride (int): Defaults to 1. Linear stride of number of clusters during 
-            parameter sweep. Aids on not testing too many values if number of clusters
-            is high.
-        reduction_algorithm (str): Defaults to PCA. Which dimensionality reduction
-            algorithm to use. Currently only PCA is supported.
-        reduction_kws (dict[str, Any]): Defaults to {'n_components': 2} for PCA. kwargs
-            for supplied reduction_algorithm.
+    Performs automatic clustering including dimensionality reduction of
+    the feature space and parameter sweep over number of clusters using
+    silhouette score optimization.
+
+    Attributes:
+        data: The loaded data array.
+        shape: Shape of the input data.
+        reduced: Dimensionality-reduced data.
+        centers: Cluster centers in reduced space.
+        labels: Cluster assignments for each data point.
+        cluster_centers: Mapping of cluster index to (replica, frame) tuple.
+
+    Args:
+        data_directory: Directory where data files can be found.
+        pattern: Optional filename pattern to select subset of npy files
+            using glob. Defaults to empty string (all .npy files).
+        dataloader: Which dataloader class to use. Defaults to
+            GenericDataloader.
+        max_clusters: Maximum number of clusters to test during parameter
+            sweep. Defaults to 10.
+        stride: Linear stride of number of clusters during parameter sweep.
+            Helps avoid testing too many values. Defaults to 1.
+        reduction_algorithm: Which dimensionality reduction algorithm to
+            use. Currently only 'PCA' is supported. Defaults to 'PCA'.
+        reduction_kws: Keyword arguments for the reduction algorithm.
+            Defaults to {'n_components': 2}.
+
+    Example:
+        >>> clusterer = AutoKMeans('data/', max_clusters=15)
+        >>> clusterer.run()
+        >>> print(clusterer.cluster_centers)
     """
-    def __init__(self,
-                 data_directory: PathLike,
-                 pattern: str='',
-                 dataloader: Type[_T]=GenericDataloader,
-                 max_clusters: int=10,
-                 stride: int=1,
-                 reduction_algorithm: str='PCA',
-                 reduction_kws: dict[str, Any]={'n_components': 2}):
+
+    def __init__(
+        self,
+        data_directory: PathLike,
+        pattern: str = '',
+        dataloader: Type[_T] = GenericDataloader,
+        max_clusters: int = 10,
+        stride: int = 1,
+        reduction_algorithm: str = 'PCA',
+        reduction_kws: dict[str, Any] = {'n_components': 2}
+    ):
+        """Initialize the automatic clustering workflow.
+
+        Args:
+            data_directory: Directory where data files can be found.
+            pattern: Optional filename pattern for glob matching.
+            dataloader: Dataloader class to use for loading data.
+            max_clusters: Maximum number of clusters to test.
+            stride: Step size for cluster number sweep.
+            reduction_algorithm: Dimensionality reduction method.
+            reduction_kws: Arguments for the reduction algorithm.
+        """
         self.data_dir = Path(data_directory) 
         self.dataloader = dataloader(list(self.data_dir.glob(f'{pattern}*.npy')))
         self.data = self.dataloader.data
@@ -153,10 +225,10 @@ class AutoKMeans:
         self.decomposition = Decomposition(reduction_algorithm, **reduction_kws)
     
     def run(self) -> None:
-        """Runs the automated clustering workflow.
+        """Run the complete automated clustering workflow.
 
-        Returns:
-            None
+        Executes dimensionality reduction, parameter sweep, center mapping,
+        and saves results to disk.
         """
         self.reduce_dimensionality()
         self.sweep_n_clusters([n for n in range(2, self.n_clusters, self.stride)])
@@ -165,23 +237,22 @@ class AutoKMeans:
         self.save_labels()
 
     def reduce_dimensionality(self) -> None:
-        """Performs dimensionality reduction using decomposer of choice.
+        """Perform dimensionality reduction on the data.
 
-        Returns:
-            None
+        Uses the configured decomposition algorithm to reduce the
+        feature space dimensionality.
         """
         self.reduced = self.decomposition.fit_transform(self.data)
 
-    def sweep_n_clusters(self,
-                         n_clusters: list[int]) -> None:
-        """Uses silhouette score to perform a parameter sweep over number of clusters.
-        Stores the cluster centers for the best performing parameterization.
+    def sweep_n_clusters(self, n_clusters: list[int]) -> None:
+        """Sweep over number of clusters to find optimal clustering.
 
-        Arguments:
-            n_clusters (list[int]): List of number of clusters to test.
+        Uses silhouette score to perform a parameter sweep over number
+        of clusters. Stores the cluster centers and labels for the best
+        performing parameterization.
 
-        Returns:
-            None
+        Args:
+            n_clusters: List of cluster numbers to test.
         """
         best_centers = None
         best_labels = None
@@ -201,11 +272,10 @@ class AutoKMeans:
         self.labels = best_labels
 
     def map_centers_to_frames(self) -> None:
-        """Finds and stores the data point which lies closest to the cluster center 
-        for each cluster.
+        """Map cluster centers to the closest actual data points.
 
-        Returns:
-            None
+        Finds and stores the data point which lies closest to each
+        cluster center, recording the replica and frame indices.
         """
         cluster_centers = {i: None for i in range(len(self.centers))}
         for i, center in enumerate(self.centers):
@@ -220,20 +290,19 @@ class AutoKMeans:
         self.cluster_centers = cluster_centers
 
     def save_centers(self) -> None:
-        """Saves out cluster centers as a json file.
+        """Save cluster centers to a JSON file.
 
-        Returns:
-            None
+        Writes the cluster_centers dictionary to 'cluster_centers.json'
+        in the data directory.
         """
         with open(str(self.data_dir / 'cluster_centers.json'), 'w') as fout:
             json.dump(self.cluster_centers, fout, indent=4)
 
     def save_labels(self) -> None:
-        """Generates a polars dataframe containing system, frame and cluster label 
-        assignments and saves to a parquet file.
+        """Save cluster labels to a Parquet file.
 
-        Returns:
-            None
+        Generates a Polars DataFrame containing system, frame, and cluster
+        label assignments and saves to 'cluster_assignments.parquet'.
         """
         files = self.dataloader.files
         if isinstance(self.dataloader.shape, tuple):
@@ -252,17 +321,35 @@ class AutoKMeans:
 
 
 class Decomposition:
-    """Thin wrapper for various dimensionality reduction algorithms. Uses scikit-learn style
-    methods like `fit` and `fit_transform`.
+    """Wrapper for dimensionality reduction algorithms.
 
-    Arguments:
-        algorithm (str): Which algorithm to use from PCA, TICA and UMAP. Currently only
-            PCA is supported.
-        kwargs: algorithm-specific kwargs to inject into the decomposer.
+    Provides a thin wrapper around various dimensionality reduction
+    algorithms using scikit-learn style methods.
+
+    Attributes:
+        decomposer: The underlying decomposition algorithm instance.
+
+    Args:
+        algorithm: Which algorithm to use. Options are 'PCA', 'TICA',
+            and 'UMAP'. Currently only 'PCA' is fully supported.
+        **kwargs: Algorithm-specific keyword arguments passed to the
+            decomposer constructor.
+
+    Example:
+        >>> decomp = Decomposition('PCA', n_components=3)
+        >>> reduced_data = decomp.fit_transform(data)
     """
-    def __init__(self,
-                 algorithm: str,
-                 **kwargs):
+
+    def __init__(self, algorithm: str, **kwargs):
+        """Initialize the decomposition wrapper.
+
+        Args:
+            algorithm: Name of the decomposition algorithm.
+            **kwargs: Arguments passed to the algorithm constructor.
+
+        Raises:
+            KeyError: If an unsupported algorithm is specified.
+        """
         algorithms = {
             'PCA': PCA,
             'TICA': None,
@@ -271,40 +358,35 @@ class Decomposition:
 
         self.decomposer = algorithms[algorithm](**kwargs)
     
-    def fit(self,
-            X: np.ndarray) -> None:
-        """Fits the decomposer with data.
+    def fit(self, X: np.ndarray) -> None:
+        """Fit the decomposer with data.
 
-        Arguments:
-            X (np.ndarray): Array of input data.
-
-        Returns:
-            None
+        Args:
+            X: Array of input data with shape (n_samples, n_features).
         """
         self.decomposer.fit(X)
 
-    def transform(self,
-                  X: np.ndarray) -> np.ndarray:
-        """Returns the reduced dimension data from a decomposer which has 
-        already been fit.
+    def transform(self, X: np.ndarray) -> np.ndarray:
+        """Transform data using the fitted decomposer.
 
-        Arguments:
-            X (np.ndarray): Array of input data.
+        Args:
+            X: Array of input data with shape (n_samples, n_features).
 
         Returns:
-            (np.ndarray): Reduced dimension data.
+            Reduced dimension data with shape (n_samples, n_components).
+
+        Raises:
+            sklearn.exceptions.NotFittedError: If called before fit().
         """
         return self.decomposer.transform(X)
 
-    def fit_transform(self,
-                      X: np.ndarray) -> np.ndarray:
-        """Fits the decomposer with data and returns the reduced dimension
-        data.
+    def fit_transform(self, X: np.ndarray) -> np.ndarray:
+        """Fit the decomposer and transform data in one step.
 
-        Arguments:
-            X (np.ndarray): Array of input data.
+        Args:
+            X: Array of input data with shape (n_samples, n_features).
 
         Returns:
-            (np.ndarray): Reduced dimension data.
+            Reduced dimension data with shape (n_samples, n_components).
         """
         return self.decomposer.fit_transform(X)
