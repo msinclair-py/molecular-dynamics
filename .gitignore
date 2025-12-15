@@ -5,3 +5,4 @@ examples/test_sim
 .DS_Store
 dist/
 .venv
+joss/

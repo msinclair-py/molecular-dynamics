@@ -5,7 +5,6 @@ from parsl import python_app
 import pip._vendor.tomli as tomllib
 from typing import Type, TypeVar
 from .omm_simulator import ImplicitSimulator, Simulator
-from .parsl_settings import LocalSettings
 from .reporters import RCReporter
 
 _T = TypeVar('_T')
@@ -31,9 +30,13 @@ class EVB:
         self.reactant_topology = Path(reactant_topology)
         self.reactant_coordinates = Path(reactant_coordinates)
         self.r_idx = reactant_indices
+        self.r_path = self.reactant_topology.parent
+        
         self.product_topology = Path(product_topology)
         self.product_coordinates = Path(product_coordinates)
         self.p_idx = product_indices
+        self.p_path = self.product_topology.parent
+
         self.log_path = Path(log_path)
 
         self.rc_freq = rc_write_freq
@@ -165,12 +168,13 @@ class EVB:
     def run_evb(self) -> None:
         """Collect futures for each EVB window and distribute."""
         futures = []
-        for rc0 in self.reaction_coordinate:
+        for i, rc0 in enumerate(self.reaction_coordinate):
             futures.append(
                 self.run_evb_window(
                     self.reactant_topology,
                     self.reactant_coordinates,
-                    self.log_path / f'forward_{rc0}.log',
+                    self.r_path / f'window{i}',
+                    self.log_path / f'forward_{i}.log',
                     rc0,
                     self.r_umbrella.update('rc0': rc0),
                     self.r_morse,
@@ -180,8 +184,9 @@ class EVB:
             futures.append(
                 self.run_evb_window(
                     self.product_topology,
-                    self.productt_coordinates,
-                    self.log_path / f'reverse_{rc0}.log',
+                    self.product_coordinates,
+                    self.p_path / f'window{i}',
+                    self.log_path / f'reverse_{i}.log',
                     rc0,
                     self.p_umbrella.update('rc0': rc0),
                     self.p_morse,
@@ -194,12 +199,14 @@ class EVB:
     def run_evb_window(self,
                        topology: Path,
                        coord_file: Path,
+                       out_path: Path,
                        rc_file: Path,
                        rc0: float,
                        umbrella_force: dict[str, int | float],
                        morse_bond: dict[str, int | float]) -> None:
         evb = EVB(topology=topology,
                   coord_file=coord_file,
+                  out_path=out_path,
                   rc_file=rc_file,
                   umbrella=umbrella_force,
                   morse_bond=morse_bond,
@@ -208,32 +215,24 @@ class EVB:
                   dt=self.dt)
         evb.run()
     
-    @classmethod
-    def from_toml(cls: Type[_T],
-                  config: Path) -> _T:
-        config = tomllib.load(open(config, 'rb'))
-        io = config['io']
-        sim = config['simulation']
-        parsl = config['parsl']
-
-        parsl_config = LocalSettings(**parsl).config_factory(io['cwd'])
-
-        return cls(
-            
-        )
-              
-
 class EVBCalculation:
     def __init__(self,
                  topology: Path,
                  coord_file: Path,
+                 out_path: Path,
                  rc_file: Path,
                  umbrella: dict,
                  morse_bond: dict,
                  rc_freq: int=5, # 0.01 ps @ 2 fs timestep 
                  steps: int=500_000, # 1 ns @ 2 fs timestep
                  dt: float=0.002):
-        self.sim_engine = Simulator()
+        self.sim_engine = Simulator(
+            path = topology.parent,
+            top_name = topology.name,
+            coor_name = coord_file.name,
+            out_path = out_path,
+            steps=steps,
+        )
         self.rc_file = rc_file
         self.rc_freq = rc_freq
         self.steps = steps
