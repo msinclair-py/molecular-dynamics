@@ -91,54 +91,54 @@ class TestSanderMinDefaults:
 class TestSanderMinimize:
     """Test suite for sander_minimize function"""
     
-    @patch('molecular_simulations.simulate.multires_simulator.subprocess')
     def test_sander_minimize_success(self, mock_subprocess, mock_difficult_dependencies):
         """Test sander_minimize runs successfully"""
         from molecular_simulations.simulate.multires_simulator import sander_minimize
         
-        mock_subprocess.run.return_value = MagicMock(returncode=0)
-        
-        with tempfile.TemporaryDirectory() as tmpdir:
-            tmpdir = Path(tmpdir)
+        with patch('molecular_simulations.simulate.multires_simulator.subprocess') as mock_subprocess:
+            mock_subprocess.run.return_value = MagicMock(returncode=0)
             
-            # Create dummy files
-            (tmpdir / 'system.inpcrd').write_text("coords")
-            (tmpdir / 'system.prmtop').write_text("topology")
-            
-            sander_minimize(
-                path=tmpdir,
-                inpcrd_file='system.inpcrd',
-                prmtop_file='system.prmtop',
-                sander_cmd='sander'
-            )
-            
-            # Should have called subprocess.run
-            mock_subprocess.run.assert_called_once()
-    
-    @patch('molecular_simulations.simulate.multires_simulator.subprocess')
-    def test_sander_minimize_failure(self, mock_subprocess, mock_difficult_dependencies):
-        """Test sander_minimize raises error on failure"""
-        from molecular_simulations.simulate.multires_simulator import sander_minimize
-        
-        mock_subprocess.run.return_value = MagicMock(
-            returncode=1,
-            stderr="Error message",
-            stdout="Output"
-        )
-        
-        with tempfile.TemporaryDirectory() as tmpdir:
-            tmpdir = Path(tmpdir)
-            
-            (tmpdir / 'system.inpcrd').write_text("coords")
-            (tmpdir / 'system.prmtop').write_text("topology")
-            
-            with pytest.raises(RuntimeError, match="sander error"):
+            with tempfile.TemporaryDirectory() as tmpdir:
+                tmpdir = Path(tmpdir)
+                
+                # Create dummy files
+                (tmpdir / 'system.inpcrd').write_text("coords")
+                (tmpdir / 'system.prmtop').write_text("topology")
+                
                 sander_minimize(
                     path=tmpdir,
                     inpcrd_file='system.inpcrd',
                     prmtop_file='system.prmtop',
                     sander_cmd='sander'
                 )
+                
+                # Should have called subprocess.run
+                mock_subprocess.run.assert_called_once()
+    
+    def test_sander_minimize_failure(self, mock_subprocess, mock_difficult_dependencies):
+        """Test sander_minimize raises error on failure"""
+        from molecular_simulations.simulate.multires_simulator import sander_minimize
+        
+        with patch('molecular_simulations.simulate.multires_simulator.subprocess') as mock_subprocess:
+            mock_subprocess.run.return_value = MagicMock(
+                returncode=1,
+                stderr="Error message",
+                stdout="Output"
+            )
+            
+            with tempfile.TemporaryDirectory() as tmpdir:
+                tmpdir = Path(tmpdir)
+                
+                (tmpdir / 'system.inpcrd').write_text("coords")
+                (tmpdir / 'system.prmtop').write_text("topology")
+                
+                with pytest.raises(RuntimeError, match="sander error"):
+                    sander_minimize(
+                        path=tmpdir,
+                        inpcrd_file='system.inpcrd',
+                        prmtop_file='system.prmtop',
+                        sander_cmd='sander'
+                    )
 
 
 class TestMultiResolutionSimulator:
