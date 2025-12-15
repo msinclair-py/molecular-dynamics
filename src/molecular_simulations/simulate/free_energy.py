@@ -1,9 +1,11 @@
 from openmm import *
 from openmm.app import *
+import numpy as np
 import parsl
-from parsl import python_app
+from parsl import python_app, Config
+from pathlib import Path
 import pip._vendor.tomli as tomllib
-from typing import Type, TypeVar
+from typing import Optional, Type, TypeVar
 from .omm_simulator import ImplicitSimulator, Simulator
 from .reporters import RCReporter
 
@@ -19,14 +21,14 @@ class EVB:
                  product_indices: list[int],
                  reaction_coordinate:  tuple[float],
                  log_path: Path,
+                 parsl_config: Config,
                  rc_write_freq: int=5,
                  steps: int=500000,
-                 dt: float=0.002
-                 k: float,
+                 dt: float=0.002,
+                 k: float=160000.0,
                  D_e: Optional[float]=None,
                  alpha: Optional[float]=None,
-                 r0: Optional[float]=None,
-                 parsl_config: Config,):
+                 r0: Optional[float]=None):
         self.reactant_topology = Path(reactant_topology)
         self.reactant_coordinates = Path(reactant_coordinates)
         self.r_idx = reactant_indices
@@ -135,7 +137,7 @@ class EVB:
         """
         keys = ['D_e', 'alpha', 'r0']
         settings = {}
-        for key, val in zip(keys, [D_e, alpha, r0])
+        for key, val in zip(keys, [D_e, alpha, r0]):
             if val is not None:
                 settings[key] = val
         
@@ -176,7 +178,7 @@ class EVB:
                     self.r_path / f'window{i}',
                     self.log_path / f'forward_{i}.log',
                     rc0,
-                    self.r_umbrella.update('rc0': rc0),
+                    self.r_umbrella.update({'rc0': rc0}),
                     self.r_morse,
                 )
             )
@@ -188,7 +190,7 @@ class EVB:
                     self.p_path / f'window{i}',
                     self.log_path / f'reverse_{i}.log',
                     rc0,
-                    self.p_umbrella.update('rc0': rc0),
+                    self.p_umbrella.update({'rc0': rc0}),
                     self.p_morse,
                 )
             )

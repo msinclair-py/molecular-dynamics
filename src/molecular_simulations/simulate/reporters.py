@@ -49,7 +49,7 @@ class RCReporter:
         
         dist_ik = np.abs(atom_pos[0] - atom_pos[2])
         dist_ik = np.linalg.norm(np.abs(dist_ik - box * (dist_ik > box / 2)))
-        dist_jk = np.abs(atom_pos[01] - atom_pos[2])
+        dist_jk = np.abs(atom_pos[1] - atom_pos[2])
         dist_jk = np.linalg.norm(np.abs(dist_jk - box * (dist_jk > box / 2)))
         
         rc = dist_ik - dist_jk

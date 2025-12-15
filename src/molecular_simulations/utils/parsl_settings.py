@@ -55,7 +55,7 @@ class LocalSettings(BaseComputeSettings):
                         init_blocks=1, 
                         max_blocks=1,
                         launcher=MpiExecLauncher(
-                            bind_cmd='--cpu-bind', overrides='--depth=1 --ppn1'
+                            bind_cmd='--cpu-bind', overrides='--depth=1 --ppn 1'
                         ),
                         worker_init=self.worker_init,
                     ),
