@@ -91,7 +91,7 @@ class TestSanderMinDefaults:
 class TestSanderMinimize:
     """Test suite for sander_minimize function"""
     
-    def test_sander_minimize_success(self, mock_subprocess, mock_difficult_dependencies):
+    def test_sander_minimize_success(self, mock_difficult_dependencies):
         """Test sander_minimize runs successfully"""
         from molecular_simulations.simulate.multires_simulator import sander_minimize
         
@@ -115,7 +115,7 @@ class TestSanderMinimize:
                 # Should have called subprocess.run
                 mock_subprocess.run.assert_called_once()
     
-    def test_sander_minimize_failure(self, mock_subprocess, mock_difficult_dependencies):
+    def test_sander_minimize_failure(self, mock_difficult_dependencies):
         """Test sander_minimize raises error on failure"""
         from molecular_simulations.simulate.multires_simulator import sander_minimize
         
