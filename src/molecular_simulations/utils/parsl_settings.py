@@ -37,22 +37,67 @@ class BaseComputeSettings(ABC, BaseSettings):
 
 class LocalSettings(BaseComputeSettings):
     available_accelerators: Union[int, Sequence[str]] = 4
+    worker_init: str = ''
+    nodes: int = 1
     retries: int = 1
     label: str = 'htex'
     worker_port_range: Tuple[int, int] = (10000, 20000)
 
-    def config_factory(self) -> Config:
+    def config_factory(self,
+                       run_dir: PathLike) -> Config:
         return Config(
-            run_dir=str(run_dir),
+            run_dir=str(run_dir / 'runinfo'),
             retries=self.retries,
             executors=[
                 HighThroughputExecutor(
-                    address="127.0.0.1",
+                    provider=LocalProvider(
+                        nodes_per_block=self.nodes,
+                        init_blocks=1, 
+                        max_blocks=1,
+                        launcher=MpiExecLauncher(
+                            bind_cmd='--cpu-bind', overrides='--depth=1 --ppn1'
+                        ),
+                        worker_init=self.worker_init,
+                    ),
                     label=self.label,
                     cpu_affinity="block",
                     available_accelerators=self.available_accelerators,
                     worker_port_range=self.worker_port_range,
-                    provider=LocalProvider(init_blocks=1, max_blocks=1)
+                ),
+            ],
+        )
+
+class LocalSettings(BaseComputeSettings):
+    worker_init: str = ''
+    nodes: int = 1
+    max_workers_per_node: int = 1
+    cores_per_worker: float = 1.0
+    retries: int = 1
+    label: str = 'htex'
+    worker_port_range: Tuple[int, int] = (10000, 20000)
+    available_accelerators: Union[int, Sequence[str]] = []
+
+    def config_factory(self,
+                       run_dir: PathLike) -> Config:
+        return Config(
+            run_dir=str(run_dir / 'runinfo'),
+            retries=self.retries,
+            executors=[
+                HighThroughputExecutor(
+                    provider=LocalProvider(
+                        nodes_per_block=self.nodes,
+                        init_blocks=1, 
+                        max_blocks=1,
+                        launcher=MpiExecLauncher(
+                            bind_cmd='--cpu-bind', overrides='--depth=1 --ppn1'
+                        ),
+                        worker_init=self.worker_init,
+                    ),
+                    label=self.label,
+                    max_workers_per_node=self.max_workers_per_node,
+                    cores_per_worker=self.cores_per_worker,
+                    cpu_affinity="block",
+                    worker_port_range=self.worker_port_range,
                 ),
             ],
         )
