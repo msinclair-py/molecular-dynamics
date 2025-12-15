@@ -99,13 +99,7 @@ class TestLocalSettings:
         from molecular_simulations.utils.parsl_settings import LocalSettings
         
         settings = LocalSettings()
-        
-        # Note: The LocalSettings.config_factory has a bug - it references `run_dir`
-        # which is not defined. This test documents that.
-        # In production code this should be fixed to accept run_dir parameter
-        with pytest.raises(NameError):
-            # This will fail because run_dir is not defined in the method
-            config = settings.config_factory()
+        config = settings.config_factory(Path('.'))
 
 
 class TestPolarisSettings:
