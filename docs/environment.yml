@@ -3,6 +3,13 @@ channels:
   - conda-forge
   - defaults
 dependencies:
+  - python=3.12
+  # Documentation
+  - sphinx>=7.0
+  - sphinx-rtd-theme>=2.0
+  - sphinx-autodoc-typehints>=2.0
+  - sphinx-copybutton>=0.5
+  # Package dependencies (for full type resolution)
   - MDAnalysis
   - mdtraj
   - natsort
@@ -14,11 +21,7 @@ dependencies:
   - pdbfixer
   - polars
   - pydantic
-  - python=3.12
   - pyyaml
   - rdkit
   - scikit-learn
   - seaborn
-  - sphinx
-  - sphinx-autodoc-typehints
-  - sphinx-rtd-theme

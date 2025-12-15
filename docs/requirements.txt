@@ -1,15 +1,18 @@
-MDAnalysis
-mdtraj
-natsort
-openmm
-parsl
-polars
-pyyaml
-pydantic
-rdkit
-scikit-learn
-seaborn
-sphinx
-sphinx-autodoc-typehints
-sphinx-rtd-theme
-sphinx-autoapi
+# Core documentation dependencies
+sphinx>=7.0
+sphinx-rtd-theme>=2.0
+sphinx-autodoc-typehints>=2.0
+sphinx-copybutton>=0.5
+
+# Mock dependencies for autodoc (not actually imported)
+# These allow docs to build without full scientific stack
+
+# Optional: for local builds with full type resolution
+# MDAnalysis
+# mdtraj
+# openmm
+# parsl
+# polars
+# numpy
+# scipy
+# scikit-learn
