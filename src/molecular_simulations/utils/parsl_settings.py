@@ -67,7 +67,7 @@ class LocalSettings(BaseComputeSettings):
             ],
         )
 
-class LocalSettings(BaseComputeSettings):
+class LocalCPUSettings(BaseComputeSettings):
     worker_init: str = ''
     nodes: int = 1
     max_workers_per_node: int = 1
