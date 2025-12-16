@@ -3,7 +3,10 @@ from openmm import unit as u
 from pathlib import Path
 
 class RCReporter:
-    """Custom reaction-coordinate reporter for OpenMM. Computes 
+    """Custom reaction-coordinate reporter for OpenMM. Computes reaction
+    coordinate progress for a given frame, and reports the target, rc0,
+    current state, rc, and both distances that comprise the reaction 
+    coordinate, d_ik, d_ij.
     """
     def __init__(self,
                  file: Path,
@@ -11,7 +14,7 @@ class RCReporter:
                  atom_indices: list[int],
                  rc0: float):
         self.file = open(file, 'w')
-        self.file.write()
+        self.file.write('rc0,rc,dist_ik, dist_jk\n')
         
         self.report_interval = report_interval
         self.atom_indices = atom_indices
@@ -53,4 +56,6 @@ class RCReporter:
         dist_jk = np.linalg.norm(np.abs(dist_jk - box * (dist_jk > box / 2)))
         
         rc = dist_ik - dist_jk
-        self.file.write(f'{self.rc0},{rc},{dist_ik},{dist_jk}')
+
+        self.file.write(f'{self.rc0},{rc},{dist_ik},{dist_jk}\n')
+        self.file.flush()

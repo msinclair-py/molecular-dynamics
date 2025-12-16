@@ -44,6 +44,8 @@ class Simulator:
         out_path: Optional output path for simulation outputs. If not
             provided, uses the same path as inputs.
         ff: Force field to use, either 'amber' or 'charmm'.
+        heat_steps: Number of heating timesteps. Defaults to 100,000 (200 ps
+            at 2 fs timestep).
         equil_steps: Number of equilibration timesteps. Defaults to 1,250,000
             (2.5 ns at 2 fs timestep).
         prod_steps: Number of production timesteps. Defaults to 250,000,000
@@ -88,6 +90,7 @@ class Simulator:
                  coor_name: Optional[str] = None,
                  out_path: Optional[Path] = None,
                  ff: str = 'amber',
+                 heat_steps: int = 100_000,
                  equil_steps: int = 1_250_000,
                  prod_steps: int = 250_000_000,
                  n_equil_cycles: int = 3,
@@ -109,9 +112,12 @@ class Simulator:
         self.setup_barostat(membrane)
 
         if out_path is not None:
-            p = out_path
+            p = Path(out_path)
         else:
             p = path
+
+        # make sure path exists
+        p.mkdir(exist_ok=True, parents=True)
 
         # logging/checkpointing stuff
         self.eq_state = p / 'eq.state'
@@ -128,16 +134,24 @@ class Simulator:
         self.prod_freq = prod_reporter_frequency
 
         # simulation details
+        self.heat_steps = heat_steps
         self.equil_cycles = n_equil_cycles
         self.equil_steps = equil_steps
         self.prod_steps = prod_steps
         self.k = force_constant
         self.platform = Platform.getPlatformByName(platform)
-        self.properties = {'DeviceIndex': ','.join([str(x) for x in device_ids]),
-                           'Precision': 'mixed'}
 
         if platform == 'CPU':
             self.properties = {}
+        elif platform == 'CUDA':
+            self.properties = {'DeviceIndex': ','.join([str(x) for x in device_ids]),
+                               'Precision': 'mixed'}
+        elif platform == 'OpenCL':
+            self.properties = {'DeviceIndex': ','.join([str(x) for x in device_ids]),
+                               'Precision': 'mixed',
+                               'OpenCLPlatformIndex': 1}
+        else:
+            raise AttributeError(f'Platform: {platform} not available!')
 
     def setup_barostat(self, is_membrane_system: bool) -> None:
         """Configure the barostat based on system type.
@@ -263,8 +277,8 @@ class Simulator:
         simulation = Simulation(self.topology.topology,
                                 system,
                                 integrator,
-                                self.platform,
-                                self.properties)
+                                platform=self.platform,
+                                platformProperties=self.properties)
 
         return simulation, integrator
 
@@ -434,7 +448,7 @@ class Simulator:
         """Perform slow heating protocol.
 
         Gradually heats the system from 5K to the target temperature over
-        100,000 timesteps in 1,000 discrete temperature increments.
+        `self.heat_steps` timesteps in 1,000 discrete temperature increments.
 
         Args:
             simulation: OpenMM Simulation object.
@@ -447,12 +461,11 @@ class Simulator:
         T = 5
 
         integrator.setTemperature(T * kelvin)
-        mdsteps = 100000
-        heat_steps = 1000
-        length = mdsteps // heat_steps
+        n_steps = 1000
+        length = self.heat_steps // heat_steps
         tstep = (self.temperature - T) / length
         for i in range(length):
-            simulation.step(heat_steps)
+            simulation.step(n_steps)
             temp = T + tstep * (1 + i)
 
             if temp > self.temperature:
@@ -480,7 +493,7 @@ class Simulator:
         simulation.context.reinitialize(True)
         n_levels = 5
         d_k = self.k / n_levels
-        eq_steps = self.equil_steps // n_levels
+        eq_steps = self.equil_steps // (n_levels + self.equil_cycles)
 
         for i in range(n_levels):
             simulation.step(eq_steps)
