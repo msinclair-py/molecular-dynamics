@@ -86,7 +86,7 @@ class LigandBuilder:
         self.path = path
         self.lig = path / lig
         self.ln = lig_number
-        self.out_lig = path / f'{file_prefix}{lig.stem}'
+        self.out_lig = path / f'{file_prefix}{Path(lig).stem}'
 
     def parameterize_ligand(self) -> None:
         """Generate GAFF2 parameters for the ligand.
@@ -687,13 +687,13 @@ class ComplexBuilder(ExplicitSolvent):
         out_pdb = []
         for line in pdb:
             if 'END' in line:
-                out_pdb.append(ion)
+                out_pdb.extend(ion)
                 out_pdb.append(line)
             else:
                 out_pdb.append(line)
 
         with open(self.pdb, 'w') as f:
-            f.write('\n'.join(out_pdb))
+            f.write(''.join(out_pdb))
 
     def assemble_system(self, dim: float, num_ions: int) -> None:
         """Assemble the solvated protein-ligand complex.

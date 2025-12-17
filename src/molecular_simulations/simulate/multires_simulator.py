@@ -9,7 +9,10 @@ from openmm.unit import *
 import subprocess
 import tempfile
 import parmed as pmd
-import pip._vendor.tomli as tomllib # for 3.10
+try:
+    import tomllib  # Python 3.11+
+except ModuleNotFoundError:
+    import tomli as tomllib  # Python 3.10
 from pathlib import Path
 from dataclasses import dataclass
 import os

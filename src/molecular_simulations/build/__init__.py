@@ -47,16 +47,17 @@ def add_chains(pdb: PathLike,
     u.add_TopologyAttr('chainID')
 
     if last_res == -1:
-        last_res = len(u.n_residues)
+        last_res = u.residues.n_residues
 
     chain_A = u.select_atoms(f'resid {first_res} to {last_res}')
     chain_A.atoms.chainIDs = 'A'
 
     if last_res != -1:
-        final_res = len(u.n_residues)
+        final_res = u.residues.n_residues
 
         chain_B = u.select_atoms(f'resid {last_res} to {final_res}')
         chain_B.atoms.chainIDs = 'B'
 
-    with mda.Writer(Path(pdb).with_suffix('_withchains.pdb')) as W:
+    output_path = Path(pdb).parent / (Path(pdb).stem + '_withchains.pdb')
+    with mda.Writer(output_path) as W:
         W.write(u.atoms)

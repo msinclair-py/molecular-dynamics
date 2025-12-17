@@ -7,7 +7,10 @@ import numpy as np
 import parsl
 from parsl import python_app, Config
 from pathlib import Path
-import pip._vendor.tomli as tomllib
+try:
+    import tomllib  # Python 3.11+
+except ModuleNotFoundError:
+    import tomli as tomllib  # Python 3.10
 from typing import Optional, Type, TypeVar
 from .omm_simulator import ImplicitSimulator, Simulator
 from .reporters import RCReporter

@@ -462,5 +462,437 @@ class TestAnalyzeCph:
             assert analyzer._analyzed
 
 
+class TestTitrationCurveMethods:
+    """Additional tests for TitrationCurve methods"""
+
+    def create_test_log(self, tmpdir):
+        """Helper to create test log file with state names"""
+        log_path = Path(tmpdir) / 'cpH.log'
+        log_content = """cpH: resids 20  76  83
+rank=0 cpH: pH 3.0: ['ASH', 'GLH', 'HIP']
+rank=0 cpH: pH 3.0: ['ASH', 'GLH', 'HIE']
+rank=0 cpH: pH 3.0: ['ASP', 'GLH', 'HIP']
+rank=0 cpH: pH 4.0: ['ASH', 'GLU', 'HIE']
+rank=0 cpH: pH 4.0: ['ASP', 'GLU', 'HIE']
+rank=0 cpH: pH 4.0: ['ASP', 'GLU', 'HIE']
+rank=0 cpH: pH 5.0: ['ASP', 'GLU', 'HIE']
+rank=0 cpH: pH 5.0: ['ASP', 'GLU', 'HIE']
+rank=0 cpH: pH 5.0: ['ASP', 'GLU', 'HID']
+rank=0 cpH: pH 6.0: ['ASP', 'GLU', 'HIE']
+rank=0 cpH: pH 6.0: ['ASP', 'GLU', 'HID']
+rank=0 cpH: pH 6.0: ['ASP', 'GLU', 'HIE']
+"""
+        log_path.write_text(log_content)
+        return log_path
+
+    def test_prepare(self):
+        """Test TitrationCurve.prepare method"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationCurve
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+            tc = TitrationCurve(log_path, make_plots=False)
+            tc.prepare()
+
+            assert hasattr(tc, 'df_long')
+            assert hasattr(tc, 'titrations')
+            assert hasattr(tc, 'resid_to_resname')
+            assert 'fraction_protonated' in tc.titrations.columns
+
+    def test_protonation_mapping(self):
+        """Test protonation_mapping property"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationCurve
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+            tc = TitrationCurve(log_path, make_plots=False)
+
+            mapping = tc.protonation_mapping
+            assert mapping['ASH'] == 1
+            assert mapping['ASP'] == 0
+            assert mapping['GLH'] == 1
+            assert mapping['GLU'] == 0
+            assert mapping['HIP'] == 1
+            assert mapping['HIE'] == 0
+            assert mapping['HID'] == 0
+            assert mapping['LYS'] == 1
+            assert mapping['LYN'] == 0
+
+    def test_canonical_resname(self):
+        """Test canonical_resname property"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationCurve
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+            tc = TitrationCurve(log_path, make_plots=False)
+
+            mapping = tc.canonical_resname
+            assert mapping['ASH'] == 'ASP'
+            assert mapping['ASP'] == 'ASP'
+            assert mapping['GLH'] == 'GLU'
+            assert mapping['GLU'] == 'GLU'
+            assert mapping['HIP'] == 'HIS'
+            assert mapping['HIE'] == 'HIS'
+
+    def test_compute_titrations_curvefit(self):
+        """Test compute_titrations_curvefit method"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationCurve
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+            tc = TitrationCurve(log_path, make_plots=False)
+            tc.prepare()
+
+            fits = tc.compute_titrations_curvefit()
+
+            assert 'pKa' in fits.columns
+            assert 'Hill_n' in fits.columns
+            assert 'resid' in fits.columns
+            assert 'method' in fits.columns
+            assert fits['method'].to_list() == ['curvefit'] * len(fits)
+
+    def test_compute_titrations_weighted(self):
+        """Test compute_titrations_weighted method"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationCurve
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+            tc = TitrationCurve(log_path, make_plots=False)
+            tc.prepare()
+
+            fits = tc.compute_titrations_weighted(verbose=False)
+
+            assert 'pKa' in fits.columns
+            assert 'Hill_n' in fits.columns
+            assert 'method' in fits.columns
+            assert fits['method'].to_list() == ['weighted'] * len(fits)
+
+    def test_compute_titrations_bootstrap(self):
+        """Test compute_titrations_bootstrap method"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationCurve
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+            tc = TitrationCurve(log_path, make_plots=False)
+            tc.prepare()
+
+            fits = tc.compute_titrations_bootstrap(n_bootstrap=10, verbose=False)
+
+            assert 'pKa' in fits.columns
+            assert 'pKa_lo' in fits.columns
+            assert 'pKa_hi' in fits.columns
+            assert 'Hill_n' in fits.columns
+            assert 'method' in fits.columns
+
+    def test_compute_titrations_method_selection(self):
+        """Test compute_titrations with different methods"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationCurve
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+
+            for method in ['curvefit', 'weighted']:
+                tc = TitrationCurve(log_path, make_plots=False, method=method)
+                tc.prepare()
+                tc.compute_titrations()
+
+                assert tc.fits is not None
+
+    def test_compute_titrations_invalid_method(self):
+        """Test compute_titrations with invalid method"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationCurve
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+            tc = TitrationCurve(log_path, make_plots=False, method='invalid')
+            tc.prepare()
+
+            with pytest.raises(ValueError, match="Unknown method"):
+                tc.compute_titrations()
+
+    def test_postprocess(self):
+        """Test postprocess method"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationCurve
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+            tc = TitrationCurve(log_path, make_plots=False, method='curvefit')
+            tc.prepare()
+            tc.compute_titrations()
+            tc.postprocess()
+
+            # curves might be None if all fits failed or might contain data
+            assert hasattr(tc, 'curves')
+
+    def test_postprocess_before_compute(self):
+        """Test postprocess raises error before compute_titrations"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationCurve
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+            tc = TitrationCurve(log_path, make_plots=False)
+            tc.prepare()
+
+            # Raises AttributeError because fits attribute doesn't exist yet
+            with pytest.raises((RuntimeError, AttributeError)):
+                tc.postprocess()
+
+    def test_diagnose_residue(self):
+        """Test diagnose_residue method"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationCurve
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+            tc = TitrationCurve(log_path, make_plots=False)
+            tc.prepare()
+
+            result = tc.diagnose_residue('20', verbose=False)
+
+            assert 'resid' in result
+            assert 'pH' in result
+            assert 'fraction_protonated' in result
+            assert 'frac_min' in result
+            assert 'frac_max' in result
+
+
+class TestTitrationAnalyzerAdvanced:
+    """Advanced tests for TitrationAnalyzer methods"""
+
+    def create_test_log(self, tmpdir):
+        """Helper to create test log file with state names"""
+        log_path = Path(tmpdir) / 'cpH.log'
+        lines = ["cpH: resids 20  76\n"]
+
+        pH_values = [3.0, 4.0, 5.0, 6.0, 7.0, 8.0]
+        pKa_20 = 4.5
+        pKa_76 = 6.5
+
+        for pH in pH_values:
+            for _ in range(20):
+                p20 = 1 / (1 + 10**(pH - pKa_20))
+                p76 = 1 / (1 + 10**(pH - pKa_76))
+
+                s20 = 'ASH' if np.random.random() < p20 else 'ASP'
+                s76 = 'GLH' if np.random.random() < p76 else 'GLU'
+
+                lines.append(f"rank=0 cpH: pH {pH:.1f}: ['{s20}', '{s76}']\n")
+
+        log_path.write_text(''.join(lines))
+        return log_path
+
+    def test_run_multiple_methods(self):
+        """Test running multiple fitting methods"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+            analyzer = TitrationAnalyzer(log_path)
+            analyzer.run(methods=['curvefit', 'weighted'], verbose=False)
+
+            assert analyzer.fits_curvefit is not None
+            assert analyzer.fits_weighted is not None
+            assert analyzer.comparison is not None
+
+    def test_summary_before_run(self):
+        """Test summary raises error before run"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+            analyzer = TitrationAnalyzer(log_path)
+
+            with pytest.raises(RuntimeError, match="Must call run"):
+                analyzer.summary()
+
+    def test_summary_after_run(self):
+        """Test summary method after run"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+            analyzer = TitrationAnalyzer(log_path)
+            analyzer.run(methods=['curvefit', 'weighted'], verbose=False)
+
+            result = analyzer.summary(show_all=False)
+
+            assert result is not None
+
+    def test_get_results_invalid_method(self):
+        """Test get_results with invalid method"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+            analyzer = TitrationAnalyzer(log_path)
+            analyzer.run(methods=['curvefit'], verbose=False)
+
+            with pytest.raises(ValueError, match="Unknown method"):
+                analyzer.get_results('invalid')
+
+    def test_recommend_protonation(self):
+        """Test protonation recommendation"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+            analyzer = TitrationAnalyzer(log_path)
+            analyzer.run(methods=['curvefit'], verbose=False)
+
+            recs = analyzer.recommend_protonation(target_pH=4.0, verbose=False)
+
+            assert 'resid' in recs.columns
+            assert 'recommendation' in recs.columns
+            assert 'prob_protonated' in recs.columns
+            assert 'state_name' in recs.columns
+            assert 'confidence' in recs.columns
+
+    def test_recommend_protonation_before_run(self):
+        """Test recommend_protonation raises error before run"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+            analyzer = TitrationAnalyzer(log_path)
+
+            with pytest.raises(RuntimeError, match="Must call run"):
+                analyzer.recommend_protonation(target_pH=4.0)
+
+    def test_get_protonation_string(self):
+        """Test get_protonation_string method"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+            analyzer = TitrationAnalyzer(log_path)
+            analyzer.run(methods=['curvefit'], verbose=False)
+
+            prot_str = analyzer.get_protonation_string(target_pH=4.0)
+
+            assert isinstance(prot_str, str)
+            assert ':' in prot_str  # Format: resid:state
+            assert ',' in prot_str  # Multiple residues
+
+    def test_export_protonation_states_csv(self):
+        """Test exporting protonation states to CSV"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            analyzer = TitrationAnalyzer(self.create_test_log(tmpdir), output_dir=tmpdir)
+            analyzer.run(methods=['curvefit'], verbose=False)
+
+            result = analyzer.export_protonation_states(target_pH=4.0, format='csv')
+
+            assert result is not None
+            out_file = Path(tmpdir) / 'protonation_pH4.0.csv'
+            assert out_file.exists()
+
+    def test_export_protonation_states_json(self):
+        """Test exporting protonation states to JSON"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            analyzer = TitrationAnalyzer(self.create_test_log(tmpdir), output_dir=tmpdir)
+            analyzer.run(methods=['curvefit'], verbose=False)
+
+            result = analyzer.export_protonation_states(target_pH=4.0, format='json')
+
+            out_file = Path(tmpdir) / 'protonation_pH4.0.json'
+            assert out_file.exists()
+
+    def test_export_protonation_states_txt(self):
+        """Test exporting protonation states to text"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            out_file = Path(tmpdir) / 'prot.txt'
+            analyzer = TitrationAnalyzer(self.create_test_log(tmpdir), output_dir=tmpdir)
+            analyzer.run(methods=['curvefit'], verbose=False)
+
+            result = analyzer.export_protonation_states(
+                target_pH=4.0, output_file=out_file, format='txt'
+            )
+
+            assert out_file.exists()
+            content = out_file.read_text()
+            assert 'pH 4.0' in content
+
+    def test_save_results_formats(self):
+        """Test save_results with different formats"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            analyzer = TitrationAnalyzer(self.create_test_log(tmpdir), output_dir=tmpdir)
+            analyzer.run(methods=['curvefit', 'weighted'], verbose=False)
+
+            analyzer.save_results(formats=['csv'])
+
+            assert (Path(tmpdir) / 'pKa_curvefit.csv').exists()
+            assert (Path(tmpdir) / 'pKa_weighted.csv').exists()
+            assert (Path(tmpdir) / 'pKa_comparison.csv').exists()
+
+    def test_save_results_with_prefix(self):
+        """Test save_results with prefix"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            analyzer = TitrationAnalyzer(self.create_test_log(tmpdir), output_dir=tmpdir)
+            analyzer.run(methods=['curvefit'], verbose=False)
+
+            analyzer.save_results(prefix='test', formats=['csv'])
+
+            assert (Path(tmpdir) / 'test_pKa_curvefit.csv').exists()
+
+    def test_diagnose(self):
+        """Test diagnose method"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            analyzer = TitrationAnalyzer(self.create_test_log(tmpdir))
+            analyzer.run(methods=['curvefit'], verbose=False)
+
+            result = analyzer.diagnose('20')
+
+            assert 'resid' in result
+
+    def test_diagnose_before_run(self):
+        """Test diagnose raises error before run"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            analyzer = TitrationAnalyzer(self.create_test_log(tmpdir))
+
+            with pytest.raises(RuntimeError, match="Must call run"):
+                analyzer.diagnose('20')
+
+    @patch('matplotlib.pyplot.subplots')
+    @patch('matplotlib.pyplot.tight_layout')
+    def test_plot_residue(self, mock_tight, mock_subplots):
+        """Test plot_residue with mocked matplotlib"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        mock_fig = MagicMock()
+        mock_ax = MagicMock()
+        mock_subplots.return_value = (mock_fig, mock_ax)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            analyzer = TitrationAnalyzer(self.create_test_log(tmpdir))
+            analyzer.run(methods=['curvefit', 'weighted'], verbose=False)
+
+            fig = analyzer.plot_residue('20')
+
+            assert fig is mock_fig
+            mock_ax.errorbar.assert_called()
+
+    def test_plot_residue_before_run(self):
+        """Test plot_residue raises error before run"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            analyzer = TitrationAnalyzer(self.create_test_log(tmpdir))
+
+            with pytest.raises(RuntimeError, match="Must call run"):
+                analyzer.plot_residue('20')
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

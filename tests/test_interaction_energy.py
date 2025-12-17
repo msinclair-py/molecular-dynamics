@@ -360,13 +360,102 @@ class TestDynamicInteractionEnergy:
 
 class TestInteractionEnergyAbstract:
     """Test the abstract base class"""
-    
+
     def test_abstract_class_cannot_instantiate(self):
         """Test that InteractionEnergy cannot be instantiated"""
         from molecular_simulations.analysis.interaction_energy import InteractionEnergy
-        
+
         with pytest.raises(TypeError):
             InteractionEnergy()
+
+
+class TestDynamicInteractionEnergyAdditional:
+    """Additional tests for DynamicInteractionEnergy class."""
+
+    def test_setup_pbar(self):
+        """Test setup_pbar creates progress bar."""
+        with patch('molecular_simulations.analysis.interaction_energy.Platform') as mock_platform, \
+             patch('molecular_simulations.analysis.interaction_energy.tqdm') as mock_tqdm:
+            mock_platform.getPlatformByName.return_value = MagicMock()
+
+            from molecular_simulations.analysis.interaction_energy import DynamicInteractionEnergy
+
+            die = DynamicInteractionEnergy.__new__(DynamicInteractionEnergy)
+            die.coordinates = np.zeros((100, 500, 3))
+
+            die.setup_pbar()
+
+            mock_tqdm.assert_called_once_with(total=100, position=0, leave=False)
+
+    def test_compute_energies_no_progress_bar(self):
+        """Test compute_energies without progress bar."""
+        with patch('molecular_simulations.analysis.interaction_energy.Platform') as mock_platform:
+            mock_platform.getPlatformByName.return_value = MagicMock()
+
+            from molecular_simulations.analysis.interaction_energy import DynamicInteractionEnergy
+
+            die = DynamicInteractionEnergy.__new__(DynamicInteractionEnergy)
+            die.coordinates = np.zeros((10, 500, 3))
+            die.stride = 2
+            die.progress = False
+
+            mock_ie = MagicMock()
+            mock_ie.lj = -10.0
+            mock_ie.coulomb = -20.0
+            die.IE = mock_ie
+
+            die.compute_energies()
+
+            # With stride=2 and 10 frames, should compute 5 energies
+            assert die.energies.shape == (5, 2)
+            assert mock_ie.compute.call_count == 5
+            # Check that energies were filled
+            assert np.all(die.energies[:, 0] == -10.0)
+            assert np.all(die.energies[:, 1] == -20.0)
+
+    def test_compute_energies_with_progress_bar(self):
+        """Test compute_energies with progress bar enabled."""
+        with patch('molecular_simulations.analysis.interaction_energy.Platform') as mock_platform, \
+             patch('molecular_simulations.analysis.interaction_energy.tqdm') as mock_tqdm:
+            mock_platform.getPlatformByName.return_value = MagicMock()
+            mock_pbar = MagicMock()
+            mock_tqdm.return_value = mock_pbar
+
+            from molecular_simulations.analysis.interaction_energy import DynamicInteractionEnergy
+
+            die = DynamicInteractionEnergy.__new__(DynamicInteractionEnergy)
+            die.coordinates = np.zeros((10, 500, 3))
+            die.stride = 1
+            die.progress = True
+
+            mock_ie = MagicMock()
+            mock_ie.lj = -5.0
+            mock_ie.coulomb = -15.0
+            die.IE = mock_ie
+
+            die.compute_energies()
+
+            assert die.energies.shape == (10, 2)
+            assert mock_pbar.update.call_count == 10
+            mock_pbar.close.assert_called_once()
+
+    def test_load_traj(self):
+        """Test load_traj loads trajectory with mdtraj."""
+        with patch('molecular_simulations.analysis.interaction_energy.Platform') as mock_platform, \
+             patch('molecular_simulations.analysis.interaction_energy.md') as mock_md:
+            mock_platform.getPlatformByName.return_value = MagicMock()
+            mock_traj = MagicMock()
+            mock_traj.xyz = np.random.rand(100, 500, 3)
+            mock_md.load.return_value = mock_traj
+
+            from molecular_simulations.analysis.interaction_energy import DynamicInteractionEnergy
+
+            die = DynamicInteractionEnergy.__new__(DynamicInteractionEnergy)
+
+            result = die.load_traj(Path('top.pdb'), Path('traj.dcd'))
+
+            mock_md.load.assert_called_once_with('traj.dcd', top='top.pdb')
+            assert np.array_equal(result, mock_traj.xyz)
 
 
 if __name__ == "__main__":

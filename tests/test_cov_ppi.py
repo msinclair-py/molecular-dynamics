@@ -383,5 +383,383 @@ class TestAnalyzeHydrophobic:
             assert 0.0 <= result <= 1.0
 
 
+class TestAnalyzeSaltbridge:
+    """Test the analyze_saltbridge method"""
+
+    @patch('molecular_simulations.analysis.cov_ppi.mda')
+    def test_analyze_saltbridge_incompatible_residues(self, mock_mda):
+        """Test saltbridge analysis returns 0 for incompatible residues"""
+        from molecular_simulations.analysis.cov_ppi import PPInteractions
+
+        mock_universe = MagicMock()
+        mock_universe.trajectory.__len__ = MagicMock(return_value=10)
+        mock_mda.Universe.return_value = mock_universe
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ppi = PPInteractions(
+                top='fake.prmtop',
+                traj='fake.dcd',
+                out=Path(tmpdir) / 'results.json',
+                plot=False
+            )
+
+            # Create mock residue that's not charged (ALA)
+            mock_res1 = MagicMock()
+            mock_res1.resnames = ['ALA']
+
+            mock_res2 = MagicMock()
+            mock_res2.resnames = ['GLY']
+
+            result = ppi.analyze_saltbridge(mock_res1, mock_res2)
+            assert result == 0.0
+
+    @patch('molecular_simulations.analysis.cov_ppi.mda')
+    def test_analyze_saltbridge_same_charge(self, mock_mda):
+        """Test saltbridge analysis returns 0 for same-charge residues"""
+        from molecular_simulations.analysis.cov_ppi import PPInteractions
+
+        mock_universe = MagicMock()
+        mock_universe.trajectory.__len__ = MagicMock(return_value=10)
+        mock_mda.Universe.return_value = mock_universe
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ppi = PPInteractions(
+                top='fake.prmtop',
+                traj='fake.dcd',
+                out=Path(tmpdir) / 'results.json',
+                plot=False
+            )
+
+            # Create two positive residues
+            mock_res1 = MagicMock()
+            mock_res1.resnames = ['LYS']
+
+            mock_res2 = MagicMock()
+            mock_res2.resnames = ['ARG']
+
+            result = ppi.analyze_saltbridge(mock_res1, mock_res2)
+            assert result == 0.0
+
+    @patch('molecular_simulations.analysis.cov_ppi.mda')
+    def test_analyze_saltbridge_two_negative(self, mock_mda):
+        """Test saltbridge analysis returns 0 for two negative residues"""
+        from molecular_simulations.analysis.cov_ppi import PPInteractions
+
+        mock_universe = MagicMock()
+        mock_universe.trajectory.__len__ = MagicMock(return_value=10)
+        mock_mda.Universe.return_value = mock_universe
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ppi = PPInteractions(
+                top='fake.prmtop',
+                traj='fake.dcd',
+                out=Path(tmpdir) / 'results.json',
+                plot=False
+            )
+
+            mock_res1 = MagicMock()
+            mock_res1.resnames = ['ASP']
+
+            mock_res2 = MagicMock()
+            mock_res2.resnames = ['GLU']
+
+            result = ppi.analyze_saltbridge(mock_res1, mock_res2)
+            assert result == 0.0
+
+
+class TestComputeInteractions:
+    """Test compute_interactions method"""
+
+    @patch('molecular_simulations.analysis.cov_ppi.convert_aa_code')
+    @patch('molecular_simulations.analysis.cov_ppi.mda')
+    def test_compute_interactions(self, mock_mda, mock_convert):
+        """Test compute_interactions method"""
+        from molecular_simulations.analysis.cov_ppi import PPInteractions
+
+        mock_universe = MagicMock()
+        mock_universe.trajectory.__len__ = MagicMock(return_value=10)
+        mock_mda.Universe.return_value = mock_universe
+
+        # Mock the select_atoms return
+        mock_grp = MagicMock()
+        mock_grp.resnames = ['ALA']
+        mock_universe.select_atoms.return_value = mock_grp
+
+        # Mock the aa code conversion
+        mock_convert.return_value = 'A'
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ppi = PPInteractions(
+                top='fake.prmtop',
+                traj='fake.dcd',
+                out=Path(tmpdir) / 'results.json',
+                plot=False
+            )
+
+            # Mock identify_interaction_type to return simple callable
+            ppi.identify_interaction_type = MagicMock(
+                return_value=([lambda x, y: 0.5], ['hydrophobic'])
+            )
+
+            result = ppi.compute_interactions(1, 10)
+
+            assert isinstance(result, dict)
+            # Result should have key in format 'A_X1-B_X10'
+
+
+class TestIdentifyInteractionType:
+    """Test identify_interaction_type method"""
+
+    @patch('molecular_simulations.analysis.cov_ppi.mda')
+    def test_identify_interaction_type_polar(self, mock_mda):
+        """Test interaction type identification for polar residues"""
+        from molecular_simulations.analysis.cov_ppi import PPInteractions
+
+        mock_universe = MagicMock()
+        mock_universe.trajectory.__len__ = MagicMock(return_value=10)
+        mock_mda.Universe.return_value = mock_universe
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ppi = PPInteractions(
+                top='fake.prmtop',
+                traj='fake.dcd',
+                out=Path(tmpdir) / 'results.json',
+                plot=False
+            )
+
+            # Test SER-THR (should have hbond capability)
+            functions, labels = ppi.identify_interaction_type('SER', 'THR')
+            assert 'hydrophobic' in labels
+            assert 'hbond' in labels
+
+    @patch('molecular_simulations.analysis.cov_ppi.mda')
+    def test_identify_interaction_type_charged(self, mock_mda):
+        """Test interaction type identification for charged residues"""
+        from molecular_simulations.analysis.cov_ppi import PPInteractions
+
+        mock_universe = MagicMock()
+        mock_universe.trajectory.__len__ = MagicMock(return_value=10)
+        mock_mda.Universe.return_value = mock_universe
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ppi = PPInteractions(
+                top='fake.prmtop',
+                traj='fake.dcd',
+                out=Path(tmpdir) / 'results.json',
+                plot=False
+            )
+
+            # Test ASP-LYS (should have saltbridge capability)
+            functions, labels = ppi.identify_interaction_type('ASP', 'LYS')
+            assert 'hydrophobic' in labels
+            assert 'saltbridge' in labels
+
+    @patch('molecular_simulations.analysis.cov_ppi.mda')
+    def test_identify_interaction_type_hydrophobic(self, mock_mda):
+        """Test interaction type identification for hydrophobic residues"""
+        from molecular_simulations.analysis.cov_ppi import PPInteractions
+
+        mock_universe = MagicMock()
+        mock_universe.trajectory.__len__ = MagicMock(return_value=10)
+        mock_mda.Universe.return_value = mock_universe
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ppi = PPInteractions(
+                top='fake.prmtop',
+                traj='fake.dcd',
+                out=Path(tmpdir) / 'results.json',
+                plot=False
+            )
+
+            # Test ALA-VAL (hydrophobic only)
+            functions, labels = ppi.identify_interaction_type('ALA', 'VAL')
+            assert 'hydrophobic' in labels
+            # ALA and VAL are not in the int_types dict, so only hydrophobic
+
+
+class TestMakePlot:
+    """Test make_plot method"""
+
+    @patch('molecular_simulations.analysis.cov_ppi.plt')
+    @patch('molecular_simulations.analysis.cov_ppi.sns')
+    @patch('molecular_simulations.analysis.cov_ppi.mda')
+    def test_make_plot(self, mock_mda, mock_sns, mock_plt):
+        """Test make_plot method"""
+        from molecular_simulations.analysis.cov_ppi import PPInteractions
+
+        mock_universe = MagicMock()
+        mock_universe.trajectory.__len__ = MagicMock(return_value=10)
+        mock_mda.Universe.return_value = mock_universe
+
+        mock_fig = MagicMock()
+        mock_ax = MagicMock()
+        mock_plt.subplots.return_value = (mock_fig, mock_ax)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ppi = PPInteractions(
+                top='fake.prmtop',
+                traj='fake.dcd',
+                out=Path(tmpdir) / 'results.json',
+                plot=False
+            )
+
+            data = pl.DataFrame({
+                'Residue Pair': ['A_ALA1-B_LYS10'],
+                'Hydrophobic': [0.5],
+                'Hydrogen Bond': [0.3],
+                'Salt Bridge': [0.0],
+                'Covariance': ['positive']
+            })
+
+            plot_path = Path(tmpdir) / 'test_plot.png'
+            ppi.make_plot(data, 'Hydrophobic', plot_path)
+
+            mock_sns.barplot.assert_called_once()
+            mock_plt.savefig.assert_called()
+
+
+class TestPlotResults:
+    """Test plot_results method"""
+
+    @patch('molecular_simulations.analysis.cov_ppi.Path')
+    @patch('molecular_simulations.analysis.cov_ppi.mda')
+    def test_plot_results(self, mock_mda, mock_path):
+        """Test plot_results method"""
+        from molecular_simulations.analysis.cov_ppi import PPInteractions
+
+        mock_universe = MagicMock()
+        mock_universe.trajectory.__len__ = MagicMock(return_value=10)
+        mock_mda.Universe.return_value = mock_universe
+
+        # Mock Path to avoid filesystem operations
+        mock_plot_dir = MagicMock()
+        mock_path.return_value = mock_plot_dir
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ppi = PPInteractions(
+                top='fake.prmtop',
+                traj='fake.dcd',
+                out=Path(tmpdir) / 'results.json',
+                plot=False
+            )
+
+            # Mock make_plot to avoid actual plotting
+            ppi.make_plot = MagicMock()
+            # Mock parse_results
+            ppi.parse_results = MagicMock(return_value=pl.DataFrame({
+                'Residue Pair': ['A_ALA1-B_LYS10'],
+                'Hydrophobic': [0.5],
+                'Hydrogen Bond': [0.3],
+                'Salt Bridge': [0.0],
+                'Covariance': ['positive']
+            }))
+
+            results = {
+                'positive': {
+                    'A_ALA1-B_LYS10': {
+                        'hydrophobic': 0.5,
+                        'hbond': 0.3,
+                        'saltbridge': 0.0
+                    }
+                },
+                'negative': {}
+            }
+
+            ppi.plot_results(results)
+
+            # make_plot should have been called for non-zero interactions
+            assert ppi.make_plot.called
+
+
+class TestSurveyDonorsAcceptors:
+    """Test survey_donors_acceptors method"""
+
+    @patch('molecular_simulations.analysis.cov_ppi.distance_array')
+    @patch('molecular_simulations.analysis.cov_ppi.mda')
+    def test_survey_donors_acceptors(self, mock_mda, mock_dist_array):
+        """Test survey_donors_acceptors method"""
+        from molecular_simulations.analysis.cov_ppi import PPInteractions
+
+        mock_universe = MagicMock()
+        mock_universe.trajectory.__len__ = MagicMock(return_value=10)
+        mock_universe.select_atoms.return_value = MagicMock()
+        mock_mda.Universe.return_value = mock_universe
+
+        # Mock distance array to return contacts
+        mock_dist_array.return_value = np.array([[2.5, 5.0], [3.0, 4.0]])
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ppi = PPInteractions(
+                top='fake.prmtop',
+                traj='fake.dcd',
+                out=Path(tmpdir) / 'results.json',
+                plot=False
+            )
+
+            # Create mock atoms with O and N types
+            mock_h = MagicMock()
+            mock_h.types = ['H']
+
+            mock_atom1 = MagicMock()
+            mock_atom1.type = 'O'
+            mock_atom1.bonded_atoms = MagicMock()
+            mock_atom1.bonded_atoms.types = ['H', 'C']
+
+            mock_res1 = MagicMock()
+            mock_res1.atoms = [mock_atom1]
+
+            mock_atom2 = MagicMock()
+            mock_atom2.type = 'N'
+            mock_atom2.bonded_atoms = MagicMock()
+            mock_atom2.bonded_atoms.types = ['H', 'C']
+
+            mock_res2 = MagicMock()
+            mock_res2.atoms = [mock_atom2]
+
+            donors, acceptors = ppi.survey_donors_acceptors(mock_res1, mock_res2)
+
+            # Should return AtomGroup-like objects
+            assert donors is not None
+            assert acceptors is not None
+
+
+class TestAnalyzeHbond:
+    """Test analyze_hbond method"""
+
+    @patch('molecular_simulations.analysis.cov_ppi.mda')
+    def test_analyze_hbond(self, mock_mda):
+        """Test analyze_hbond method"""
+        from molecular_simulations.analysis.cov_ppi import PPInteractions
+
+        mock_universe = MagicMock()
+        mock_universe.trajectory.__len__ = MagicMock(return_value=2)
+        mock_universe.trajectory.__iter__ = MagicMock(return_value=iter([MagicMock(), MagicMock()]))
+        mock_mda.Universe.return_value = mock_universe
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ppi = PPInteractions(
+                top='fake.prmtop',
+                traj='fake.dcd',
+                out=Path(tmpdir) / 'results.json',
+                plot=False
+            )
+
+            # Mock survey_donors_acceptors
+            mock_donors = MagicMock()
+            mock_acceptors = MagicMock()
+            ppi.survey_donors_acceptors = MagicMock(return_value=(mock_donors, mock_acceptors))
+
+            # Mock evaluate_hbond to return 1 (hbond found)
+            ppi.evaluate_hbond = MagicMock(return_value=1)
+
+            mock_res1 = MagicMock()
+            mock_res2 = MagicMock()
+
+            result = ppi.analyze_hbond(mock_res1, mock_res2)
+
+            assert isinstance(result, float)
+            assert 0.0 <= result <= 1.0
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

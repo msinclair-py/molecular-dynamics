@@ -6,3 +6,4 @@ examples/test_sim
 dist/
 .venv
 joss/
+.claude

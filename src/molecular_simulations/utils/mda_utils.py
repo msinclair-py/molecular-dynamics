@@ -1,7 +1,8 @@
 import MDAnalysis as mda
+import numpy as np
 from pathlib import Path
-from rust_simulation_tools import (kabsch_align, 
-                                   unwrap_system, 
+from rust_simulation_tools import (kabsch_align,
+                                   unwrap_system,
                                    rewrap_system)
 from typing import Optional
 

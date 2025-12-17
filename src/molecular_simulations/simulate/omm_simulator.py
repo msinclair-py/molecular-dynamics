@@ -114,7 +114,7 @@ class Simulator:
         if out_path is not None:
             p = Path(out_path)
         else:
-            p = path
+            p = self.path
 
         # make sure path exists
         p.mkdir(exist_ok=True, parents=True)
@@ -170,7 +170,7 @@ class Simulator:
         if is_membrane_system:
             self.barostat = MonteCarloMembraneBarostat
             self.barostat_args.update({
-                'defaultSurfaceTension': 0 * bar * nm,
+                'defaultSurfaceTension': 0 * bar * nanometer,
                 'defaultTemperature': self.temperature * kelvin,
                 'xymode': MonteCarloMembraneBarostat.XYIsotropic,
                 'zmode': MonteCarloMembraneBarostat.ZFree
@@ -820,9 +820,17 @@ class CustomForcesSimulator(Simulator):
                  platform: str = 'CUDA',
                  device_ids: list[int] = [0],
                  equilibration_force_constant: float = 10.):
-        super().__init__(path, equil_steps, prod_steps, n_equil_cycles,
-                         reporter_frequency, platform, device_ids,
-                         equilibration_force_constant)
+        super().__init__(
+            path=path,
+            equil_steps=equil_steps,
+            prod_steps=prod_steps,
+            n_equil_cycles=n_equil_cycles,
+            eq_reporter_frequency=reporter_frequency,
+            prod_reporter_frequency=reporter_frequency,
+            platform=platform,
+            device_ids=device_ids,
+            force_constant=equilibration_force_constant
+        )
         self.custom_forces = custom_force_objects
 
     def load_amber_files(self) -> System:

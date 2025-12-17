@@ -59,7 +59,7 @@ We use standard Python conventions:
 
 * Follow PEP 8 for code style
 * Use type hints for function signatures
-* Write docstrings in NumPy format
+* Write docstrings in Google format
 
 Example docstring:
 
@@ -68,27 +68,19 @@ Example docstring:
    def calculate_energy(atoms, cutoff=10.0):
        """Calculate pairwise interaction energy.
 
-       Parameters
-       ----------
-       atoms : MDAnalysis.AtomGroup
-           Atoms to include in calculation.
-       cutoff : float, optional
-           Distance cutoff in Angstroms. Default is 10.0.
+       Args:
+           atoms (MDAnalysis.AtomGroup): Atoms to include in calculation.
+           cutoff (float): Distance cutoff in Angstroms. Default is 10.0.
 
-       Returns
-       -------
-       float
-           Total interaction energy in kcal/mol.
+       Returns:
+           (float): Total interaction energy in kcal/mol.
 
-       Raises
-       ------
-       ValueError
-           If atoms contains fewer than 2 atoms.
+       Raises:
+           ValueError: If atoms contains fewer than 2 atoms.
 
-       Examples
-       --------
-       >>> u = mda.Universe("system.prmtop", "traj.dcd")
-       >>> energy = calculate_energy(u.select_atoms("protein"))
+       Examples:
+           >>> u = mda.Universe("system.prmtop", "traj.dcd")
+           >>> energy = calculate_energy(u.select_atoms("protein"))
        """
 
 Building Documentation

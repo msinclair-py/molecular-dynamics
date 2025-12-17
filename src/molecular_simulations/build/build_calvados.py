@@ -10,7 +10,10 @@ Classes:
 import os
 from calvados.cfg import Config, Job, Components
 import numpy as np
-import pip._vendor.tomli as tomllib  # for 3.10
+try:
+    import tomllib  # Python 3.11+
+except ModuleNotFoundError:
+    import tomli as tomllib  # Python 3.10
 import yaml
 from pathlib import Path
 from typing import Any, Union, Type, TypeVar
