@@ -363,7 +363,7 @@ class EVBCalculation:
         Returns:
             CustomBondForce: Force that drives sampling in each umbrella window.
         """
-        force = CustomCompoundBondForce(3, '0.5 * k * ((r13 - r23) - rc0) ^ 2; r13=distance(p1, p3); r23=distance(p2, p3);')
+        force = CustomCompoundBondForce(3, '0.5 * k * ((r13 - r23) - rc0) ^ 2; r13=periodicdistance(p1, p3); r23=periodicdistance(p2, p3);')
         force.addGlobalParameter('k', k)
         force.addGlobalParameter('rc0', rc0)
         force.addBond([atom_i, atom_j, atom_k])
