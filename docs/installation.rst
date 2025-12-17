@@ -46,13 +46,14 @@ For development and testing:
 Installing with Conda
 ---------------------
 
-For complex dependencies like OpenMM and AmberTools, conda is often easier:
+For complex dependencies like OpenMM and AmberTools, conda is often easier.
+To install on a CUDA-enabled machine:
 
 .. code-block:: console
 
    $ conda create -n molsim python=3.11
    $ conda activate molsim
-   $ conda install -c conda-forge openmm mdanalysis ambertools parsl
+   $ conda install -c conda-forge openmm[cuda] ambertools
    $ pip install molecular-simulations
 
 Installing from Source
@@ -95,4 +96,4 @@ Known Issues
 * OpenMM versions 8.0-8.1 may exhibit slower integration times for larger systems 
   due to a known bug. Consider using OpenMM ≥ 8.2 if available.
 * On some HPC systems, you may need to set ``OMP_NUM_THREADS=1`` to avoid OpenBLAS 
-  threading conflicts.
+  threading conflicts for parallel MM-PBSA calculations.

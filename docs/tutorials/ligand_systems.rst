@@ -51,7 +51,7 @@ Combine the parameterized ligand with your protein:
 
    from molecular_simulations.build.build_ligand import ComplexBuilder
 
-   builder = ExplicitSolvent(
+   builder = ComplexBuilder(
        path=Path("./complex_sim"),                 # Path for output files
        pdb=Path("protein.pdb"),                    # Path to protein input PDB
        ligand_param_prefix=output_dir / "ligand",  # Prefix of .frcmod, .lib files; if None compute params
@@ -71,7 +71,3 @@ Common Issues
 **Ligand parameterization fails**
    Check that the ligand has correct protonation state and no unusual 
    functional groups. GAFF2 may not cover all chemistries.
-
-**Charges don't sum to integer**
-   Ensure the input structure has correct formal charges. Consider using 
-   ``charge_method="resp"`` for more accurate charges.

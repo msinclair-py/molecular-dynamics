@@ -52,14 +52,16 @@ production MD with OpenMM:
 Running on HPC Clusters
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-For running multiple replicas on a cluster with PBS:
+For running multiple replicas on a cluster with PBS either submit a normal job
+and call `python script.py` using the LocalSettings or a few prepared Settings
+configs are provided for ALCF Polaris and ALCF Aurora:
 
 .. code-block:: python
 
    import parsl
-   from molecular_simulations.simulate import LocalSettings
+   from molecular_simulations.simulate import AuroraSettings
 
-   settings = LocalSettings.from_yaml("parsl_config.yaml")
+   settings = AuroraSettings.from_yaml("parsl_config.yaml")
    config = settings.config_factory("/path/to/run_dir")
    parsl.load(config)
 
@@ -71,6 +73,10 @@ For running multiple replicas on a cluster with PBS:
    # Submit jobs for each replica
    futures = [run_md(p) for p in Path("./").glob("replica_*")]
    results = [f.result() for f in futures]
+
+The above code, if executed on a login node of ALCF Aurora would run each simulation
+until completion. This includes resubmitting if walltime is hit until each job is finished.
+For more information about Parsl, please read the Parsl Documentation.
 
 Analyzing Trajectories
 ----------------------
@@ -112,6 +118,10 @@ Cluster simulation frames using KMeans++ with automatic k selection:
    clusterer.save_labels()
    clusterer.save_centers()
 
+The AutoKMeans is a great first-pass clustering and is sometimes sufficient
+without relying on testing various clustering methods. If you find that it is
+doing a poor job for your data, it may require custom clustering analyses.
+
 Protein-Protein Interactions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -148,6 +158,10 @@ Calculate binding free energies with MM-PBSA:
        parallel_mode="frame",
    )
    results = mmpbsa.run()
+
+The amberhome kwarg is not necessary but is provided as way for virtual environments,
+such as those created with `uv`, can still take advantage of this code by providing a
+path to another location which has ambertools installed (which cannot be done via uv/pip).
 
 Interface Scoring
 ~~~~~~~~~~~~~~~~~

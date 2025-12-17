@@ -13,24 +13,7 @@ Prerequisites
 
 We'll use lysozyme (PDB: 1AKI) as our example system.
 
-Step 1: Prepare the Structure
------------------------------
-
-First, download and clean the PDB file. The builder will handle common issues like 
-missing atoms, but the input should be a single protein chain:
-
-.. code-block:: python
-
-   from pathlib import Path
-   import urllib.request
-
-   # Download lysozyme structure
-   pdb_id = "1AKI"
-   url = f"https://files.rcsb.org/download/{pdb_id}.pdb"
-   pdb_file = Path(f"{pdb_id}.pdb")
-   urllib.request.urlretrieve(url, pdb_file)
-
-Step 2: Build the System
+Step 1: Build the System
 ------------------------
 
 Create an explicitly solvated system with the ff19SB force field:
@@ -39,8 +22,8 @@ Create an explicitly solvated system with the ff19SB force field:
 
    from molecular_simulations.build import ExplicitSolvent
 
+   pdb_file = Path('/path/to/1AKI.pdb')
    output_dir = Path("./lysozyme_sim")
-   output_dir.mkdir(exist_ok=True)
 
    builder = ExplicitSolvent(
        out=output_dir,
@@ -61,7 +44,7 @@ This creates:
    The builder uses tleap internally. Check the generated ``tleap.log`` file 
    if you encounter issues with unusual residues or missing parameters.
 
-Step 3: Run the Simulation
+Step 2: Run the Simulation
 --------------------------
 
 Initialize and run the simulation with default settings:
@@ -88,7 +71,6 @@ Output files:
 
 * ``prod.dcd`` - Production trajectory
 * ``prod.log`` - Energy, temperature, and density data
-* ``final.pdb`` - Final structure
 
 Customizing Simulation Parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -99,15 +81,15 @@ For more control over the simulation:
 
    sim = Simulator(
        path=output_dir,
-       equil_steps=1_000_000,         # 2 ns equilibration per cycle
-       prod_steps=25_000_000,         # 100 ns production
+       equil_steps=2_500_000,         # 5 ns equilibration total (unrestrained + restrained)
+       prod_steps=25_000_000,         # 100 ns production @ 4 fs timestep
        temperature=310,               # K (body temperature)
        n_equil_cycles=3,              # N cycles of unrestrained equilibration
-       prod_reporter_frequency=5000,  # Save every 20 ps
+       prod_reporter_frequency=5000,  # Save every 20 ps @ 4 fs timestep
        platform="CUDA",               # Force GPU platform
    )
 
-Step 4: Basic Analysis
+Step 3: Basic Analysis
 ----------------------
 
 Check the trajectory looks reasonable with basic metrics:
@@ -130,7 +112,7 @@ Check the trajectory looks reasonable with basic metrics:
    print(f"Trajectory: {len(u.trajectory)} frames")
    print(f"Final RMSD: {R.results.rmsd[-1, 2]:.2f} Å")
 
-Step 5: Interaction Fingerprinting
+Step 4: Interaction Fingerprinting
 ----------------------------------
 
 Calculate per-residue interaction energies to identify key contacts:
@@ -152,7 +134,7 @@ Calculate per-residue interaction energies to identify key contacts:
    data = np.load("fingerprint.npz")
    print(f"Residues analyzed: {data['residues'].shape[0]}")
 
-Step 6: Clustering Conformations
+Step 5: Clustering Conformations
 --------------------------------
 
 Identify distinct conformational states:
