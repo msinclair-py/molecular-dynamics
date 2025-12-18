@@ -175,16 +175,16 @@ class TestMultiResolutionSimulator:
                 aa_params=aa_params,
                 cg2all_bin='convert_cg2all',
                 cg2all_ckpt=None,
-                AMBERHOME='/fake/amber'
+                amberhome='/fake/amber'
             )
             
             assert sim.path == tmpdir
             assert sim.input_pdb == 'protein.pdb'
             assert sim.n_rounds == 3
-            assert sim.AMBERHOME == Path('/fake/amber')
+            assert sim.amberhome == Path('/fake/amber')
     
     def test_multires_init_no_amberhome(self, mock_difficult_dependencies):
-        """Test MultiResolutionSimulator initialization without AMBERHOME"""
+        """Test MultiResolutionSimulator initialization without amberhome"""
         from molecular_simulations.simulate.multires_simulator import MultiResolutionSimulator
         
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -198,10 +198,10 @@ class TestMultiResolutionSimulator:
                 n_rounds=1,
                 cg_params={},
                 aa_params={},
-                AMBERHOME=None
+                amberhome=None
             )
             
-            assert sim.AMBERHOME is None
+            assert sim.amberhome is None
     
     def test_multires_from_toml(self, mock_difficult_dependencies):
         """Test MultiResolutionSimulator.from_toml classmethod"""
@@ -218,7 +218,7 @@ input_pdb = "protein.pdb"
 n_rounds = 2
 cg2all_bin = "convert_cg2all"
 cg2all_ckpt = "/path/to/ckpt"
-AMBERHOME = "/fake/amber"
+amberhome = "/fake/amber"
 
 [[cg_params]]
 test = "value"
@@ -263,7 +263,7 @@ solvation_scheme = "implicit"
             assert sim.n_rounds == 1
             assert sim.cg2all_bin == 'convert_cg2all'  # Default
             assert sim.cg2all_ckpt is None  # Default
-            assert sim.AMBERHOME is None  # Default
+            assert sim.amberhome is None  # Default
     
     def test_strip_solvent(self, mock_difficult_dependencies):
         """Test strip_solvent static method"""

@@ -1,6 +1,7 @@
 from calvados import sim
 from cg2all.script.convert_cg2all import main as convert
 from dataclasses import dataclass
+from openmm.app import Simulation
 import parmed as pmd
 from pathlib import Path
 import subprocess

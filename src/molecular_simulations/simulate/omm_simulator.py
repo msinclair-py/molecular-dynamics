@@ -16,6 +16,7 @@ import logging
 import MDAnalysis as mda
 import numpy as np
 from openmm import (
+    CustomExternalForce,
     Integrator,
     LangevinMiddleIntegrator,
     MonteCarloBarostat,
@@ -44,12 +45,15 @@ from openmm.app import (
     Topology
 )
 from openmm.unit import (
+    amu,
     angstroms, 
+    bar,
     kelvin, 
     kilocalories_per_mole, 
     nanometer, 
     nanometers, 
     picosecond,
+    picoseconds,
 )
 from openmm.app.internal.singleton import Singleton
 from pathlib import Path
