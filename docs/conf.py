@@ -26,6 +26,7 @@ extensions = [
     'sphinx.ext.todo',          # Support TODO notes
     'sphinx_autodoc_typehints',
     'sphinx_copybutton',        # Copy button for code blocks (add to deps)
+    'sphinx_wagtail_theme',
 ]
 
 # Autosummary settings
@@ -84,7 +85,7 @@ templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 # -- Options for HTML output -------------------------------------------------
-html_theme = 'sphinx_rtd_theme'
+html_theme = 'sphinx_wagtail_theme'
 html_static_path = ['_static']
 
 html_theme_options = {
