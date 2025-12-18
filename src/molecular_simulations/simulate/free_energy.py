@@ -1,8 +1,7 @@
 """
 """
 
-from openmm import *
-from openmm.app import *
+from openmm import CustomBondForce, CustomCompoundBondForce
 import numpy as np
 import parsl
 from parsl import python_app, Config
@@ -353,7 +352,7 @@ class EVBCalculation:
                        atom_j: int, 
                        atom_k: int,
                        k: float, 
-                       rc0: float) -> CustomBondForce:
+                       rc0: float) -> CustomCompoundBondForce:
         """Difference of distances umbrella force. Think pulling an oxygen off
 
         Args:

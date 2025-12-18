@@ -1,510 +1,260 @@
-
-
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" data-content_root="../">
+<html class="no-js" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>molecular_simulations.build.build_ligand module &mdash; molecular-simulations 2025 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
-      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
-
-  
-      <script src="../_static/jquery.js?v=5d32c60e"></script>
-      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=cb975c41"></script>
-      <script src="../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="../_static/js/theme.js"></script>
-    <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="molecular_simulations.simulate package" href="molecular_simulations.simulate.html" />
-    <link rel="prev" title="molecular_simulations.build.build_interface module" href="molecular_simulations.build.build_interface.html" /> 
-</head>
-
-<body class="wy-body-for-nav"> 
-  <div class="wy-grid-for-nav">
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
-
-          
-          
-          <a href="../index.html" class="icon icon-home">
-            molecular-simulations
-          </a>
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+        <title>molecular_simulations.build.build_ligand module &mdash; molecular-simulations 0.3.28 documentation</title>
+    
+    <link rel="stylesheet" type="text/css" href="../_static/dist/fontawesome.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/dist/theme.css?v=310cf088" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+            <link rel="index" title="Index" href="../genindex.html" />
+            <link rel="search" title="Search" href="../search.html" />
+            <link rel="top" title="molecular-simulations 0.3.28 documentation" href="#" />
+            <link rel="up" title="molecular_simulations.build package" href="molecular_simulations.build.html" />
+            <link rel="next" title="molecular_simulations.simulate package" href="molecular_simulations.simulate.html" />
+            <link rel="prev" title="molecular_simulations.build.build_interface module" href="molecular_simulations.build.build_interface.html" />
+    </head>
+<body>
+    <script type="text/javascript" src="../_static/dist/blocking.js"></script>
+    <header class="container-fluid bg-primary">
+        <a class="btn btn-sm btn-light skip-to-content-link" href="#main">Skip to content</a>
+        <div class="container-fluid">
+            <div class="navbar navbar-expand-lg navbar-dark font-weight-bold">
+                    <a href="../index.html"
+                        title="Wagtail"
+                        class="logo navbar-brand"
+                    >
+                        <img src="../_static/img/wagtail-logo-circle.svg" width="45" height="59" alt="Wagtail"
+                            class="logo-img"
+                        />
+                        molecular-simulations
+                    </a>
+                
+                
+                    <div class="collapse navbar-collapse justify-content-end">
+                        <ul class="navbar-nav">
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="/index">Documentation</a></li>
+                            
+                        </ul>
+                    </div>
+                
+                <button class="navbar-toggler btn btn-primary d-lg-none" type="button" data-toggle="collapse" data-target="#collapseSidebar" aria-expanded="false" aria-controls="collapseExample">
+                    <span class="navbar-toggler-icon"></span>
+                    <span class="sr-only">menu</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    <div class="container-fluid">
+        <div class="row">
+            <aside class="col-12 col-lg-3 sidebar-container">
+                <div id="collapseSidebar" class="collapse sticky-top d-lg-block pt-5 pr-lg-4">
+<div id="searchbox" class="searchbox mb-6 px-1" role="search">
+    <form id="search-form" action="../search.html" autocomplete="off" method="get" role="search">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text border-right-0 bg-white py-3 pl-3 pr-2"><span class="fas fa-search"></span></div>
+            </div>
+            <input class="form-control py-3 pr-3 pl-1 h-100 border-left-0" type="search" name="q" placeholder="Search documentation" aria-label="Search documentation" id="searchinput" />
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+    </form>
+</div><div class="site-toc">
+    <nav class="toc mt-3" aria-label="Main menu">
+        <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/basic_simulation.html">Basic Protein Simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/ligand_systems.html">Protein-Ligand Systems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/hpc_deployment.html">HPC Deployment with Parsl</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/analysis_workflows.html">Analysis Workflows</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">API Overview</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">molecular_simulations</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="molecular_simulations.html">molecular_simulations package</a><ul class="current">
-<li class="toctree-l3 current"><a class="reference internal" href="molecular_simulations.html#subpackages">Subpackages</a><ul class="current">
-<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.analysis.html">molecular_simulations.analysis package</a></li>
-<li class="toctree-l4 current"><a class="reference internal" href="molecular_simulations.build.html">molecular_simulations.build package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.simulate.html">molecular_simulations.simulate package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="molecular_simulations.analysis.html">molecular_simulations.analysis package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.analysis.autocluster.html">molecular_simulations.analysis.autocluster module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.analysis.constant_pH_analysis.html">molecular_simulations.analysis.constant_pH_analysis module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.analysis.cov_ppi.html">molecular_simulations.analysis.cov_ppi module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.analysis.fingerprinter.html">molecular_simulations.analysis.fingerprinter module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.analysis.interaction_energy.html">molecular_simulations.analysis.interaction_energy module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.analysis.ipSAE.html">molecular_simulations.analysis.ipSAE module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.analysis.sasa.html">molecular_simulations.analysis.sasa module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.analysis.utils.html">molecular_simulations.analysis.utils module</a></li>
+</ul>
+</li>
+<li class="toctree-l3 current"><a class="reference internal" href="molecular_simulations.build.html">molecular_simulations.build package</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.build.build_amber.html">molecular_simulations.build.build_amber module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.build.build_calvados.html">molecular_simulations.build.build_calvados module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.build.build_interface.html">molecular_simulations.build.build_interface module</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">molecular_simulations.build.build_ligand module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="molecular_simulations.simulate.html">molecular_simulations.simulate package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.simulate.free_energy.html">molecular_simulations.simulate.free_energy module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.simulate.mmpbsa.html">molecular_simulations.simulate.mmpbsa module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.simulate.multires_simulator.html">molecular_simulations.simulate.multires_simulator module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.simulate.omm_simulator.html">molecular_simulations.simulate.omm_simulator module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.simulate.reporters.html">molecular_simulations.simulate.reporters module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="molecular_simulations.utils.html">molecular_simulations.utils package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.utils.amber_utils.html">molecular_simulations.utils.amber_utils module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.utils.mda_utils.html">molecular_simulations.utils.mda_utils module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.utils.parsl_settings.html">molecular_simulations.utils.parsl_settings module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="molecular_simulations.logging_config.html">molecular_simulations.logging_config module</a></li>
 </ul>
 </li>
 </ul>
 </li>
 </ul>
-</li>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
 </ul>
 
-        </div>
-      </div>
     </nav>
-
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../index.html">molecular-simulations</a>
-      </nav>
-
-      <div class="wy-nav-content">
-        <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
-  <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="modules.html">molecular_simulations</a></li>
-          <li class="breadcrumb-item"><a href="molecular_simulations.html">molecular_simulations package</a></li>
-          <li class="breadcrumb-item"><a href="molecular_simulations.build.html">molecular_simulations.build package</a></li>
-      <li class="breadcrumb-item active">molecular_simulations.build.build_ligand module</li>
-      <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/api/molecular_simulations.build.build_ligand.rst.txt" rel="nofollow"> View page source</a>
-      </li>
-  </ul>
-  <hr/>
+    <template data-toggle-item-template>
+        <button class="btn btn-sm btn-link toctree-expand" type="button">
+            <span class="sr-only">Toggle menu contents</span>
+        </button>
+    </template>
 </div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
-             
-  <section id="module-molecular_simulations.build.build_ligand">
-<span id="molecular-simulations-build-build-ligand-module"></span><h1>molecular_simulations.build.build_ligand module<a class="headerlink" href="#module-molecular_simulations.build.build_ligand" title="Link to this heading"></a></h1>
-<dl class="py class">
-<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.ComplexBuilder">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.build.build_ligand.</span></span><span class="sig-name descname"><span class="pre">ComplexBuilder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lig_param_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.ComplexBuilder" title="Link to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="molecular_simulations.build.build_amber.html#molecular_simulations.build.build_amber.ExplicitSolvent" title="molecular_simulations.build.build_amber.ExplicitSolvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExplicitSolvent</span></code></a></p>
-<p>Builds complexes consisting of a biomolecule pdb and small molecule ligand.
-Runs antechamber workflow to generate gaff2 parameters. Can optionally
-supply precomputed frcmod/lib files by their path + suffix in the
-lig_param_prefix argument (e.g. /path/to/lig.mol2 or /path/to/lig)</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>)</p></li>
-<li><p><strong>pdb</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>)</p></li>
-<li><p><strong>lig</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>]</em>)</p></li>
-<li><p><strong>padding</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>)</p></li>
-<li><p><strong>lig_param_prefix</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> | </em><em>None</em>)</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.ComplexBuilder.add_ion_to_pdb">
-<span class="sig-name descname"><span class="pre">add_ion_to_pdb</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.ComplexBuilder.add_ion_to_pdb" title="Link to this definition"></a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.ComplexBuilder.assemble_system">
-<span class="sig-name descname"><span class="pre">assemble_system</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_ions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.ComplexBuilder.assemble_system" title="Link to this definition"></a></dt>
-<dd><p>Slightly modified from the parent class, now we have to add
-the ligand parameters and assemble a complex rather than just
-placing a biomolecule in the water box.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.ComplexBuilder.build">
-<span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.ComplexBuilder.build" title="Link to this definition"></a></dt>
-<dd><p>Orchestrate the various things that need to happen in order
-to produce an explicit solvent system. This includes running
-<cite>pdb4amber</cite>, computing the periodic box size, number of ions
-needed and running <cite>tleap</cite> to make the final system.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.ComplexBuilder.process_ligand">
-<span class="sig-name descname"><span class="pre">process_ligand</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.ComplexBuilder.process_ligand" title="Link to this definition"></a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.13)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code></a>]</span></p>
-</dd>
-<dt class="field-even">Parameters<span class="colon">:</span></dt>
-<dd class="field-even"><ul class="simple">
-<li><p><strong>lig</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><em>Path</em></a>)</p></li>
-<li><p><strong>prefix</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> | </em><em>None</em>)</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.LigandBuilder">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.build.build_ligand.</span></span><span class="sig-name descname"><span class="pre">LigandBuilder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lig_number</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.LigandBuilder" title="Link to this definition"></a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Parameterizes a ligand molecule and generates all relevant force field files for
-running tleap.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><em>Path</em></a>)</p></li>
-<li><p><strong>lig</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>)</p></li>
-<li><p><strong>lig_number</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>)</p></li>
-<li><p><strong>file_prefix</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>)</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.LigandBuilder.check_sqm">
-<span class="sig-name descname"><span class="pre">check_sqm</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.LigandBuilder.check_sqm" title="Link to this definition"></a></dt>
-<dd><p>Checks for evidence that antechamber calculations exited
-successfully. This is always on the second to last line,
-and if not present, indicates that we failed to produce
-sane parameters for this molecule. In that case, I wish
-you good luck.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.LigandBuilder.convert_to_mol2">
-<span class="sig-name descname"><span class="pre">convert_to_mol2</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.LigandBuilder.convert_to_mol2" title="Link to this definition"></a></dt>
-<dd><p>Converts an sdf file to mol2 format using obabel.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.LigandBuilder.move_antechamber_outputs">
-<span class="sig-name descname"><span class="pre">move_antechamber_outputs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.LigandBuilder.move_antechamber_outputs" title="Link to this definition"></a></dt>
-<dd><p>Remove unneccessary outputs from antechamber. Keep the
-sqm.out file as proof that antechamber did not fail.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.LigandBuilder.parameterize_ligand">
-<span class="sig-name descname"><span class="pre">parameterize_ligand</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.LigandBuilder.parameterize_ligand" title="Link to this definition"></a></dt>
-<dd><p>Ensures consistent treatment of all ligand sdf files, generating
-GAFF2 parameters in the form of .frcmod and .lib files. Produces
-a mol2 file for coordinates and connectivity and ensures that
-antechamber did not fail. Hydrogens are added in rdkit which
-generally does a good job of this.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.LigandBuilder.process_pdb">
-<span class="sig-name descname"><span class="pre">process_pdb</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.LigandBuilder.process_pdb" title="Link to this definition"></a></dt>
-<dd><p>Ingests a PDB file of a small molecule, adds hydrogens and writes out to
-an SDF file.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.LigandBuilder.process_sdf">
-<span class="sig-name descname"><span class="pre">process_sdf</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.LigandBuilder.process_sdf" title="Link to this definition"></a></dt>
-<dd><p>Add hydrogens in rdkit. Atom hybridization is taken from the
-input sdf file and if this is incorrect, hydrogens will be wrong
-too.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.LigandBuilder.write_leap">
-<span class="sig-name descname"><span class="pre">write_leap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.LigandBuilder.write_leap" title="Link to this definition"></a></dt>
-<dd><p>Writes out a tleap input file and returns the path
-to the file.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
-</dd>
-<dt class="field-even">Parameters<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>inp</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>)</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py exception">
-<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.LigandError">
-<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.build.build_ligand.</span></span><span class="sig-name descname"><span class="pre">LigandError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'This</span> <span class="pre">system</span> <span class="pre">contains</span> <span class="pre">ligands</span> <span class="pre">which</span> <span class="pre">we</span> <span class="pre">cannot</span> <span class="pre">model!'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.LigandError" title="Link to this definition"></a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></a></p>
-<p>Custom Ligand exception to catch parameterization errors.</p>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.PLINDERBuilder">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.build.build_ligand.</span></span><span class="sig-name descname"><span class="pre">PLINDERBuilder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.PLINDERBuilder" title="Link to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="molecular_simulations.build.build_amber.html#molecular_simulations.build.build_amber.ImplicitSolvent" title="molecular_simulations.build.build_amber.ImplicitSolvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImplicitSolvent</span></code></a></p>
-<p>Builds complexes consisting of a biomolecule pdb and small molecule ligand.
-Runs antechamber workflow to generate gaff2 parameters.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><em>Path</em></a>)</p></li>
-<li><p><strong>system_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>)</p></li>
-<li><p><strong>out</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><em>Path</em></a>)</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py property">
-<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.PLINDERBuilder.anion_list">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">anion_list</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.13)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#molecular_simulations.build.build_ligand.PLINDERBuilder.anion_list" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.PLINDERBuilder.assemble_system">
-<span class="sig-name descname"><span class="pre">assemble_system</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.PLINDERBuilder.assemble_system" title="Link to this definition"></a></dt>
-<dd><p>Slightly modified from the parent class, now we have to add
-the ligand parameters and assemble a complex rather than just
-placing a biomolecule in the water box.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.PLINDERBuilder.build">
-<span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.PLINDERBuilder.build" title="Link to this definition"></a></dt>
-<dd><p>Orchestrate the various things that need to happen in order
-to produce an explicit solvent system. This includes running
-<cite>pdb4amber</cite>, computing the periodic box size, number of ions
-needed and running <cite>tleap</cite> to make the final system.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.PLINDERBuilder.cation_list">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">cation_list</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.13)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#molecular_simulations.build.build_ligand.PLINDERBuilder.cation_list" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.PLINDERBuilder.check_ligand">
-<span class="sig-name descname"><span class="pre">check_ligand</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ligand</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.PLINDERBuilder.check_ligand" title="Link to this definition"></a></dt>
-<dd><p>Check ligand for ions and other weird stuff. We need to take care not
-to assume all species containing formal charges are ions, nor that all
-species containing atoms in the cation/anion lists are ions. Good example
-is the multitude of small molecule drugs containing bonded halogens.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span></p>
-</dd>
-<dt class="field-even">Parameters<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>ligand</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><em>Path</em></a>)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.PLINDERBuilder.check_ptms">
-<span class="sig-name descname"><span class="pre">check_ptms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequence</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain_residues</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.PLINDERBuilder.check_ptms" title="Link to this definition"></a></dt>
-<dd><p>Check the full sequence (from fasta) against the potentially partial
-sequence from the structural model stored in <cite>chain_residues</cite>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span></p>
-</dd>
-<dt class="field-even">Parameters<span class="colon">:</span></dt>
-<dd class="field-even"><ul class="simple">
-<li><p><strong>sequence</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.13)"><em>List</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>]</em>)</p></li>
-<li><p><strong>chain_residues</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.13)"><em>List</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>]</em>)</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.PLINDERBuilder.inject_fasta">
-<span class="sig-name descname"><span class="pre">inject_fasta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chain_map</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.PLINDERBuilder.inject_fasta" title="Link to this definition"></a></dt>
-<dd><p>Checks fasta against actual sequence. Modifies sequence so that
-it correctly matches in the case of non-canonical residues such
-as phosphorylations (i.e. SER -&gt; SEP).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code>]</span></p>
-</dd>
-<dt class="field-even">Parameters<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>chain_map</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.13)"><em>Dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.13)"><em>List</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>]</em><em>]</em>)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.PLINDERBuilder.ligand_handler">
-<span class="sig-name descname"><span class="pre">ligand_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ligs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.PLINDERBuilder.ligand_handler" title="Link to this definition"></a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.13)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code></a>]]</span></p>
-</dd>
-<dt class="field-even">Parameters<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>ligs</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.13)"><em>List</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><em>Path</em></a><em>]</em>)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.PLINDERBuilder.migrate_files">
-<span class="sig-name descname"><span class="pre">migrate_files</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.PLINDERBuilder.migrate_files" title="Link to this definition"></a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.PLINDERBuilder.place_ions">
-<span class="sig-name descname"><span class="pre">place_ions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.PLINDERBuilder.place_ions" title="Link to this definition"></a></dt>
-<dd><p>This is horrible and I apologize profusely if you find yourself
-having to go through the following. Good luck.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.PLINDERBuilder.prep_protein">
-<span class="sig-name descname"><span class="pre">prep_protein</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.PLINDERBuilder.prep_protein" title="Link to this definition"></a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.build.build_ligand.PLINDERBuilder.triage_pdb">
-<span class="sig-name descname"><span class="pre">triage_pdb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">broken_pdb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repaired_pdb</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.build.build_ligand.PLINDERBuilder.triage_pdb" title="Link to this definition"></a></dt>
-<dd><p>Runs PDBFixer to repair missing loops and ensure structure is
-in good shape. Runs a check against the sequence provided by
-PLINDER and ensures that any non-canonical residues are represented
-in the sequence properly.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
-</dd>
-<dt class="field-even">Parameters<span class="colon">:</span></dt>
-<dd class="field-even"><ul class="simple">
-<li><p><strong>broken_pdb</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><em>Path</em></a>)</p></li>
-<li><p><strong>repaired_pdb</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><em>Path</em></a>)</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
+                    <div class="d-lg-none border-bottom">
+                        
+                    </div>
+                </div>
+            </aside>
+            <div class="col-12 col-lg-9 pt-5">
+                <header class="row align-items-baseline">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+    <ol class="breadcrumb m-0 p-0 bg-transparent">
+        <li class="breadcrumb-item"><a href="../index.html">Docs</a></li>
+            <li class="breadcrumb-item"><a href="modules.html">molecular_simulations</a></li>
+            <li class="breadcrumb-item"><a href="molecular_simulations.html">molecular_simulations package</a></li>
+            <li class="breadcrumb-item"><a href="molecular_simulations.build.html">molecular_simulations.build package</a></li>
+        <li class="breadcrumb-item active" aria-current="page">molecular_simulations.build.build_ligand module</li>
+    </ol>
+</nav>
+                    </div>
+                    <div class="col-sm-12 col-lg-auto mt-3 mt-lg-3">
+                        <noscript>
+                            <p>JavaScript is required to toggle light/dark mode..</p>
+                        </noscript>
+                        <button id="wagtail-theme" class="btn btn-sm btn-light text-decoration-none" type="button">
+                            <span class="dark-only"><i class="fas fa-sun"></i> Light mode</span>
+                            <span class="light-only"><i class="fas fa-moon"></i> Dark mode</span>
+                        </button>
+    <a class="btn btn-sm btn-light text-decoration-none" href="https://github.com/wagtail/sphinx_wagtail_theme/blob/main/docs/api/molecular_simulations.build.build_ligand.rst" rel="nofollow">
+        <span class="btn-icon"><span class="fab fa-github"></span></span>
+        <span class="btn-text">Edit on GitHub</span>
+    </a>
+    <a class="btn btn-sm btn-light text-decoration-none" href="../_sources/api/molecular_simulations.build.build_ligand.rst.txt" rel="nofollow">
+        <span class="btn-icon"><span class="fas fa-code"></span></span>
+        <span class="btn-text">View source</span>
+    </a>
+                        
+                    </div>
+                </header>
+                <div class="row" >
+                    <div class="col-12">
+                        <hr class="w-100 my-4">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
+                        <main role="main" id="main">
+    <section id="molecular-simulations-build-build-ligand-module">
+<h1>molecular_simulations.build.build_ligand module<a class="headerlink" href="#molecular-simulations-build-build-ligand-module" title="Link to this heading">¶</a></h1>
 </section>
 
-
-           </div>
-          </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="molecular_simulations.build.build_interface.html" class="btn btn-neutral float-left" title="molecular_simulations.build.build_interface module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="molecular_simulations.simulate.html" class="btn btn-neutral float-right" title="molecular_simulations.simulate package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
-
-  <hr/>
-
-  <div role="contentinfo">
-    <p>&#169; Copyright 2025, Matt Sinclair.</p>
-  </div>
-
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
-
-</footer>
+</main>
+                        <nav aria-label="Page navigation" class="py-4 my-5 clearfix font-weight-bold border-top">
+    <a class="float-left" href="molecular_simulations.build.build_interface.html" title="Previous">
+        <span aria-hidden="true">←&nbsp;</span>molecular_simulations.build.build_interface module
+    </a>
+    <a class="float-right" href="molecular_simulations.simulate.html" title="Next">
+        molecular_simulations.simulate package <span aria-hidden="true">&nbsp;→</span>
+    </a>
+</nav>
+                    </div>
+                    
+                </div>
+            </div>
         </div>
-      </div>
-    </section>
-  </div>
-  <script>
-      jQuery(function () {
-          SphinxRtdTheme.Navigation.enable(true);
-      });
-  </script> 
-
-</body>
+    </div>
+    <footer class="container-fluid bg-primary text-light">
+        <div class="container">
+            <div class="row">
+        <div class="col p-4">
+            
+                <nav aria-label="Footer">
+                    <ul class="nav justify-content-center mb-2">
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="https://wagtail.org/features/">Features</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="https://wagtail.org/about-wagtail/"> About Wagtail</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="https://wagtail.org/services/"> Services</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="https://wagtail.org/blog/"> Blog</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="https://wagtail.org/packages/"> Packages</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="https://wagtail.org/developers/"> Developers</a></li>
+                        
+                    </ul>
+                </nav>
+            
+            <div class="text-center">
+                    &copy; Copyright 2025, Matt Sinclair
+            </div>
+        </div>
+    </div>
+        </div>
+    </footer>
+        <script src="../_static/documentation_options.js?v=11b5e5c7"></script>
+        <script src="../_static/doctools.js?v=9bcbadda"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="../_static/copybutton.js?v=fd10adb8"></script>
+        <script type="text/javascript" src="../_static/dist/theme.js"></script>
+        <script type="text/javascript" src="../_static/dist/vendor.js"></script>
+        <script type="text/javascript" src="../_static/searchtools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function() { Search.loadIndex("../searchindex.js"); });
+        </script>
+        <script type="text/javascript" id="searchindexloader"></script>
+    </body>
 </html>

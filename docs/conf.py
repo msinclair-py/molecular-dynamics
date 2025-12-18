@@ -86,18 +86,12 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 # -- Options for HTML output -------------------------------------------------
 html_theme = 'sphinx_wagtail_theme'
+html_show_sphinx = False
 html_static_path = ['_static']
 
 html_theme_options = {
-    'logo_only': False,
-    'display_version': True,
-    'prev_next_buttons_location': 'bottom',
-    'style_external_links': True,
-    'collapse_navigation': False,
-    'sticky_navigation': True,
-    'navigation_depth': 4,
-    'includehidden': True,
-    'titles_only': False,
+    'project_name': 'molecular-simulations',
+    'header_links': 'Documentation|/index',
 }
 
 # Custom CSS (create _static/custom.css if needed)

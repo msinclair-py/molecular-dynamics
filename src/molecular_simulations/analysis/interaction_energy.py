@@ -7,9 +7,9 @@ Supports both static models and dynamic trajectory analysis.
 
 from abc import ABC, abstractmethod
 from copy import deepcopy
-from openmm import *
-from openmm.app import *
-from openmm.unit import *
+from openmm import (Context, Platform, System, VerletIntegrator)
+from openmm.app import (AmberPrmtopFile, CutoffNonPeriodic, ForceField, HBonds, PDBFile, Topology)
+from openmm.unit import (picosecond, kilocalories_per_mole)
 import MDAnalysis as mda
 from MDAnalysis.analysis.distances import contact_matrix
 import mdtraj as md

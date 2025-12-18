@@ -15,9 +15,42 @@ from copy import deepcopy
 import logging
 import MDAnalysis as mda
 import numpy as np
-from openmm import *
-from openmm.app import *
-from openmm.unit import *
+from openmm import (
+    Integrator,
+    LangevinMiddleIntegrator,
+    MonteCarloBarostat,
+    MonteCarloMembraneBarostat,
+    Platform, 
+    System
+)
+from openmm.app import (
+    AmberInpcrdFile, 
+    AmberPrmtopFile,
+    CharmmParameterSet,
+    CharmmPsfFile,
+    CheckpointReporter,
+    CutoffNonPeriodic,
+    DCDReporter,
+    ForceField,
+    GBn2,
+    GromacsGroFile,
+    GromacsTopFile,
+    HBonds,
+    NoCutoff,
+    PDBFile,
+    PME,
+    Simulation,
+    StateDataReporter,
+    Topology
+)
+from openmm.unit import (
+    angstroms, 
+    kelvin, 
+    kilocalories_per_mole, 
+    nanometer, 
+    nanometers, 
+    picosecond,
+)
 from openmm.app.internal.singleton import Singleton
 from pathlib import Path
 from typing import Optional, Union
