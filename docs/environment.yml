@@ -6,7 +6,7 @@ dependencies:
   - python=3.12
   # Documentation
   - sphinx>=7.0
-  - sphinx-rtd-theme>=2.0
+  - sphinx-wagtail-theme
   - sphinx-autodoc-typehints>=2.0
   - sphinx-copybutton>=0.5
   # Package dependencies (for full type resolution)
