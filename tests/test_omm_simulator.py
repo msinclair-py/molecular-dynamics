@@ -243,7 +243,11 @@ class TestSimulatorCheckpoint:
 
     @patch('molecular_simulations.simulate.omm_simulator.Platform')
     def test_load_checkpoint(self, mock_platform):
-        """Test load_checkpoint method"""
+        """Test load_checkpoint method.
+
+        Note: loadCheckpoint() restores positions, velocities, and step count
+        automatically, so no additional setPositions/setVelocities calls are needed.
+        """
         from molecular_simulations.simulate.omm_simulator import Simulator
 
         mock_platform.getPlatformByName.return_value = MagicMock()
@@ -258,16 +262,11 @@ class TestSimulatorCheckpoint:
             sim = Simulator(path=path)
 
             mock_simulation = MagicMock()
-            mock_state = MagicMock()
-            mock_state.getPositions.return_value = [[0, 0, 0]]
-            mock_state.getVelocities.return_value = [[0, 0, 0]]
-            mock_simulation.context.getState.return_value = mock_state
 
             result = sim.load_checkpoint(mock_simulation, str(chkpt))
 
             mock_simulation.loadCheckpoint.assert_called_once()
-            mock_simulation.context.setPositions.assert_called_once()
-            mock_simulation.context.setVelocities.assert_called_once()
+            assert result is mock_simulation
 
 
 class TestSimulatorReporters:
