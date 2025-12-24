@@ -78,6 +78,7 @@ class ImplicitSolvent:
                  out: OptPath = None,
                  delete_temp_file: bool = True,
                  amberhome: Optional[str] = None,
+                 debug: bool = False,
                  **kwargs):
         """Initialize the ImplicitSolvent builder."""
         if path is None:
@@ -122,6 +123,8 @@ class ImplicitSolvent:
             ff for ff, switch in zip(ffs, switches) if switch
         ]
 
+        self.debug = debug
+
         for key, val in kwargs.items():
             setattr(self, key, val)
 
@@ -153,9 +156,12 @@ class ImplicitSolvent:
         quit
         """
 
-        self.temp_tleap(tleap_in)
+        if self.debug:
+            self.debug_tleap(tleap_in)
+        else:
+            self.temp_tleap(tleap_in)
 
-    def write_leap(self, inp: str) -> Path:
+    def debug_tleap(self, inp: str) -> None:
         """Write a tleap input file.
 
         Args:
@@ -168,7 +174,9 @@ class ImplicitSolvent:
         with open(leap_file, 'w') as outfile:
             outfile.write(inp)
 
-        return Path(leap_file)
+        tleap_command = f'{self.tleap} -f {leap_file}'
+        subprocess.run(tleap_command, shell=True, cwd=str(self.path), check=True,
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     def temp_tleap(self, inp: str) -> None:
         """Run tleap with a temporary input file.
@@ -239,6 +247,7 @@ class ExplicitSolvent(ImplicitSolvent):
                  polarizable: bool = False,
                  delete_temp_file: bool = True,
                  amberhome: Optional[str] = None,
+                 debug: bool=False,
                  **kwargs):
         """Initialize the ExplicitSolvent builder."""
         super().__init__(path=path,
@@ -251,6 +260,7 @@ class ExplicitSolvent(ImplicitSolvent):
                          out=None,
                          delete_temp_file=delete_temp_file,
                          amberhome=amberhome,
+                         debug=debug,
                          **kwargs)
         self.pad = padding
         self.ffs.extend(['leaprc.water.opc'])
@@ -317,8 +327,11 @@ class ExplicitSolvent(ImplicitSolvent):
         saveamberparm PROT {out_top} {out_coor}
         quit
         """
-
-        self.temp_tleap(tleap_complex)
+        
+        if self.debug:
+            self.debug_tleap(tleap_complex)
+        else:
+            self.temp_tleap(tleap_complex)
 
     def get_pdb_extent(self) -> int:
         """Calculate the required box dimension.

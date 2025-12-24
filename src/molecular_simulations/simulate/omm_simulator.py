@@ -149,7 +149,7 @@ class Simulator:
         elif platform == 'OpenCL':
             self.properties = {'DeviceIndex': ','.join([str(x) for x in device_ids]),
                                'Precision': 'mixed',
-                               'OpenCLPlatformIndex': 1}
+                               'OpenCLPlatformIndex': '1'}
         else:
             raise AttributeError(f'Platform: {platform} not available!')
 

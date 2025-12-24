@@ -89,14 +89,13 @@ class LocalCPUSettings(BaseComputeSettings):
                         init_blocks=1, 
                         max_blocks=1,
                         launcher=MpiExecLauncher(
-                            bind_cmd='--cpu-bind', overrides='--depth=1 --ppn1'
+                            bind_cmd='--cpu-bind depth', overrides='--depth=1 --ppn 1'
                         ),
                         worker_init=self.worker_init,
                     ),
                     label=self.label,
                     max_workers_per_node=self.max_workers_per_node,
                     cores_per_worker=self.cores_per_worker,
-                    cpu_affinity="block",
                     worker_port_range=self.worker_port_range,
                 ),
             ],

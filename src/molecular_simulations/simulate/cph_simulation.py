@@ -1,22 +1,23 @@
 from datetime import datetime
 import json
 import logging
+from openmm import LangevinIntegrator
 from openmm.app import (CutoffNonPeriodic, 
                         HBonds,
                         ForceField, 
-                        LangevinIntegrator, 
                         PDBFile, 
                         PME,
                         Topology)
 from openmm.unit import kelvin, nanometers, picosecond
 import MDAnalysis as mda
-from .constantph.constantph import ConstantPH
-from .constantph.logging import setup_task_logger
+import numpy as np
 import parsl
 from parsl import Config, python_app
 from pathlib import Path
 from typing import Any, Optional
 import uuid
+from .constantph.constantph import ConstantPH
+from .constantph.logging import setup_task_logger
 
 @python_app
 def run_cph_sim(params: dict[str, Any],
@@ -62,7 +63,7 @@ def setup_worker_logger(self,
 
 class ConstantPHEnsemble:
     def __init__(self,
-                 path: list[Path],
+                 paths: list[Path],
                  reference_energies: dict[str, list[float]],
                  parsl_config: Config,
                  log_dir: Path,

@@ -99,7 +99,6 @@ def merge_lipid21_residues(topology):
     return new_top
 
 def generate_exclusions(out):
-
     titratable = ' '.join([
         'ASP', 'ASH', 
         'CYS', 'CYX',
