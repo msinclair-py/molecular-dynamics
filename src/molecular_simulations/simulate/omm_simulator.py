@@ -56,6 +56,7 @@ from openmm.unit import (
     picoseconds,
 )
 from openmm.app.internal.singleton import Singleton
+import os
 from pathlib import Path
 from typing import Optional, Union
 
@@ -180,13 +181,32 @@ class Simulator:
 
         if platform == 'CPU':
             self.properties = {}
+
         elif platform == 'CUDA':
-            self.properties = {'DeviceIndex': ','.join([str(x) for x in device_ids]),
+            if device_id := os.environ.get('CUDA_VISIBLE_DEVICES', False):
+                if isinstance(device_id, list):
+                    device_index = ','.join([str(x) for x in device_id])
+                else:
+                    device_index = str(device_id)
+            else:
+                device_index = ','.join([str(x) for x in device_ids])
+
+            self.properties = {'DeviceIndex': device_index,
                                'Precision': 'mixed'}
+
         elif platform == 'OpenCL':
-            self.properties = {'DeviceIndex': ','.join([str(x) for x in device_ids]),
-                               'Precision': 'mixed',
-                               'OpenCLPlatformIndex': '1'}
+            if device_id := os.environ.get('ZE_AFFINITY_MASK', False):
+                if isinstance(device_id, list):
+                    device_index = ','.join([str(x) for x in device_id])
+                else:
+                    device_index = str(device_id)
+            else:
+                device_index = ','.join([str(x) for x in device_ids])
+
+            self.properties = {'Precision': 'mixed'}
+            #self.properties = {'DeviceIndex': device_index,
+            #                   'Precision': 'mixed',
+            #                   'OpenCLPlatformIndex': '1'}
         else:
             raise AttributeError(f'Platform: {platform} not available!')
 
@@ -499,7 +519,7 @@ class Simulator:
 
         integrator.setTemperature(T * kelvin)
         n_steps = 1000
-        length = self.heat_steps // heat_steps
+        length = self.heat_steps // n_steps
         tstep = (self.temperature - T) / length
         for i in range(length):
             simulation.step(n_steps)
