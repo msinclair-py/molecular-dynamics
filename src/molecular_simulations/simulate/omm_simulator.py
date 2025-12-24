@@ -15,9 +15,46 @@ from copy import deepcopy
 import logging
 import MDAnalysis as mda
 import numpy as np
-from openmm import *
-from openmm.app import *
-from openmm.unit import *
+from openmm import (
+    CustomExternalForce,
+    Integrator,
+    LangevinMiddleIntegrator,
+    MonteCarloBarostat,
+    MonteCarloMembraneBarostat,
+    Platform, 
+    System
+)
+from openmm.app import (
+    AmberInpcrdFile, 
+    AmberPrmtopFile,
+    CharmmParameterSet,
+    CharmmPsfFile,
+    CheckpointReporter,
+    CutoffNonPeriodic,
+    DCDReporter,
+    ForceField,
+    GBn2,
+    GromacsGroFile,
+    GromacsTopFile,
+    HBonds,
+    NoCutoff,
+    PDBFile,
+    PME,
+    Simulation,
+    StateDataReporter,
+    Topology
+)
+from openmm.unit import (
+    amu,
+    angstroms, 
+    bar,
+    kelvin, 
+    kilocalories_per_mole, 
+    nanometer, 
+    nanometers, 
+    picosecond,
+    picoseconds,
+)
 from openmm.app.internal.singleton import Singleton
 from pathlib import Path
 from typing import Optional, Union
@@ -289,6 +326,9 @@ class Simulator:
         Checks production log to resume from checkpoints if available. Runs
         equilibration if needed, then production MD.
         """
+        # Store original total for progress reporting
+        self.total_prod_steps = self.prod_steps
+
         skip_eq = all([f.exists()
                        for f in [self.eq_state, self.eq_chkpt, self.eq_log]])
         if not skip_eq:
@@ -385,16 +425,9 @@ class Simulator:
             checkpoint: Path to OpenMM checkpoint file.
 
         Returns:
-            Simulation with restored positions and velocities.
+            Simulation with restored positions, velocities, and step count.
         """
         simulation.loadCheckpoint(checkpoint)
-        state = simulation.context.getState(getVelocities=True, getPositions=True)
-        positions = state.getPositions()
-        velocities = state.getVelocities()
-
-        simulation.context.setPositions(positions)
-        simulation.context.setVelocities(velocities)
-
         return simulation
 
     def attach_reporters(self,
@@ -415,6 +448,10 @@ class Simulator:
         Returns:
             Simulation with reporters attached.
         """
+        # Use total_prod_steps for progress reporting if available (set by run()),
+        # otherwise fall back to prod_steps for direct production() calls
+        total_steps = getattr(self, 'total_prod_steps', self.prod_steps)
+
         simulation.reporters.extend([
             DCDReporter(
                 dcd_file,
@@ -431,7 +468,7 @@ class Simulator:
                 remainingTime=True,
                 speed=True,
                 volume=True,
-                totalSteps=self.prod_steps,
+                totalSteps=total_steps,
                 separator='\t'
             ),
             CheckpointReporter(
@@ -550,30 +587,39 @@ class Simulator:
     def check_num_steps_left(self) -> None:
         """Check production log to determine remaining simulation steps.
 
-        Reads the log file to find the last completed step, then decrements
-        the remaining steps. Also handles duplicate frames that may occur
-        when restarting from checkpoints.
+        Reads the log file to find the last completed step, then calculates
+        the remaining steps needed. Also handles duplicate frames that may
+        occur when restarting from checkpoints (since checkpoint frequency
+        may not align with reporter frequency).
         """
-        prod_log = open(str(self.prod_log)).readlines()
+        with open(str(self.prod_log)) as f:
+            prod_log = f.readlines()
 
         try:
             last_line = prod_log[-1]
             last_step = int(last_line.split()[1].strip())
-        except IndexError:
+        except (IndexError, ValueError):
             try:
                 last_line = prod_log[-2]
                 last_step = int(last_line.split()[1].strip())
-            except IndexError:  # something weird happened just run full time
+            except (IndexError, ValueError):  # something weird happened just run full time
                 return
 
-        if time_left := (self.prod_steps - last_step):
-            self.prod_steps -= time_left
+        # Calculate steps remaining from the checkpoint position
+        # Checkpoint is written every prod_freq * 10 steps, so checkpoint_step
+        # is the most recent multiple of checkpoint_freq before last_step
+        checkpoint_freq = self.prod_freq * 10
+        n_repeat_timesteps = last_step % checkpoint_freq
+        time_left_from_log = self.prod_steps - last_step
 
-            if n_repeat_timesteps := (last_step % (self.prod_freq * 10)):
-                self.prod_steps -= n_repeat_timesteps
-                n_repeat_frames = n_repeat_timesteps / self.prod_freq
+        if time_left_from_log > 0:
+            # Add back steps that will be re-run from checkpoint
+            self.prod_steps = time_left_from_log + n_repeat_timesteps
 
-                n_total_frames = last_step / self.prod_freq
+            # Log duplicate frames that will be created
+            if n_repeat_timesteps:
+                n_repeat_frames = n_repeat_timesteps // self.prod_freq
+                n_total_frames = last_step // self.prod_freq
 
                 lines = [f'{n_total_frames - n_repeat_frames},{n_total_frames}']
                 duplicate_log = self.path / 'duplicate_frames.log'

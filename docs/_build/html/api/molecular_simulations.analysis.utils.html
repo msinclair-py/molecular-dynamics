@@ -1,258 +1,260 @@
-
-
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" data-content_root="../">
+<html class="no-js" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>molecular_simulations.analysis.utils module &mdash; molecular-simulations 2025 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
-      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
-
-  
-      <script src="../_static/jquery.js?v=5d32c60e"></script>
-      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=cb975c41"></script>
-      <script src="../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="../_static/js/theme.js"></script>
-    <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="molecular_simulations.build package" href="molecular_simulations.build.html" />
-    <link rel="prev" title="molecular_simulations.analysis.sasa module" href="molecular_simulations.analysis.sasa.html" /> 
-</head>
-
-<body class="wy-body-for-nav"> 
-  <div class="wy-grid-for-nav">
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
-
-          
-          
-          <a href="../index.html" class="icon icon-home">
-            molecular-simulations
-          </a>
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+        <title>molecular_simulations.analysis.utils module &mdash; molecular-simulations 0.3.28 documentation</title>
+    
+    <link rel="stylesheet" type="text/css" href="../_static/dist/fontawesome.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/dist/theme.css?v=310cf088" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+            <link rel="index" title="Index" href="../genindex.html" />
+            <link rel="search" title="Search" href="../search.html" />
+            <link rel="top" title="molecular-simulations 0.3.28 documentation" href="#" />
+            <link rel="up" title="molecular_simulations.analysis package" href="molecular_simulations.analysis.html" />
+            <link rel="next" title="molecular_simulations.build package" href="molecular_simulations.build.html" />
+            <link rel="prev" title="molecular_simulations.analysis.sasa module" href="molecular_simulations.analysis.sasa.html" />
+    </head>
+<body>
+    <script type="text/javascript" src="../_static/dist/blocking.js"></script>
+    <header class="container-fluid bg-primary">
+        <a class="btn btn-sm btn-light skip-to-content-link" href="#main">Skip to content</a>
+        <div class="container-fluid">
+            <div class="navbar navbar-expand-lg navbar-dark font-weight-bold">
+                    <a href="../index.html"
+                        title="Wagtail"
+                        class="logo navbar-brand"
+                    >
+                        <img src="../_static/img/wagtail-logo-circle.svg" width="45" height="59" alt="Wagtail"
+                            class="logo-img"
+                        />
+                        molecular-simulations
+                    </a>
+                
+                
+                    <div class="collapse navbar-collapse justify-content-end">
+                        <ul class="navbar-nav">
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="/index">Documentation</a></li>
+                            
+                        </ul>
+                    </div>
+                
+                <button class="navbar-toggler btn btn-primary d-lg-none" type="button" data-toggle="collapse" data-target="#collapseSidebar" aria-expanded="false" aria-controls="collapseExample">
+                    <span class="navbar-toggler-icon"></span>
+                    <span class="sr-only">menu</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    <div class="container-fluid">
+        <div class="row">
+            <aside class="col-12 col-lg-3 sidebar-container">
+                <div id="collapseSidebar" class="collapse sticky-top d-lg-block pt-5 pr-lg-4">
+<div id="searchbox" class="searchbox mb-6 px-1" role="search">
+    <form id="search-form" action="../search.html" autocomplete="off" method="get" role="search">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text border-right-0 bg-white py-3 pl-3 pr-2"><span class="fas fa-search"></span></div>
+            </div>
+            <input class="form-control py-3 pr-3 pl-1 h-100 border-left-0" type="search" name="q" placeholder="Search documentation" aria-label="Search documentation" id="searchinput" />
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+    </form>
+</div><div class="site-toc">
+    <nav class="toc mt-3" aria-label="Main menu">
+        <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/basic_simulation.html">Basic Protein Simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/ligand_systems.html">Protein-Ligand Systems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/hpc_deployment.html">HPC Deployment with Parsl</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/analysis_workflows.html">Analysis Workflows</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">API Overview</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">molecular_simulations</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="molecular_simulations.html">molecular_simulations package</a><ul class="current">
-<li class="toctree-l3 current"><a class="reference internal" href="molecular_simulations.html#subpackages">Subpackages</a><ul class="current">
-<li class="toctree-l4 current"><a class="reference internal" href="molecular_simulations.analysis.html">molecular_simulations.analysis package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.build.html">molecular_simulations.build package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.simulate.html">molecular_simulations.simulate package</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="molecular_simulations.analysis.html">molecular_simulations.analysis package</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.analysis.autocluster.html">molecular_simulations.analysis.autocluster module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.analysis.constant_pH_analysis.html">molecular_simulations.analysis.constant_pH_analysis module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.analysis.cov_ppi.html">molecular_simulations.analysis.cov_ppi module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.analysis.fingerprinter.html">molecular_simulations.analysis.fingerprinter module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.analysis.interaction_energy.html">molecular_simulations.analysis.interaction_energy module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.analysis.ipSAE.html">molecular_simulations.analysis.ipSAE module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.analysis.sasa.html">molecular_simulations.analysis.sasa module</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">molecular_simulations.analysis.utils module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="molecular_simulations.build.html">molecular_simulations.build package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.build.build_amber.html">molecular_simulations.build.build_amber module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.build.build_calvados.html">molecular_simulations.build.build_calvados module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.build.build_interface.html">molecular_simulations.build.build_interface module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.build.build_ligand.html">molecular_simulations.build.build_ligand module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="molecular_simulations.simulate.html">molecular_simulations.simulate package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.simulate.free_energy.html">molecular_simulations.simulate.free_energy module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.simulate.mmpbsa.html">molecular_simulations.simulate.mmpbsa module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.simulate.multires_simulator.html">molecular_simulations.simulate.multires_simulator module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.simulate.omm_simulator.html">molecular_simulations.simulate.omm_simulator module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.simulate.reporters.html">molecular_simulations.simulate.reporters module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="molecular_simulations.utils.html">molecular_simulations.utils package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.utils.amber_utils.html">molecular_simulations.utils.amber_utils module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.utils.mda_utils.html">molecular_simulations.utils.mda_utils module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.utils.parsl_settings.html">molecular_simulations.utils.parsl_settings module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="molecular_simulations.logging_config.html">molecular_simulations.logging_config module</a></li>
 </ul>
 </li>
 </ul>
 </li>
 </ul>
-</li>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
 </ul>
 
-        </div>
-      </div>
     </nav>
-
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../index.html">molecular-simulations</a>
-      </nav>
-
-      <div class="wy-nav-content">
-        <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
-  <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="modules.html">molecular_simulations</a></li>
-          <li class="breadcrumb-item"><a href="molecular_simulations.html">molecular_simulations package</a></li>
-          <li class="breadcrumb-item"><a href="molecular_simulations.analysis.html">molecular_simulations.analysis package</a></li>
-      <li class="breadcrumb-item active">molecular_simulations.analysis.utils module</li>
-      <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/api/molecular_simulations.analysis.utils.rst.txt" rel="nofollow"> View page source</a>
-      </li>
-  </ul>
-  <hr/>
+    <template data-toggle-item-template>
+        <button class="btn btn-sm btn-link toctree-expand" type="button">
+            <span class="sr-only">Toggle menu contents</span>
+        </button>
+    </template>
 </div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
-             
-  <section id="module-molecular_simulations.analysis.utils">
-<span id="molecular-simulations-analysis-utils-module"></span><h1>molecular_simulations.analysis.utils module<a class="headerlink" href="#module-molecular_simulations.analysis.utils" title="Link to this heading"></a></h1>
-<dl class="py class">
-<dt class="sig sig-object py" id="molecular_simulations.analysis.utils.EmbedData">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.utils.</span></span><span class="sig-name descname"><span class="pre">EmbedData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embedding_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.utils.EmbedData" title="Link to this definition"></a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Embeds given data into the beta-factor column of PDB. Writes out to same
-path as input PDB and backs up old PDB file, unless an output path is
-explicitly provided. Embedding data should be provided as a dictionary where
-the keys are MDAnalysis selection strings and the values are numpy arrays
-of shape (n_frames, n_residues, n_datapoints) or (n_residues, n_datapoints).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>pdb</strong> (<em>Path</em>) – Path to PDB file to load. Also will be the output if one is
-not provided.</p></li>
-<li><p><strong>embedding_dict</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>np.ndarray</em><em>]</em>) – A dictionary containing MDAnalysis
-selections as keys and data as the values.</p></li>
-<li><p><strong>out</strong> (<em>OptPath</em>) – Defaults to None. If not None this will be the path to the
-output PDB.</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.analysis.utils.EmbedData.embed">
-<span class="sig-name descname"><span class="pre">embed</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.utils.EmbedData.embed" title="Link to this definition"></a></dt>
-<dd><p>Unpacks embedding dictionary, embeds data and writes out new PDB.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.analysis.utils.EmbedData.embed_selection">
-<span class="sig-name descname"><span class="pre">embed_selection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">selection</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.utils.EmbedData.embed_selection" title="Link to this definition"></a></dt>
-<dd><p>Embeds data into given selection in the beta column for each residue.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>selection</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – MDAnalysis selection string.</p></li>
-<li><p><strong>data</strong> (<em>np.ndarray</em>) – Array of data to place in beta column. Shape should
-be (n_residues_in_selection, 1).</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
-</dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.analysis.utils.EmbedData.write_new_pdb">
-<span class="sig-name descname"><span class="pre">write_new_pdb</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.utils.EmbedData.write_new_pdb" title="Link to this definition"></a></dt>
-<dd><p>Writes out PDB file. If an output was not designated, backs up original
-PDB with the extension .orig.pdb. If this backup already exists, do not
-back up the PDB as that may occur if you run this twice and to do so would
-mean losing the actual original PDB.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="molecular_simulations.analysis.utils.EmbedEnergyData">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.analysis.utils.</span></span><span class="sig-name descname"><span class="pre">EmbedEnergyData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embedding_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.utils.EmbedEnergyData" title="Link to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#molecular_simulations.analysis.utils.EmbedData" title="molecular_simulations.analysis.utils.EmbedData"><code class="xref py py-class docutils literal notranslate"><span class="pre">EmbedData</span></code></a></p>
-<p>Special instance of EmbedData in which the data stored in embedding_dict is
-non-bonded energy data with both LJ and coulombic terms. In this case we need
-to obtain the total energy by summing these and rescale it as many softwares
-do not understand a negative beta factor.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>pdb</strong> (<em>Path</em>) – Path to PDB file to load. Also will be the output if one is
-not provided.</p></li>
-<li><p><strong>embedding_dict</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>np.ndarray</em><em>]</em>) – A dictionary containing MDAnalysis
-selections as keys and data as the values.</p></li>
-<li><p><strong>out</strong> (<em>OptPath</em>) – Defaults to None. If not None this will be the path to the
-output PDB.</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.analysis.utils.EmbedEnergyData.preprocess">
-<span class="sig-name descname"><span class="pre">preprocess</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.utils.EmbedEnergyData.preprocess" title="Link to this definition"></a></dt>
-<dd><p>Processes embeddings data so that it can be fed through parent methods.
-This requires the embeddings data contain values of one-dimensional arrays,
-and that the data be rescaled such that there are no negative values while
-preserving the distance between values.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Processed data array.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>, np.ndarray])</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.analysis.utils.EmbedEnergyData.sanitize_data">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sanitize_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.analysis.utils.EmbedEnergyData.sanitize_data" title="Link to this definition"></a></dt>
-<dd><p>Takes in data of shape (n_frames, n_residues, n_terms) and
-returns one-dimensional array of shape (n_residues,) by
-first averaging in the first dimension and then summing in
-the new second dimension - originally the third dimension.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>data</strong> (<em>np.ndarray</em>) – Unprocessed input data.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>One-dimensional processed data.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>(np.ndarray)</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
+                    <div class="d-lg-none border-bottom">
+                        
+                    </div>
+                </div>
+            </aside>
+            <div class="col-12 col-lg-9 pt-5">
+                <header class="row align-items-baseline">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+    <ol class="breadcrumb m-0 p-0 bg-transparent">
+        <li class="breadcrumb-item"><a href="../index.html">Docs</a></li>
+            <li class="breadcrumb-item"><a href="modules.html">molecular_simulations</a></li>
+            <li class="breadcrumb-item"><a href="molecular_simulations.html">molecular_simulations package</a></li>
+            <li class="breadcrumb-item"><a href="molecular_simulations.analysis.html">molecular_simulations.analysis package</a></li>
+        <li class="breadcrumb-item active" aria-current="page">molecular_simulations.analysis.utils module</li>
+    </ol>
+</nav>
+                    </div>
+                    <div class="col-sm-12 col-lg-auto mt-3 mt-lg-3">
+                        <noscript>
+                            <p>JavaScript is required to toggle light/dark mode..</p>
+                        </noscript>
+                        <button id="wagtail-theme" class="btn btn-sm btn-light text-decoration-none" type="button">
+                            <span class="dark-only"><i class="fas fa-sun"></i> Light mode</span>
+                            <span class="light-only"><i class="fas fa-moon"></i> Dark mode</span>
+                        </button>
+    <a class="btn btn-sm btn-light text-decoration-none" href="https://github.com/wagtail/sphinx_wagtail_theme/blob/main/docs/api/molecular_simulations.analysis.utils.rst" rel="nofollow">
+        <span class="btn-icon"><span class="fab fa-github"></span></span>
+        <span class="btn-text">Edit on GitHub</span>
+    </a>
+    <a class="btn btn-sm btn-light text-decoration-none" href="../_sources/api/molecular_simulations.analysis.utils.rst.txt" rel="nofollow">
+        <span class="btn-icon"><span class="fas fa-code"></span></span>
+        <span class="btn-text">View source</span>
+    </a>
+                        
+                    </div>
+                </header>
+                <div class="row" >
+                    <div class="col-12">
+                        <hr class="w-100 my-4">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
+                        <main role="main" id="main">
+    <section id="molecular-simulations-analysis-utils-module">
+<h1>molecular_simulations.analysis.utils module<a class="headerlink" href="#molecular-simulations-analysis-utils-module" title="Link to this heading">¶</a></h1>
 </section>
 
-
-           </div>
-          </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="molecular_simulations.analysis.sasa.html" class="btn btn-neutral float-left" title="molecular_simulations.analysis.sasa module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="molecular_simulations.build.html" class="btn btn-neutral float-right" title="molecular_simulations.build package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
-
-  <hr/>
-
-  <div role="contentinfo">
-    <p>&#169; Copyright 2025, Matt Sinclair.</p>
-  </div>
-
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
-
-</footer>
+</main>
+                        <nav aria-label="Page navigation" class="py-4 my-5 clearfix font-weight-bold border-top">
+    <a class="float-left" href="molecular_simulations.analysis.sasa.html" title="Previous">
+        <span aria-hidden="true">←&nbsp;</span>molecular_simulations.analysis.sasa module
+    </a>
+    <a class="float-right" href="molecular_simulations.build.html" title="Next">
+        molecular_simulations.build package <span aria-hidden="true">&nbsp;→</span>
+    </a>
+</nav>
+                    </div>
+                    
+                </div>
+            </div>
         </div>
-      </div>
-    </section>
-  </div>
-  <script>
-      jQuery(function () {
-          SphinxRtdTheme.Navigation.enable(true);
-      });
-  </script> 
-
-</body>
+    </div>
+    <footer class="container-fluid bg-primary text-light">
+        <div class="container">
+            <div class="row">
+        <div class="col p-4">
+            
+                <nav aria-label="Footer">
+                    <ul class="nav justify-content-center mb-2">
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="https://wagtail.org/features/">Features</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="https://wagtail.org/about-wagtail/"> About Wagtail</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="https://wagtail.org/services/"> Services</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="https://wagtail.org/blog/"> Blog</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="https://wagtail.org/packages/"> Packages</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="https://wagtail.org/developers/"> Developers</a></li>
+                        
+                    </ul>
+                </nav>
+            
+            <div class="text-center">
+                    &copy; Copyright 2025, Matt Sinclair
+            </div>
+        </div>
+    </div>
+        </div>
+    </footer>
+        <script src="../_static/documentation_options.js?v=11b5e5c7"></script>
+        <script src="../_static/doctools.js?v=9bcbadda"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="../_static/copybutton.js?v=fd10adb8"></script>
+        <script type="text/javascript" src="../_static/dist/theme.js"></script>
+        <script type="text/javascript" src="../_static/dist/vendor.js"></script>
+        <script type="text/javascript" src="../_static/searchtools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function() { Search.loadIndex("../searchindex.js"); });
+        </script>
+        <script type="text/javascript" id="searchindexloader"></script>
+    </body>
 </html>

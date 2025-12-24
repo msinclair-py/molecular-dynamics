@@ -1,6 +1,8 @@
 from datetime import datetime
 import json
 import logging
+import MDAnalysis as mda
+import numpy as np
 from openmm import LangevinIntegrator
 from openmm.app import (CutoffNonPeriodic, 
                         HBonds,
@@ -9,8 +11,6 @@ from openmm.app import (CutoffNonPeriodic,
                         PME,
                         Topology)
 from openmm.unit import kelvin, nanometers, picosecond
-import MDAnalysis as mda
-import numpy as np
 import parsl
 from parsl import Config, python_app
 from pathlib import Path

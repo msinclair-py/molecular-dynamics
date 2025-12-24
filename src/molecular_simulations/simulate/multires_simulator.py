@@ -1,22 +1,20 @@
-from ..build.build_calvados import CGBuilder
-from ..build import ImplicitSolvent, ExplicitSolvent
 from calvados import sim
-from .omm_simulator import ImplicitSimulator, Simulator
 from cg2all.script.convert_cg2all import main as convert
-import openmm
-from openmm.app import *
-from openmm.unit import *
+from dataclasses import dataclass
+from openmm.app import Simulation
+import parmed as pmd
+from pathlib import Path
 import subprocess
 import tempfile
-import parmed as pmd
 try:
     import tomllib  # Python 3.11+
 except ModuleNotFoundError:
     import tomli as tomllib  # Python 3.10
-from pathlib import Path
-from dataclasses import dataclass
-import os
 from typing import Union, Type, TypeVar
+
+from ..build.build_calvados import CGBuilder
+from ..build import ImplicitSolvent, ExplicitSolvent
+from .omm_simulator import ImplicitSimulator, Simulator
 
 _T = TypeVar('_T')
 OptPath = Union[Path, str, None]
@@ -38,7 +36,7 @@ class sander_min_defaults:
     ntwr=5000    # Write restart file every 5000 steps (only once)
     ntxo=1       # Output restart file format (ASCII)
 
-    def __init__(self):
+    def __post_init__(self):
         self.mdin_contents = f"""Minimization input
  &cntrl
   imin={self.imin},
@@ -100,7 +98,7 @@ class MultiResolutionSimulator:
         cg2all_bin (str): Defaults to 'convert_cg2all'. Path to cg2all binary. Must
             be provided if cg2all is installed in a separate environment. 
         cg2all_ckpt (OptPath): Path to cg2all checkpoint file. 
-        AMBERHOME (str | None): Defaults to None. Path to AMBERHOME (excluding bin). 
+        amberhome (str | None): Defaults to None. Path to amberhome (excluding bin). 
             Used for sander and pdb4amber. If None, assumes AmberTools binaries are 
             available in the current $PATH.
 
@@ -116,7 +114,7 @@ class MultiResolutionSimulator:
                  aa_params: dict,
                  cg2all_bin: str = 'convert_cg2all',
                  cg2all_ckpt: OptPath = None,
-                 AMBERHOME: str | None = None):
+                 amberhome: str | None = None):
         self.path = Path(path)
         self.input_pdb = input_pdb
         self.n_rounds = n_rounds
@@ -124,7 +122,7 @@ class MultiResolutionSimulator:
         self.aa_params = aa_params
         self.cg2all_bin = cg2all_bin
         self.cg2all_ckpt = cg2all_ckpt
-        self.AMBERHOME = Path(AMBERHOME) if AMBERHOME is not None else None
+        self.amberhome = Path(amberhome) if amberhome is not None else None
 
     @classmethod
     def from_toml(cls: Type[_T], config: PathLike) -> _T:
@@ -151,10 +149,10 @@ class MultiResolutionSimulator:
         else:
             cg2all_ckpt = None
 
-        if 'AMBERHOME' in settings:
-            AMBERHOME = Path(settings['AMBERHOME'])
+        if 'amberhome' in settings:
+            amberhome = Path(settings['amberhome'])
         else:
-            AMBERHOME = None
+            amberhome = None
         
         return cls(path, 
                    input_pdb,
@@ -163,7 +161,7 @@ class MultiResolutionSimulator:
                    aa_params, 
                    cg2all_bin = cg2all_bin,
                    cg2all_ckpt = cg2all_ckpt,
-                   AMBERHOME = AMBERHOME)
+                   amberhome = amberhome)
 
     @staticmethod
     def strip_solvent(simulation: Simulation,
@@ -227,10 +225,10 @@ class MultiResolutionSimulator:
             
             # cg2all may create clashes which OpenMM minimization does not address.
             # Therefore, we want to minimize all cg2all-created structures with sander instead.
-            if self.AMBERHOME is None:
+            if self.amberhome is None:
                 sander = 'sander'
             else:
-                sander = str(self.AMBERHOME / 'bin/sander')
+                sander = str(self.amberhome / 'bin/sander')
             sander_minimize(aa_path, 'system.inpcrd', 'system.prmtop', sander)
 
             aa_simulator = _aa_simulator(
@@ -281,10 +279,10 @@ class MultiResolutionSimulator:
                 raise RuntimeError(f'cg2all error!\n{result.stderr}')
 
             # use pdb4amber to fix cg2all-generated pdb
-            if self.AMBERHOME is None:
+            if self.amberhome is None:
                 command = ['pdb4amber'] 
             else:
-                command = [str(self.AMBERHOME / 'bin/pdb4amber')]
+                command = [str(self.amberhome / 'bin/pdb4amber')]
             command += [str(cg_path / 'last_frame.pdb'), '-y']
             result = subprocess.run(command, shell=False, capture_output=True, text=True)
             if result.returncode == 0:

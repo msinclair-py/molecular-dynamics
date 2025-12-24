@@ -10,6 +10,8 @@ build:
   tools:
     python: "mambaforge-22.9"
   jobs:
+    post_create_environment:
+      - pip install --no-deps -e .
     pre_build:
       - sphinx-apidoc -f -o docs/api src/molecular_simulations -e -M --implicit-namespaces -t docs/_templates/apidoc
 

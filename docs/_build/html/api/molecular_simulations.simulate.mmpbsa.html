@@ -1,622 +1,260 @@
-
-
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" data-content_root="../">
+<html class="no-js" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>molecular_simulations.simulate.mmpbsa module &mdash; molecular-simulations 2025 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
-      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
-
-  
-      <script src="../_static/jquery.js?v=5d32c60e"></script>
-      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=cb975c41"></script>
-      <script src="../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="../_static/js/theme.js"></script>
-    <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="molecular_simulations.simulate.omm_simulator module" href="molecular_simulations.simulate.omm_simulator.html" />
-    <link rel="prev" title="molecular_simulations.simulate package" href="molecular_simulations.simulate.html" /> 
-</head>
-
-<body class="wy-body-for-nav"> 
-  <div class="wy-grid-for-nav">
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
-
-          
-          
-          <a href="../index.html" class="icon icon-home">
-            molecular-simulations
-          </a>
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+        <title>molecular_simulations.simulate.mmpbsa module &mdash; molecular-simulations 0.3.28 documentation</title>
+    
+    <link rel="stylesheet" type="text/css" href="../_static/dist/fontawesome.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/dist/theme.css?v=310cf088" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+            <link rel="index" title="Index" href="../genindex.html" />
+            <link rel="search" title="Search" href="../search.html" />
+            <link rel="top" title="molecular-simulations 0.3.28 documentation" href="#" />
+            <link rel="up" title="molecular_simulations.simulate package" href="molecular_simulations.simulate.html" />
+            <link rel="next" title="molecular_simulations.simulate.multires_simulator module" href="molecular_simulations.simulate.multires_simulator.html" />
+            <link rel="prev" title="molecular_simulations.simulate.free_energy module" href="molecular_simulations.simulate.free_energy.html" />
+    </head>
+<body>
+    <script type="text/javascript" src="../_static/dist/blocking.js"></script>
+    <header class="container-fluid bg-primary">
+        <a class="btn btn-sm btn-light skip-to-content-link" href="#main">Skip to content</a>
+        <div class="container-fluid">
+            <div class="navbar navbar-expand-lg navbar-dark font-weight-bold">
+                    <a href="../index.html"
+                        title="Wagtail"
+                        class="logo navbar-brand"
+                    >
+                        <img src="../_static/img/wagtail-logo-circle.svg" width="45" height="59" alt="Wagtail"
+                            class="logo-img"
+                        />
+                        molecular-simulations
+                    </a>
+                
+                
+                    <div class="collapse navbar-collapse justify-content-end">
+                        <ul class="navbar-nav">
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="/index">Documentation</a></li>
+                            
+                        </ul>
+                    </div>
+                
+                <button class="navbar-toggler btn btn-primary d-lg-none" type="button" data-toggle="collapse" data-target="#collapseSidebar" aria-expanded="false" aria-controls="collapseExample">
+                    <span class="navbar-toggler-icon"></span>
+                    <span class="sr-only">menu</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    <div class="container-fluid">
+        <div class="row">
+            <aside class="col-12 col-lg-3 sidebar-container">
+                <div id="collapseSidebar" class="collapse sticky-top d-lg-block pt-5 pr-lg-4">
+<div id="searchbox" class="searchbox mb-6 px-1" role="search">
+    <form id="search-form" action="../search.html" autocomplete="off" method="get" role="search">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text border-right-0 bg-white py-3 pl-3 pr-2"><span class="fas fa-search"></span></div>
+            </div>
+            <input class="form-control py-3 pr-3 pl-1 h-100 border-left-0" type="search" name="q" placeholder="Search documentation" aria-label="Search documentation" id="searchinput" />
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+    </form>
+</div><div class="site-toc">
+    <nav class="toc mt-3" aria-label="Main menu">
+        <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/basic_simulation.html">Basic Protein Simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/ligand_systems.html">Protein-Ligand Systems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/hpc_deployment.html">HPC Deployment with Parsl</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/analysis_workflows.html">Analysis Workflows</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">API Overview</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">molecular_simulations</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="molecular_simulations.html">molecular_simulations package</a><ul class="current">
-<li class="toctree-l3 current"><a class="reference internal" href="molecular_simulations.html#subpackages">Subpackages</a><ul class="current">
-<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.analysis.html">molecular_simulations.analysis package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.build.html">molecular_simulations.build package</a></li>
-<li class="toctree-l4 current"><a class="reference internal" href="molecular_simulations.simulate.html">molecular_simulations.simulate package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="molecular_simulations.analysis.html">molecular_simulations.analysis package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.analysis.autocluster.html">molecular_simulations.analysis.autocluster module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.analysis.constant_pH_analysis.html">molecular_simulations.analysis.constant_pH_analysis module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.analysis.cov_ppi.html">molecular_simulations.analysis.cov_ppi module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.analysis.fingerprinter.html">molecular_simulations.analysis.fingerprinter module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.analysis.interaction_energy.html">molecular_simulations.analysis.interaction_energy module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.analysis.ipSAE.html">molecular_simulations.analysis.ipSAE module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.analysis.sasa.html">molecular_simulations.analysis.sasa module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.analysis.utils.html">molecular_simulations.analysis.utils module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="molecular_simulations.build.html">molecular_simulations.build package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.build.build_amber.html">molecular_simulations.build.build_amber module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.build.build_calvados.html">molecular_simulations.build.build_calvados module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.build.build_interface.html">molecular_simulations.build.build_interface module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.build.build_ligand.html">molecular_simulations.build.build_ligand module</a></li>
+</ul>
+</li>
+<li class="toctree-l3 current"><a class="reference internal" href="molecular_simulations.simulate.html">molecular_simulations.simulate package</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.simulate.free_energy.html">molecular_simulations.simulate.free_energy module</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">molecular_simulations.simulate.mmpbsa module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.simulate.multires_simulator.html">molecular_simulations.simulate.multires_simulator module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.simulate.omm_simulator.html">molecular_simulations.simulate.omm_simulator module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.simulate.reporters.html">molecular_simulations.simulate.reporters module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="molecular_simulations.utils.html">molecular_simulations.utils package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.utils.amber_utils.html">molecular_simulations.utils.amber_utils module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.utils.mda_utils.html">molecular_simulations.utils.mda_utils module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="molecular_simulations.utils.parsl_settings.html">molecular_simulations.utils.parsl_settings module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="molecular_simulations.logging_config.html">molecular_simulations.logging_config module</a></li>
 </ul>
 </li>
 </ul>
 </li>
 </ul>
-</li>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
 </ul>
 
-        </div>
-      </div>
     </nav>
-
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../index.html">molecular-simulations</a>
-      </nav>
-
-      <div class="wy-nav-content">
-        <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
-  <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="modules.html">molecular_simulations</a></li>
-          <li class="breadcrumb-item"><a href="molecular_simulations.html">molecular_simulations package</a></li>
-          <li class="breadcrumb-item"><a href="molecular_simulations.simulate.html">molecular_simulations.simulate package</a></li>
-      <li class="breadcrumb-item active">molecular_simulations.simulate.mmpbsa module</li>
-      <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/api/molecular_simulations.simulate.mmpbsa.rst.txt" rel="nofollow"> View page source</a>
-      </li>
-  </ul>
-  <hr/>
+    <template data-toggle-item-template>
+        <button class="btn btn-sm btn-link toctree-expand" type="button">
+            <span class="sr-only">Toggle menu contents</span>
+        </button>
+    </template>
 </div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
-             
-  <section id="module-molecular_simulations.simulate.mmpbsa">
-<span id="molecular-simulations-simulate-mmpbsa-module"></span><h1>molecular_simulations.simulate.mmpbsa module<a class="headerlink" href="#module-molecular_simulations.simulate.mmpbsa" title="Link to this heading"></a></h1>
-<dl class="py class">
-<dt class="sig sig-object py" id="molecular_simulations.simulate.mmpbsa.FileHandler">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.simulate.mmpbsa.</span></span><span class="sig-name descname"><span class="pre">FileHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">top</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">traj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cpptraj_binary</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.simulate.mmpbsa.FileHandler" title="Link to this definition"></a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Performs preprocessing for MM-PBSA runs and manages the pathing to all file
-inputs. Additionally used to write out various cpptraj input files by the
-MMPBSA class.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>top</strong> (<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><em>Path</em></a>)</p></li>
-<li><p><strong>traj</strong> (<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><em>Path</em></a>)</p></li>
-<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><em>Path</em></a>)</p></li>
-<li><p><strong>sels</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>]</em>)</p></li>
-<li><p><strong>first</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>)</p></li>
-<li><p><strong>last</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>)</p></li>
-<li><p><strong>stride</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>)</p></li>
-<li><p><strong>cpptraj_binary</strong> (<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><em>Path</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>)</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py property">
-<dt class="sig sig-object py" id="molecular_simulations.simulate.mmpbsa.FileHandler.files">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">files</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#molecular_simulations.simulate.mmpbsa.FileHandler.files" title="Link to this definition"></a></dt>
-<dd><p>Returns a zip generator containing the output paths, topologies,
-trajectories and pdbs for each system. This is done to ensure we
-have the correct order for housekeeping reasons.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>System order, topologies, trajectories and pdbs.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)">list</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>]])</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.simulate.mmpbsa.FileHandler.prepare_topologies">
-<span class="sig-name descname"><span class="pre">prepare_topologies</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.simulate.mmpbsa.FileHandler.prepare_topologies" title="Link to this definition"></a></dt>
-<dd><p>Slices out each sub-topology for the desolvated complex, receptor and
-ligand using cpptraj due to the difficulty of working with AMBER FF
-files otherwise (including PARMED).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.simulate.mmpbsa.FileHandler.prepare_trajectories">
-<span class="sig-name descname"><span class="pre">prepare_trajectories</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.simulate.mmpbsa.FileHandler.prepare_trajectories" title="Link to this definition"></a></dt>
-<dd><p>Converts DCD trajectory to AMBER CRD format which is explicitly
-required by MM-G(P)BSA.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.simulate.mmpbsa.FileHandler.write_file">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">write_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lines</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filepath</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.simulate.mmpbsa.FileHandler.write_file" title="Link to this definition"></a></dt>
-<dd><p>Given an input of either a list of strings or a single string,
-write input to file. If a list, join by newline characters.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>lines</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>]</em>) – Input to be written to file.</p></li>
-<li><p><strong>filepath</strong> (<em>PathLike</em>) – Path to the file to be written.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
-</dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="molecular_simulations.simulate.mmpbsa.MMPBSA">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.simulate.mmpbsa.</span></span><span class="sig-name descname"><span class="pre">MMPBSA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">top</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dcd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selections</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_frame</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_frame</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_cpus</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mmpbsa'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solvent_probe</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gb_surften</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0072</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gb_surfoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amberhome</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.simulate.mmpbsa.MMPBSA" title="Link to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#molecular_simulations.simulate.mmpbsa.MMPBSA_settings" title="molecular_simulations.simulate.mmpbsa.MMPBSA_settings"><code class="xref py py-class docutils literal notranslate"><span class="pre">MMPBSA_settings</span></code></a></p>
-<p>This is an experiment in patience. What follows is a reconstruction of the various
-pieces of code that run MM-P(G)BSA from AMBER but written in a more digestible manner
-with actual documentation. Herein we have un-CLI’d what should never have been a
-CLI and piped together the correct pieces of the ambertools ecosystem to perform
-MM-P(G)BSA and that alone. Your trajectory is required to be concatenated into a single
-continuous trajectory - or you can run this serially over each by instancing this class
-for each trajectory you have. In this way we have also disentangled the requirement to
-parallelize by use of MPI, allowing the user to choose their own parallelization/scaling
-scheme.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>top</strong> (<em>PathLike</em>) – Input topology for a solvated system. Should match the input trajectory.</p></li>
-<li><p><strong>dcd</strong> (<em>PathLike</em>) – Input trajectory. Can be DCD format or MDCRD already.</p></li>
-<li><p><strong>selections</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>]</em>) – A list of residue ID selections for the receptor and ligand
-in that order. Should be formatted for cpptraj (e.g. <cite>:1-10</cite>).</p></li>
-<li><p><strong>first_frame</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Defaults to 0. The first frame of the input trajectory to begin
-the calculations on.</p></li>
-<li><p><strong>last_frame</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Defaults to -1. Optional final frame to cut trajectory at. If -1,
-acts as a flag to run the whole trajectory.</p></li>
-<li><p><strong>stride</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Defaults to 1. The number of frames to stride the trajectory by.</p></li>
-<li><p><strong>n_cpus</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Number of parallel processes</p></li>
-<li><p><strong>out</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The prefix name or path for output files.</p></li>
-<li><p><strong>solvent_probe</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Defaults to 1.4Å. The probe radius to use for SA calculations.</p></li>
-<li><p><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Defaults to 0Å. I don’t know what this does.</p></li>
-<li><p><strong>gb_surften</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Defaults to 0.0072.</p></li>
-<li><p><strong>gb_suroff</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Defaults to 0.0.</p></li>
-<li><p><strong>gb_surfoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>)</p></li>
-<li><p><strong>amberhome</strong> (<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><em>Path</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>)</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.simulate.mmpbsa.MMPBSA.calculate_energy">
-<span class="sig-name descname"><span class="pre">calculate_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pre</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mdin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suf</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.simulate.mmpbsa.MMPBSA.calculate_energy" title="Link to this definition"></a></dt>
-<dd><p>Runs mmpbsa_py_energy, an undocumented binary file which somehow mysteriously
-computes the energy of a system. This software is not only undocumented but is
-a binary which we cannot inspect ourselves.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>pre</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Prefix for output file.</p></li>
-<li><p><strong>prm</strong> (<em>PathLike</em>) – Path to prmtop file.</p></li>
-<li><p><strong>trj</strong> (<em>PathLike</em>) – Path to CRD trajectory file.</p></li>
-<li><p><strong>pdb</strong> (<em>PathLike</em>) – Path to PDB file.</p></li>
-<li><p><strong>mdin</strong> (<em>PathLike</em>) – Configuration file for the program.</p></li>
-<li><p><strong>suf</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Suffix for output file.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
-</dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.simulate.mmpbsa.MMPBSA.calculate_sasa">
-<span class="sig-name descname"><span class="pre">calculate_sasa</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pre</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.simulate.mmpbsa.MMPBSA.calculate_sasa" title="Link to this definition"></a></dt>
-<dd><p>Runs the molsurf command in cpptraj to compute the SASA of a given system.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>pre</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Prefix for output SASA file.</p></li>
-<li><p><strong>prm</strong> (<em>PathLike</em>) – Path to prmtop file.</p></li>
-<li><p><strong>trj</strong> (<em>PathLike</em>) – Path to CRD trajectory file.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
-</dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.simulate.mmpbsa.MMPBSA.run">
-<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.simulate.mmpbsa.MMPBSA.run" title="Link to this definition"></a></dt>
-<dd><p>Main logic of MM-PBSA. Computes the SASA with molsurf in cpptraj, and
-the various energy terms for GB/PB using mmpbsa_py_energy from ambertools.
-Finally, parse outputs and collate into a neat form consisting of a json
-of raw data and a plain text file of the binding free energies.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.simulate.mmpbsa.MMPBSA.write_mdins">
-<span class="sig-name descname"><span class="pre">write_mdins</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.simulate.mmpbsa.MMPBSA.write_mdins" title="Link to this definition"></a></dt>
-<dd><p>Writes out the configuration files that are to be fed to mmpbsa_py_energy.
-These are also undocumented and I took the parameters from the location
-in which they are hardcoded in ambertools.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Tuple of paths to the GB mdin and the PB mdin.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)">tuple</a>[Path, Path])</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="molecular_simulations.simulate.mmpbsa.MMPBSA_settings">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.simulate.mmpbsa.</span></span><span class="sig-name descname"><span class="pre">MMPBSA_settings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">top</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dcd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selections</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_frame</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_frame</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_cpus</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mmpbsa'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solvent_probe</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gb_surften</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0072</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gb_surfoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.simulate.mmpbsa.MMPBSA_settings" title="Link to this definition"></a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>top</strong> (<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><em>Path</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>)</p></li>
-<li><p><strong>dcd</strong> (<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><em>Path</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>)</p></li>
-<li><p><strong>selections</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>]</em>)</p></li>
-<li><p><strong>first_frame</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>)</p></li>
-<li><p><strong>last_frame</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>)</p></li>
-<li><p><strong>stride</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>)</p></li>
-<li><p><strong>n_cpus</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>)</p></li>
-<li><p><strong>out</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>)</p></li>
-<li><p><strong>solvent_probe</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>)</p></li>
-<li><p><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>)</p></li>
-<li><p><strong>gb_surften</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>)</p></li>
-<li><p><strong>gb_surfoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>)</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="molecular_simulations.simulate.mmpbsa.MMPBSA_settings.dcd">
-<span class="sig-name descname"><span class="pre">dcd</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.13)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a><span class="pre">[</span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code></a><span class="pre">,</span> <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a><span class="pre">]</span></em><a class="headerlink" href="#molecular_simulations.simulate.mmpbsa.MMPBSA_settings.dcd" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="molecular_simulations.simulate.mmpbsa.MMPBSA_settings.first_frame">
-<span class="sig-name descname"><span class="pre">first_frame</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#molecular_simulations.simulate.mmpbsa.MMPBSA_settings.first_frame" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="molecular_simulations.simulate.mmpbsa.MMPBSA_settings.gb_surfoff">
-<span class="sig-name descname"><span class="pre">gb_surfoff</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.0</span></em><a class="headerlink" href="#molecular_simulations.simulate.mmpbsa.MMPBSA_settings.gb_surfoff" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="molecular_simulations.simulate.mmpbsa.MMPBSA_settings.gb_surften">
-<span class="sig-name descname"><span class="pre">gb_surften</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.0072</span></em><a class="headerlink" href="#molecular_simulations.simulate.mmpbsa.MMPBSA_settings.gb_surften" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="molecular_simulations.simulate.mmpbsa.MMPBSA_settings.last_frame">
-<span class="sig-name descname"><span class="pre">last_frame</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">-1</span></em><a class="headerlink" href="#molecular_simulations.simulate.mmpbsa.MMPBSA_settings.last_frame" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="molecular_simulations.simulate.mmpbsa.MMPBSA_settings.n_cpus">
-<span class="sig-name descname"><span class="pre">n_cpus</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#molecular_simulations.simulate.mmpbsa.MMPBSA_settings.n_cpus" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="molecular_simulations.simulate.mmpbsa.MMPBSA_settings.offset">
-<span class="sig-name descname"><span class="pre">offset</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#molecular_simulations.simulate.mmpbsa.MMPBSA_settings.offset" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="molecular_simulations.simulate.mmpbsa.MMPBSA_settings.out">
-<span class="sig-name descname"><span class="pre">out</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'mmpbsa'</span></em><a class="headerlink" href="#molecular_simulations.simulate.mmpbsa.MMPBSA_settings.out" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="molecular_simulations.simulate.mmpbsa.MMPBSA_settings.selections">
-<span class="sig-name descname"><span class="pre">selections</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a><span class="pre">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a><span class="pre">]</span></em><a class="headerlink" href="#molecular_simulations.simulate.mmpbsa.MMPBSA_settings.selections" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="molecular_simulations.simulate.mmpbsa.MMPBSA_settings.solvent_probe">
-<span class="sig-name descname"><span class="pre">solvent_probe</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1.4</span></em><a class="headerlink" href="#molecular_simulations.simulate.mmpbsa.MMPBSA_settings.solvent_probe" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="molecular_simulations.simulate.mmpbsa.MMPBSA_settings.stride">
-<span class="sig-name descname"><span class="pre">stride</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#molecular_simulations.simulate.mmpbsa.MMPBSA_settings.stride" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="molecular_simulations.simulate.mmpbsa.MMPBSA_settings.top">
-<span class="sig-name descname"><span class="pre">top</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.13)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a><span class="pre">[</span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code></a><span class="pre">,</span> <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a><span class="pre">]</span></em><a class="headerlink" href="#molecular_simulations.simulate.mmpbsa.MMPBSA_settings.top" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="molecular_simulations.simulate.mmpbsa.OutputAnalyzer">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">molecular_simulations.simulate.mmpbsa.</span></span><span class="sig-name descname"><span class="pre">OutputAnalyzer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface_tension</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0072</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sasa_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_tolerance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.005</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.simulate.mmpbsa.OutputAnalyzer" title="Link to this definition"></a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Analyzes the outputs from an MM-PBSA run. Stores data in a Polars dataframe
-internally, and writes out data in the form of json/plain text.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><em>Path</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>)</p></li>
-<li><p><strong>surface_tension</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>)</p></li>
-<li><p><strong>sasa_offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>)</p></li>
-<li><p><strong>_tolerance</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>)</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.simulate.mmpbsa.OutputAnalyzer.check_bonded_terms">
-<span class="sig-name descname"><span class="pre">check_bonded_terms</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.simulate.mmpbsa.OutputAnalyzer.check_bonded_terms" title="Link to this definition"></a></dt>
-<dd><p>Performs a sanity check on the bonded terms which should perfectly cancel out
-(e.g. complex = receptor + ligand). If this is not the case something horrible
-has happened and we can’t trust the non-bonded energies either. Additionally
-sets a few terms we will need later such as the number of frames as given by
-the dataframe height and sqrt(n_frames).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.simulate.mmpbsa.OutputAnalyzer.compute_dG">
-<span class="sig-name descname"><span class="pre">compute_dG</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.simulate.mmpbsa.OutputAnalyzer.compute_dG" title="Link to this definition"></a></dt>
-<dd><p>For each energy dataframe (GB/PB) compute the ∆G of binding by subtracting out
-relevant contributions in accordance with how this is done under the hood of the
-MMPBSA code.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.simulate.mmpbsa.OutputAnalyzer.generate_summary">
-<span class="sig-name descname"><span class="pre">generate_summary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.simulate.mmpbsa.OutputAnalyzer.generate_summary" title="Link to this definition"></a></dt>
-<dd><p>Summarizes all processed energy data into a single polars dataframe
-and dumps it to a json file.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.simulate.mmpbsa.OutputAnalyzer.parse_energy_file">
-<span class="sig-name descname"><span class="pre">parse_energy_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_contents</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.simulate.mmpbsa.OutputAnalyzer.parse_energy_file" title="Link to this definition"></a></dt>
-<dd><p>Parses the contents of an energy calculation using a dictionary of
-energy terms to extract theory-level observables (e.g. EGB vs EPB).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>file_contents</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>]</em>) – A list of each line from an energy calculation.</p></li>
-<li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>]</em>) – The relevant energy terms to be scraped from input.</p></li>
-<li><p><strong>system</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The name of the system which will be included as an additional
-kv pair in the returned dataframe. This ensures we can track which portion
-of the calculation we are accounting for (e.g. complex, receptor, ligand).</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A Polars dataframe of shape (n_frames, n_calculations + system).</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>(pl.DataFrame)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.simulate.mmpbsa.OutputAnalyzer.parse_line">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parse_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.simulate.mmpbsa.OutputAnalyzer.parse_line" title="Link to this definition"></a></dt>
-<dd><p>Parses a line from mmpbsa_energy to get the various energy terms and values.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><dl class="simple">
-<dt>A tuple containing the list of energy</dt><dd><p>term names and corresponding energy values.</p>
-</dd>
-</dl>
-</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)">list</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>], <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)">list</a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)">float</a>]])</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.simulate.mmpbsa.OutputAnalyzer.parse_outputs">
-<span class="sig-name descname"><span class="pre">parse_outputs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.simulate.mmpbsa.OutputAnalyzer.parse_outputs" title="Link to this definition"></a></dt>
-<dd><p>Parse all the output files.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.simulate.mmpbsa.OutputAnalyzer.pretty_print">
-<span class="sig-name descname"><span class="pre">pretty_print</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dfs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.simulate.mmpbsa.OutputAnalyzer.pretty_print" title="Link to this definition"></a></dt>
-<dd><p>Ingests a list of Polars dataframes for GB and PB and prints their contents
-in a human-readable form to STDIN. Also saves out the energies to a plain
-text file called <cite>deltaG.txt</cite>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>dfs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>[</em><em>pl.DataFrame</em><em>]</em>) – List of dataframes for GB and PB.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
-</dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.simulate.mmpbsa.OutputAnalyzer.read_GB">
-<span class="sig-name descname"><span class="pre">read_GB</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.simulate.mmpbsa.OutputAnalyzer.read_GB" title="Link to this definition"></a></dt>
-<dd><p>Read in the GB mdout files and returns a Polars dataframe of the values
-for each term for every frame. Also adds a <cite>system</cite> label to more easily
-compute summary statistics later.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>_file</strong> (<em>PathLike</em>) – Energy data file path.</p></li>
-<li><p><strong>system</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – String label for which system we are processing (e.g. complex).</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Polars dataframe containing the parsed energy data.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>(pl.DataFrame)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.simulate.mmpbsa.OutputAnalyzer.read_PB">
-<span class="sig-name descname"><span class="pre">read_PB</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.simulate.mmpbsa.OutputAnalyzer.read_PB" title="Link to this definition"></a></dt>
-<dd><p>Read in the PB mdout files and returns a Polars dataframe of the values
-for each term for every frame. Also adds a <cite>system</cite> label to more easily
-compute summary statistics later.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>_file</strong> (<em>PathLike</em>) – Energy data file path.</p></li>
-<li><p><strong>system</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – String label for which system we are processing (e.g. complex).</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Polars dataframe containing the parsed energy data.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>(pl.DataFrame)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="molecular_simulations.simulate.mmpbsa.OutputAnalyzer.read_sasa">
-<span class="sig-name descname"><span class="pre">read_sasa</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_file</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#molecular_simulations.simulate.mmpbsa.OutputAnalyzer.read_sasa" title="Link to this definition"></a></dt>
-<dd><p>Reads in the results of the cpptraj SASA calculation and returns the
-per-frame SASA scaled by a hardcoded value for surface tension that is
-a mostly undocumented heuristic.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>_file</strong> (<em>PathLike</em>) – Path to a file containing the SASA data.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A numpy array of the per-frame rescaled SASA energies.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>(np.ndarray)</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
+                    <div class="d-lg-none border-bottom">
+                        
+                    </div>
+                </div>
+            </aside>
+            <div class="col-12 col-lg-9 pt-5">
+                <header class="row align-items-baseline">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+    <ol class="breadcrumb m-0 p-0 bg-transparent">
+        <li class="breadcrumb-item"><a href="../index.html">Docs</a></li>
+            <li class="breadcrumb-item"><a href="modules.html">molecular_simulations</a></li>
+            <li class="breadcrumb-item"><a href="molecular_simulations.html">molecular_simulations package</a></li>
+            <li class="breadcrumb-item"><a href="molecular_simulations.simulate.html">molecular_simulations.simulate package</a></li>
+        <li class="breadcrumb-item active" aria-current="page">molecular_simulations.simulate.mmpbsa module</li>
+    </ol>
+</nav>
+                    </div>
+                    <div class="col-sm-12 col-lg-auto mt-3 mt-lg-3">
+                        <noscript>
+                            <p>JavaScript is required to toggle light/dark mode..</p>
+                        </noscript>
+                        <button id="wagtail-theme" class="btn btn-sm btn-light text-decoration-none" type="button">
+                            <span class="dark-only"><i class="fas fa-sun"></i> Light mode</span>
+                            <span class="light-only"><i class="fas fa-moon"></i> Dark mode</span>
+                        </button>
+    <a class="btn btn-sm btn-light text-decoration-none" href="https://github.com/wagtail/sphinx_wagtail_theme/blob/main/docs/api/molecular_simulations.simulate.mmpbsa.rst" rel="nofollow">
+        <span class="btn-icon"><span class="fab fa-github"></span></span>
+        <span class="btn-text">Edit on GitHub</span>
+    </a>
+    <a class="btn btn-sm btn-light text-decoration-none" href="../_sources/api/molecular_simulations.simulate.mmpbsa.rst.txt" rel="nofollow">
+        <span class="btn-icon"><span class="fas fa-code"></span></span>
+        <span class="btn-text">View source</span>
+    </a>
+                        
+                    </div>
+                </header>
+                <div class="row" >
+                    <div class="col-12">
+                        <hr class="w-100 my-4">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
+                        <main role="main" id="main">
+    <section id="molecular-simulations-simulate-mmpbsa-module">
+<h1>molecular_simulations.simulate.mmpbsa module<a class="headerlink" href="#molecular-simulations-simulate-mmpbsa-module" title="Link to this heading">¶</a></h1>
 </section>
 
-
-           </div>
-          </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="molecular_simulations.simulate.html" class="btn btn-neutral float-left" title="molecular_simulations.simulate package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="molecular_simulations.simulate.omm_simulator.html" class="btn btn-neutral float-right" title="molecular_simulations.simulate.omm_simulator module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
-
-  <hr/>
-
-  <div role="contentinfo">
-    <p>&#169; Copyright 2025, Matt Sinclair.</p>
-  </div>
-
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
-
-</footer>
+</main>
+                        <nav aria-label="Page navigation" class="py-4 my-5 clearfix font-weight-bold border-top">
+    <a class="float-left" href="molecular_simulations.simulate.free_energy.html" title="Previous">
+        <span aria-hidden="true">←&nbsp;</span>molecular_simulations.simulate.free_energy module
+    </a>
+    <a class="float-right" href="molecular_simulations.simulate.multires_simulator.html" title="Next">
+        molecular_simulations.simulate.multires_simulator module <span aria-hidden="true">&nbsp;→</span>
+    </a>
+</nav>
+                    </div>
+                    
+                </div>
+            </div>
         </div>
-      </div>
-    </section>
-  </div>
-  <script>
-      jQuery(function () {
-          SphinxRtdTheme.Navigation.enable(true);
-      });
-  </script> 
-
-</body>
+    </div>
+    <footer class="container-fluid bg-primary text-light">
+        <div class="container">
+            <div class="row">
+        <div class="col p-4">
+            
+                <nav aria-label="Footer">
+                    <ul class="nav justify-content-center mb-2">
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="https://wagtail.org/features/">Features</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="https://wagtail.org/about-wagtail/"> About Wagtail</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="https://wagtail.org/services/"> Services</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="https://wagtail.org/blog/"> Blog</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="https://wagtail.org/packages/"> Packages</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="https://wagtail.org/developers/"> Developers</a></li>
+                        
+                    </ul>
+                </nav>
+            
+            <div class="text-center">
+                    &copy; Copyright 2025, Matt Sinclair
+            </div>
+        </div>
+    </div>
+        </div>
+    </footer>
+        <script src="../_static/documentation_options.js?v=11b5e5c7"></script>
+        <script src="../_static/doctools.js?v=9bcbadda"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="../_static/copybutton.js?v=fd10adb8"></script>
+        <script type="text/javascript" src="../_static/dist/theme.js"></script>
+        <script type="text/javascript" src="../_static/dist/vendor.js"></script>
+        <script type="text/javascript" src="../_static/searchtools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function() { Search.loadIndex("../searchindex.js"); });
+        </script>
+        <script type="text/javascript" id="searchindexloader"></script>
+    </body>
 </html>

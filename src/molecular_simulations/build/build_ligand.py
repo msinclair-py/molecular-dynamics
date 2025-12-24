@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """Ligand parameterization and complex building module.
 
 This module provides classes for parameterizing small molecule ligands
@@ -18,8 +17,6 @@ from glob import glob
 import json
 from MDAnalysis.lib.util import convert_aa_code
 from openbabel import pybel
-from openmm import *
-from openmm.app import *
 import os
 from pathlib import Path
 from pdbfixer import PDBFixer

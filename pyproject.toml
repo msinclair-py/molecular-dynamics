@@ -48,6 +48,7 @@ ligand = [
 docutils = [
     'sphinx',
     'sphinx-rtd-theme',
+    'sphinx-wagtail-theme',
     'docutils'
 ]
 dev = [
