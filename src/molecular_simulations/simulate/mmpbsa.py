@@ -896,11 +896,15 @@ class OutputAnalyzer:
                 for col in sys.columns:
                     mean = sys.select(pl.mean(col)).item()
                     stdev = sys.select(pl.std(col)).item()
-                    
+                    if stdev is None:
+                        err = None
+                    else:
+                        err = stdev / self.square_root_N
+
                     stats[col] = {
                         'mean': mean, 
                         'std': stdev, 
-                        'err': stdev / self.square_root_N
+                        'err': err
                     }
 
                 for energy, contributors in self.contributions.items():

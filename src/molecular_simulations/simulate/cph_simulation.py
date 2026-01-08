@@ -10,10 +10,15 @@ from openmm.app import (CutoffNonPeriodic,
                         PDBFile, 
                         PME,
                         Topology)
-from openmm.unit import kelvin, nanometers, picosecond
+from openmm.unit import (amu,
+                         kelvin, 
+                         kilojoules_per_mole,
+                         nanometers, 
+                         picosecond)
 import parsl
 from parsl import Config, python_app
 from pathlib import Path
+from pdbfixer import PDBFixer
 from typing import Any, Optional
 import uuid
 from .constantph.constantph import ConstantPH
@@ -68,7 +73,8 @@ class ConstantPHEnsemble:
                  parsl_config: Config,
                  log_dir: Path,
                  pHs: list[float]=[x+0.5 for x in range(14)],
-                 variant_sel: Optional[str]=None):
+                 temperature: float=300.,
+                 variant_sel: Optional[str]=None,):
         self.paths = paths
         self.ref_energies = reference_energies
         
@@ -78,6 +84,8 @@ class ConstantPHEnsemble:
         self.log_dir = log_dir
         self.pHs = pHs
         self.variant_sel = variant_sel
+        
+        self.temperature = temperature * kelvin
 
         self.run_id = datetime.now().strftime('%Y%m%d_%H%M%S')
 
@@ -92,11 +100,18 @@ class ConstantPHEnsemble:
 
     def load_files(self,
                    path: Path) -> tuple[Topology, np.ndarray]:
-        pdb = PDBFile(str(path / 'system.pdb'))
+        fixer = PDBFixer(filename=str(path))
+        fixer.findMissingResidues()
+        fixer.findNonstandardResidues()
+        fixer.replaceNonstandardResidues()
+        fixer.findMissingAtoms()
+        fixer.addMissingAtoms()
+        fixer.addMissingHydrogens(7.0)
         
-        return pdb.topology, pdb.positions
+        return fixer.topology, fixer.positions
 
     def build_dicts(self,
+                    path: Path,
                     top: Topology) -> tuple[dict[str, list[str]], 
                                             dict[int, list[float]]]:
         _variants = {
@@ -115,7 +130,7 @@ class ConstantPHEnsemble:
                 reference_energies[residue.index] = [x * kilojoules_per_mole 
                                                      for x in self.ref_energies[residue.name]]
         
-        u = mda.Universe(str(path / 'system.pdb'))
+        u = mda.Universe(str(path))
         sel = u.select_atoms('protein')
         bad_keys = [sel[0].resid, sel[-1].resid] # termini
         
@@ -136,12 +151,12 @@ class ConstantPHEnsemble:
     def run(self,
             n_cycles: int=500,
             n_steps: int=500) -> None:
-        temperature = 300*kelvin
         futures = []
         for i, path in enumerate(self.paths):
             top, pos = self.load_files(path)
-            cph_params = self.get_params()
-            variants, reference_energies = self.build_dicts(top)
+            variants, reference_energies = self.build_dicts(path, top)
+
+            cph_params = self.params
 
             cph_params.update({
                 'topology': top,
@@ -157,7 +172,7 @@ class ConstantPHEnsemble:
             }
     
             futures.append(
-                run_cph_sim(cph_params, temperature, n_cycles, n_steps, log_params, str(path))
+                run_cph_sim(cph_params, self.temperature, n_cycles, n_steps, log_params, str(path))
             )
 
         _ = [x.result() for x in futures]
@@ -176,10 +191,10 @@ class ConstantPHEnsemble:
                            nonbondedCutoff=2.0*nanometers, 
                            constraints=HBonds)
     
-        integrator = LangevinIntegrator(temperature, 
+        integrator = LangevinIntegrator(self.temperature, 
                                         1.0/picosecond, 
                                         0.004*picosecond)
-        relaxation_integrator = LangevinIntegrator(temperature, 
+        relaxation_integrator = LangevinIntegrator(self.temperature, 
                                                    10.0/picosecond, 
                                                    0.002*picosecond)
     
@@ -188,10 +203,10 @@ class ConstantPHEnsemble:
             'explicitForceField': expl_ff, 
             'implicitForceField': impl_ff, 
             'relaxationSteps': 1000,
-            'explicitArgs': expl_p, 
-            'implicitArgs': impl_p, 
+            'explicitArgs': expl_params, 
+            'implicitArgs': impl_params, 
             'integrator': integrator, 
-            'relaxationIntegrator': relax_integrator,
+            'relaxationIntegrator': relaxation_integrator,
         }
 
         return params
