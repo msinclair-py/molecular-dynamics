@@ -34,7 +34,7 @@ class RCReporter:
         """
         steps = self.report_interval - simulation.currentStep % self.report_interval
         return (steps, True, False, False, False, None)
-    
+
     def report(self,
                simulation,
                state):
@@ -44,16 +44,12 @@ class RCReporter:
             simulation (_type_): _description_
             state (_type_): _description_
         """
-        box = state.getPeriodicBoxVectors().value_in_unit(u.angstrom)
-        box = np.array([box[0][0], box[1][1], box[2][2]])
+        box_vecs = state.getPeriodicBoxVectors(asNumpy=True)
+        pos = state.getPositions(asNumpy=True)
         
-        positions = np.array(state.getPositions().value_in_unit(u.angstrom))
-        atom_pos = [positions[atom_idx] for atom_idx in self.atom_indices]
-        
-        dist_ik = np.abs(atom_pos[0] - atom_pos[2])
-        dist_ik = np.linalg.norm(np.abs(dist_ik - box * (dist_ik > box / 2)))
-        dist_jk = np.abs(atom_pos[1] - atom_pos[2])
-        dist_jk = np.linalg.norm(np.abs(dist_jk - box * (dist_jk > box / 2)))
+        i, j, k = self.atom_indices
+        dist_ik = np.linalg.norm(pos[i] - pos[k])
+        dist_jk = np.linalg.norm(pos[j] - pos[k])
         
         rc = dist_ik - dist_jk
 

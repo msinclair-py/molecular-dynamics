@@ -53,52 +53,44 @@ class EVB:
     """EVB orchestrator. Sets up full EVB run for a set of reactants and products,
     and distributes calculations using Parsl."""
     def __init__(self,
-                 reactant_topology: Path,
-                 reactant_coordinates: Path,
-                 reactant_umbrella: list[int],
-                 reactant_morse: list[int],
-                 product_topology: Path,
-                 product_coordinates: Path,
-                 product_umbrella: list[int],
-                 product_morse: list[int],
+                 topology: Path,
+                 coordinates: Path,
+                 umbrella_atoms: list[int],
+                 morse_atoms: list[int],
                  reaction_coordinate:  list[float],
                  log_path: Path,
+                 log_prefix: str,
                  parsl_config: Config,
                  rc_write_freq: int=5,
                  steps: int=500000,
                  dt: float=0.002,
                  k: float=160000.0,
+                 D_e: float=1491.89,
+                 alpha: float=10.46,
+                 r0: float=0.1,
                  platform: str='CUDA',
-                 restraint_sel: Optional[str]=None,
-                 D_e: Optional[float]=None,
-                 alpha: Optional[float]=None,
-                 r0: Optional[float]=None):
-        # Reactant system
-        self.reactant_topology = Path(reactant_topology)
-        self.reactant_coordinates = Path(reactant_coordinates)
-        self.r_umb = reactant_umbrella
-        self.r_mor = reactant_morse
-        self.r_path = self.reactant_topology.parent / 'evb'
+                 restraint_sel: Optional[str]=None):
+        self.topology = Path(topology)
+        self.coordinates = Path(coordinates)
+        self.umbrella_atoms = umbrella_atoms
+        self.morse_atoms = morse_atoms
+        self.path = self.topology.parent / 'evb'
         
-        # Product system
-        self.product_topology = Path(product_topology)
-        self.product_coordinates = Path(product_coordinates)
-        self.p_umb = product_umbrella
-        self.p_mor = product_morse
-        self.p_path = self.product_topology.parent / 'evb'
-
         self.log_path = Path(log_path)
-
+        self.log_prefix = log_prefix
         self.rc_freq = rc_write_freq
+
         self.steps = steps
         self.dt = dt
-
+        self.k = k
+        self.D_e = D_e
+        self.alpha = alpha
+        self.r0 = r0
+        
         self.platform = platform
         self.restraint_sel = restraint_sel
 
         self.reaction_coordinate = self.construct_rc(reaction_coordinate)
-        self.set_umbrella_settings(k)
-        self.set_morse_bond_settings(D_e, alpha, r0)
         self.parsl_config = parsl_config
         self.dfk = None
 
@@ -113,17 +105,14 @@ class EVB:
                 is set correctly, having more than 1 window.
         """
         paths = [
-            self.reactant_topology, self.reactant_coordinates,
-            self.product_topology, self.product_coordinates,
+            self.topology, self.coordinates,
         ]
 
         for path in paths:
             assert path.exists(), f'File {path} not found!'
 
-        assert len(self.r_umb) == 3, f'Reactant umbrella indices must be length 3!'
-        assert len(self.p_umb) == 3, f'Product umbrella indices must be length 3!'
-        assert len(self.r_mor) == 2, f'Reactant Morse indices must be length 2!'
-        assert len(self.p_mor) == 2, f'Product Morse indices must be length 2!'
+        assert len(self.umbrella_atoms) == 3, f'Need 3 umbrella atoms!'
+        assert len(self.morse_atoms) == 2, f'Need 2 morse bond atoms!'
         assert self.reaction_coordinate.shape[0] > 1, f'RC needs at least 1 window!'
 
         self.log_path.mkdir(exist_ok=True, parents=True)
@@ -140,78 +129,6 @@ class EVB:
         """
         return np.arange(rc[0], rc[1] + rc[2], rc[2])
 
-    def set_umbrella_settings(self,
-                              k:  float) -> None:
-        """Sets up Umbrella force settings for force calculation. Because the
-        windows are decided at run time we leave rc0 as None for now.
-
-        Args:
-            k (float): pass
-
-        Returns:
-            None
-        """
-        self.r_umbrella = {
-            'atom_i': self.r_umb[0],
-            'atom_j': self.r_umb[1],
-            'atom_k': self.r_umb[2],
-            'k': k,
-            'rc0': None
-        }
-
-        self.p_umbrella = {
-            'atom_i': self.p_umb[0],
-            'atom_j': self.p_umb[1],
-            'atom_k': self.p_umb[2],
-            'k': k,
-            'rc0': None
-        }
-
-    def set_morse_bond_settings(self,
-                                D_e: Optional[float],
-                                alpha: Optional[float],
-                                r0: Optional[float]) -> None:
-        """Sets up Morse bond settings for potential creation. D_e is the 
-        potential well depth and can be computed using QM or scraped from
-        ML predictions such as ALFABET (https://bde.ml.nrel.gov). alpha is 
-        the potential well width and is computed from the Taylor expansion of
-        the second derivative of the potential. This takes the form:
-        .. math::
-            \alpha = \sqrt(\frac{k_e}{2*D_e})
-
-        Finally, r0 is the equilibrium bond distance coming from literature,
-        forcefield, QM or ML predictions.
-
-        Args:
-            D_e (Optional[float]): Potential well depth.
-            alpha (Optional[float]): Potential width. 
-            r0 (Optional[float]): Equilibrium bond distance.
-            r_idx (list[int]): List of atom indices from reactant system that
-                participate in Morse bond
-            p_idx (list[int]): List of atom indices from product system that
-                participate in Morse bond
-
-        Returns:
-            None
-        """
-        keys = ['D_e', 'alpha', 'r0']
-        settings = {}
-        for key, val in zip(keys, [D_e, alpha, r0]):
-            if val is not None:
-                settings[key] = val
-        
-        self.r_morse = {
-            'atom_i': self.r_mor[0],
-            'atom_j': self.r_mor[1],
-        }
-
-        self.p_morse = {
-            'atom_i': self.p_mor[0],
-            'atom_j': self.p_mor[1],
-        }
-
-        for morse_dict in [self.r_morse, self.p_morse]:
-            morse_dict.update(settings)
 
     def initialize(self) -> None:
         """Initialize Parsl for runs"""
@@ -230,36 +147,16 @@ class EVB:
         """Collect futures for each EVB window and distribute."""
         futures = []
         for i, rc0 in enumerate(self.reaction_coordinate):
-            r_umbrella = deepcopy(self.r_umbrella)
-            r_umbrella.update({'rc0': rc0})
+            umbrella = self.umbrella.update({'rc0': rc0})
             
             futures.append(
                 run_evb_window(
-                    topology=self.reactant_topology,
-                    coord_file=self.reactant_coordinates,
-                    out_path=self.r_path / f'window{i}',
-                    rc_file=self.log_path / f'forward_{i}.log',
-                    umbrella_force=r_umbrella,
-                    morse_bond=self.r_morse,
-                    rc_freq=self.rc_freq,
-                    steps=self.steps,
-                    dt=self.dt,
-                    platform=self.platform,
-                    restraint_sel=self.restraint_sel,
-                )
-            )
-            
-            p_umbrella = deepcopy(self.p_umbrella)
-            p_umbrella.update({'rc0': rc0})
-
-            futures.append(
-                run_evb_window(
-                    topology=self.product_topology,
-                    coord_file=self.product_coordinates,
-                    out_path=self.p_path / f'window{i}',
-                    rc_file=self.log_path / f'reverse_{i}.log',
-                    umbrella_force=p_umbrella,
-                    morse_bond=self.p_morse,
+                    topology=self.topology,
+                    coord_file=self.coordinates,
+                    out_path=self.path / f'window{i}',
+                    rc_file=self.log_path / f'{self.log_prefix}_{i}.log',
+                    umbrella_force=umbrella,
+                    morse_bond=self.morse_bond,
                     rc_freq=self.rc_freq,
                     steps=self.steps,
                     dt=self.dt,
@@ -269,6 +166,53 @@ class EVB:
             )
 
         _ = [x.result() for x in futures]
+    
+    @property
+    def umbrella(self,
+                 k:  float) -> dict[str, Any]:
+        """Sets up Umbrella force settings for force calculation. Because the
+        windows are decided at run time we leave rc0 as None for now.
+
+        Args:
+            k (float): pass
+
+        Returns:
+            dict
+        """
+        return {
+            'atom_i': self.umbrella_atoms[0],
+            'atom_j': self.umbrella_atoms[1],
+            'atom_k': self.umbrella_atoms[2],
+            'k': k,
+            'rc0': None
+        }
+
+    @property
+    def morse_bond(self) -> dict[str, Any]:
+        """Sets up Morse bond settings for potential creation. D_e is the 
+        potential well depth and can be computed using QM or scraped from
+        ML predictions such as ALFABET (https://bde.ml.nrel.gov). alpha is 
+        the potential well width and is computed from the Taylor expansion of
+        the second derivative of the potential. This takes the form:
+        .. math::
+            \alpha = \sqrt(\frac{k_e}{2*D_e})
+
+        Finally, r0 is the equilibrium bond distance coming from literature,
+        forcefield, QM or ML predictions.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
+        return {
+            'atom_i': self.morse_atoms[0],
+            'atom_j': self.morse_atoms[1],
+            'D_e': self.D_e,
+            'alpha': self.alpha,
+            'r0': self.r0,
+        }
 
     
 class EVBCalculation:
@@ -418,9 +362,9 @@ class EVBCalculation:
     @staticmethod
     def morse_bond_force(atom_i: int,
                          atom_j: int,
-                         D_e: float=419.6, # from NREL server for my O-H
-                         alpha: float=2.5977, # a = sqrt(k_OH / (2 * De))
-                         r0: float=0.096) -> CustomBondForce:
+                         D_e: float,
+                         alpha: float,
+                         r0: float) -> CustomBondForce:
         """Generates a custom Morse potential between two atom indices.
 
         Args:
