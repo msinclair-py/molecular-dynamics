@@ -107,21 +107,25 @@ class TestImplicitSolvent:
             assert 'leaprc.DNA.OL21' in builder.ffs
     
     def test_implicit_solvent_write_leap(self):
-        """Test write_leap method"""
+        """Test tleap_it method writes correct leap input"""
         from molecular_simulations.build.build_amber import ImplicitSolvent
-        
+
         with tempfile.TemporaryDirectory() as tmpdir:
             pdb_path = Path(tmpdir) / 'test.pdb'
             pdb_path.write_text("ATOM      1  N   ALA A   1       0.000   0.000   0.000  1.00  0.00\n")
-            
+
             with patch.dict(os.environ, {'AMBERHOME': '/fake/amber'}):
                 builder = ImplicitSolvent(path=tmpdir, pdb=str(pdb_path))
-            
-            leap_content = "source leaprc.protein.ff19SB\nquit\n"
-            leap_file = builder.write_leap(leap_content)
-            
+
+            builder.debug = True
+            with patch('subprocess.run'):
+                builder.tleap_it()
+
+            leap_file = Path(tmpdir) / 'tleap.in'
             assert leap_file.exists()
-            assert leap_file.read_text() == leap_content
+            content = leap_file.read_text()
+            assert 'leaprc.protein.ff19SB' in content
+            assert 'loadpdb' in content
 
 
 class TestExplicitSolvent:

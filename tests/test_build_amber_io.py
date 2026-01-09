@@ -5,16 +5,26 @@ from unittest.mock import patch
 from molecular_simulations.build import ImplicitSolvent
 
 @patch.dict('os.environ', {'AMBERHOME': '/mock/amber/path'})
-def test_write_leap_writes_file(tmp_path: Path):
-    content = 'source leaprc.protein.ff19SB\nquit\n'
-    imp = ImplicitSolvent(path=tmp_path, pdb='dummy.pdb')
-    leap_path = imp.write_leap(content)
+def test_tleap_it_writes_file(tmp_path: Path):
+    pdb_path = tmp_path / 'test.pdb'
+    pdb_path.write_text("ATOM      1  N   ALA A   1       0.000   0.000   0.000  1.00  0.00\n")
+    imp = ImplicitSolvent(path=tmp_path, pdb=str(pdb_path))
+    imp.debug = True
+    with patch('subprocess.run'):
+        imp.tleap_it()
+    leap_path = tmp_path / 'tleap.in'
     assert leap_path.exists()
-    assert leap_path.read_text() == content
+    content = leap_path.read_text()
+    assert 'leaprc.protein.ff19SB' in content
 
 @patch.dict('os.environ', {'AMBERHOME': '/mock/amber/path'})
-def test_write_leap_returns_path(tmp_path: Path):
-    imp = ImplicitSolvent(path=tmp_path, pdb='dummy.pdb')
-    p = imp.write_leap('quit\n')
-    assert p.parent == tmp_path
-    assert p.suffix in ('.in', '.inp', '.leap', '.txt')
+def test_tleap_it_creates_leap_in_path(tmp_path: Path):
+    pdb_path = tmp_path / 'test.pdb'
+    pdb_path.write_text("ATOM      1  N   ALA A   1       0.000   0.000   0.000  1.00  0.00\n")
+    imp = ImplicitSolvent(path=tmp_path, pdb=str(pdb_path))
+    imp.debug = True
+    with patch('subprocess.run'):
+        imp.tleap_it()
+    leap_path = tmp_path / 'tleap.in'
+    assert leap_path.parent == tmp_path
+    assert leap_path.suffix == '.in'

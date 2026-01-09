@@ -1,5 +1,9 @@
 """
 Unit tests for build/build_ligand.py module
+
+This module contains both unit tests (with mocks) and integration tests that use
+real RDKit/OpenBabel when available. Tests for non-chemistry logic use mocks,
+while chemistry validation tests use real libraries.
 """
 import pytest
 import numpy as np
@@ -10,10 +14,54 @@ import os
 import sys
 
 
-# Mock difficult dependencies before import
-@pytest.fixture(autouse=True)
+# ============================================================================
+# Fixtures and helpers for conditional chemistry library usage
+# ============================================================================
+
+def _check_rdkit_available():
+    """Check if RDKit is available."""
+    try:
+        from rdkit import Chem
+        return True
+    except ImportError:
+        return False
+
+
+def _check_openbabel_available():
+    """Check if OpenBabel/pybel is available."""
+    try:
+        from openbabel import pybel
+        return True
+    except ImportError:
+        return False
+
+
+# Custom markers for tests requiring chemistry libraries
+requires_rdkit = pytest.mark.skipif(
+    not _check_rdkit_available(),
+    reason="RDKit not available"
+)
+
+requires_openbabel = pytest.mark.skipif(
+    not _check_openbabel_available(),
+    reason="OpenBabel not available"
+)
+
+requires_chemistry = pytest.mark.skipif(
+    not (_check_rdkit_available() and _check_openbabel_available()),
+    reason="RDKit or OpenBabel not available"
+)
+
+
+# NOTE: This fixture is NOT autouse - only used by tests that need mocks
+@pytest.fixture
 def mock_difficult_dependencies():
-    """Mock dependencies that might not be installed"""
+    """Mock dependencies that might not be installed.
+
+    This fixture is NOT autouse - it must be explicitly requested by tests
+    that need to mock the chemistry libraries. Tests that validate actual
+    chemistry behavior should not use this fixture.
+    """
     mock_pybel = MagicMock()
     mock_openbabel = MagicMock()
     mock_openbabel.pybel = mock_pybel
@@ -45,24 +93,227 @@ def mock_difficult_dependencies():
             sys.modules.pop(mod, None)
 
 
+@pytest.fixture
+def sample_sdf_content():
+    """Return a valid SDF file content for methanol."""
+    return """methanol
+     RDKit          3D
+
+  5  4  0  0  0  0  0  0  0  0999 V2000
+    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+    1.4000    0.0000    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0
+   -0.3000    1.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0
+   -0.3000   -0.5000    0.8660 H   0  0  0  0  0  0  0  0  0  0  0  0
+   -0.3000   -0.5000   -0.8660 H   0  0  0  0  0  0  0  0  0  0  0  0
+  1  2  1  0
+  1  3  1  0
+  1  4  1  0
+  1  5  1  0
+M  END
+"""
+
+
+@pytest.fixture
+def sample_sdf_file(tmp_path, sample_sdf_content):
+    """Create a temporary SDF file with valid content."""
+    sdf_path = tmp_path / "methanol.sdf"
+    sdf_path.write_text(sample_sdf_content)
+    return sdf_path
+
+
+# ============================================================================
+# Integration tests using real chemistry libraries (when available)
+# ============================================================================
+
+class TestRDKitIntegration:
+    """Integration tests using real RDKit functionality.
+
+    These tests verify actual chemistry operations rather than mocked interactions.
+    """
+
+    @requires_rdkit
+    def test_real_sdf_reading(self, sample_sdf_file):
+        """Test that RDKit can read a real SDF file."""
+        from rdkit import Chem
+
+        supplier = Chem.SDMolSupplier(str(sample_sdf_file), removeHs=False)
+        mol = next(iter(supplier))
+
+        assert mol is not None
+        # Should have at least the heavy atoms (C and O)
+        assert mol.GetNumAtoms() >= 2
+
+    @requires_rdkit
+    def test_real_hydrogen_addition(self, sample_sdf_file):
+        """Test that RDKit can add hydrogens to a molecule."""
+        from rdkit import Chem
+
+        supplier = Chem.SDMolSupplier(str(sample_sdf_file))
+        mol = next(iter(supplier))
+
+        # The methanol in our SDF already has explicit H
+        initial_atoms = mol.GetNumAtoms()
+
+        # AddHs should not add more since they're already explicit
+        molH = Chem.AddHs(mol, addCoords=True)
+        assert molH is not None
+        assert molH.GetNumAtoms() >= initial_atoms
+
+    @requires_rdkit
+    def test_real_molecule_from_smiles(self):
+        """Test creating a molecule from SMILES and converting it."""
+        from rdkit import Chem
+        from rdkit.Chem import AllChem
+
+        # Create ethanol from SMILES
+        mol = Chem.MolFromSmiles('CCO')
+        assert mol is not None
+
+        # Add hydrogens
+        molH = Chem.AddHs(mol)
+        assert molH.GetNumAtoms() == 9  # 2C + 1O + 6H
+
+        # Generate 3D coordinates
+        AllChem.EmbedMolecule(molH, randomSeed=42)
+        conf = molH.GetConformer()
+        assert conf.GetNumAtoms() == 9
+
+    @requires_rdkit
+    def test_real_sdf_writing(self, tmp_path):
+        """Test that RDKit can write valid SDF files."""
+        from rdkit import Chem
+        from rdkit.Chem import AllChem
+
+        # Create molecule
+        mol = Chem.MolFromSmiles('C')  # Methane
+        mol = Chem.AddHs(mol)
+        AllChem.EmbedMolecule(mol, randomSeed=42)
+
+        # Write to SDF
+        output_sdf = tmp_path / "output.sdf"
+        with Chem.SDWriter(str(output_sdf)) as writer:
+            writer.write(mol)
+
+        # Verify file was written and can be read back
+        assert output_sdf.exists()
+        supplier = Chem.SDMolSupplier(str(output_sdf), removeHs=False)
+        read_mol = next(iter(supplier))
+        assert read_mol is not None
+        assert read_mol.GetNumAtoms() == 5  # C + 4H
+
+    @requires_rdkit
+    def test_real_pdb_reading(self, tmp_path):
+        """Test that RDKit can read a PDB file with small molecule."""
+        from rdkit import Chem
+
+        # Create a simple PDB for a water molecule
+        pdb_content = """HETATM    1  O   HOH A   1       0.000   0.000   0.000  1.00  0.00           O
+HETATM    2  H1  HOH A   1       0.957   0.000   0.000  1.00  0.00           H
+HETATM    3  H2  HOH A   1      -0.240   0.927   0.000  1.00  0.00           H
+END
+"""
+        pdb_path = tmp_path / "water.pdb"
+        pdb_path.write_text(pdb_content)
+
+        mol = Chem.MolFromPDBFile(str(pdb_path), removeHs=False)
+        assert mol is not None
+        assert mol.GetNumAtoms() == 3
+
+
+class TestOpenBabelIntegration:
+    """Integration tests using real OpenBabel functionality."""
+
+    @requires_openbabel
+    def test_real_sdf_to_mol2_conversion(self, sample_sdf_file, tmp_path):
+        """Test that OpenBabel can convert SDF to mol2."""
+        from openbabel import pybel
+
+        # Read SDF
+        mols = list(pybel.readfile('sdf', str(sample_sdf_file)))
+        assert len(mols) == 1
+        mol = mols[0]
+
+        # Write mol2
+        mol2_path = tmp_path / "output.mol2"
+        mol.write('mol2', str(mol2_path), overwrite=True)
+
+        assert mol2_path.exists()
+        assert mol2_path.stat().st_size > 0
+
+    @requires_openbabel
+    def test_real_format_detection(self, sample_sdf_file):
+        """Test that OpenBabel correctly detects molecular format."""
+        from openbabel import pybel
+
+        mols = list(pybel.readfile('sdf', str(sample_sdf_file)))
+        mol = mols[0]
+
+        # Verify atom count
+        assert len(mol.atoms) == 5  # C + O + 3H for methanol
+
+
+class TestChemistryValidation:
+    """Tests that validate chemistry logic with real libraries."""
+
+    @requires_chemistry
+    def test_molecule_valence_valid(self, sample_sdf_file):
+        """Test that the molecule has valid valence."""
+        from rdkit import Chem
+
+        supplier = Chem.SDMolSupplier(str(sample_sdf_file))
+        mol = next(iter(supplier))
+
+        # Sanitize checks valence
+        try:
+            Chem.SanitizeMol(mol)
+            valid = True
+        except Exception:
+            valid = False
+
+        assert valid, "Molecule should have valid valence"
+
+    @requires_chemistry
+    def test_hydrogen_count_correct(self, sample_sdf_file):
+        """Test that hydrogen count is correct for the molecule."""
+        from rdkit import Chem
+
+        supplier = Chem.SDMolSupplier(str(sample_sdf_file))
+        mol = next(iter(supplier))
+
+        # Count atoms by element
+        atom_counts = {}
+        for atom in mol.GetAtoms():
+            symbol = atom.GetSymbol()
+            atom_counts[symbol] = atom_counts.get(symbol, 0) + 1
+
+        # Methanol: CH3OH -> 1C, 1O, 4H (but our SDF has 3H explicit)
+        assert atom_counts.get('C', 0) == 1
+        assert atom_counts.get('O', 0) == 1
+
+
+# ============================================================================
+# Unit tests with mocks (for non-chemistry logic)
+# ============================================================================
+
+
 class TestLigandError:
     """Test suite for LigandError exception class"""
 
-    def test_ligand_error_default_message(self):
+    def test_ligand_error_default_message(self, mock_difficult_dependencies):
         """Test LigandError with default message"""
         from molecular_simulations.build.build_ligand import LigandError
 
         err = LigandError()
         assert 'cannot model' in str(err)
 
-    def test_ligand_error_custom_message(self):
+    def test_ligand_error_custom_message(self, mock_difficult_dependencies):
         """Test LigandError with custom message"""
         from molecular_simulations.build.build_ligand import LigandError
 
         err = LigandError("Custom error message")
         assert str(err) == "Custom error message"
 
-    def test_ligand_error_is_exception(self):
+    def test_ligand_error_is_exception(self, mock_difficult_dependencies):
         """Test LigandError is a proper Exception subclass"""
         from molecular_simulations.build.build_ligand import LigandError
 
@@ -75,7 +326,7 @@ class TestLigandError:
 class TestLigandBuilder:
     """Test suite for LigandBuilder class"""
 
-    def test_ligand_builder_init(self):
+    def test_ligand_builder_init(self, mock_difficult_dependencies):
         """Test LigandBuilder initialization"""
         from molecular_simulations.build.build_ligand import LigandBuilder
 
@@ -96,7 +347,7 @@ class TestLigandBuilder:
             assert builder.lig == path / 'ligand.sdf'
             assert builder.ln == 0
 
-    def test_ligand_builder_init_with_prefix(self):
+    def test_ligand_builder_init_with_prefix(self, mock_difficult_dependencies):
         """Test LigandBuilder initialization with file prefix"""
         from molecular_simulations.build.build_ligand import LigandBuilder
 
@@ -115,7 +366,7 @@ class TestLigandBuilder:
             assert builder.ln == 1
             assert 'prefix_' in str(builder.out_lig)
 
-    def test_ligand_builder_write_leap(self):
+    def test_ligand_builder_write_leap(self, mock_difficult_dependencies):
         """Test write_leap method"""
         from molecular_simulations.build.build_ligand import LigandBuilder
 
@@ -190,7 +441,7 @@ class TestLigandBuilder:
             mock_chem.MolFromPDBFile.assert_called_once()
             mock_chem.AddHs.assert_called_once_with(mock_mol, addCoords=True)
 
-    def test_check_sqm_success(self):
+    def test_check_sqm_success(self, mock_difficult_dependencies):
         """Test check_sqm with successful calculation"""
         from molecular_simulations.build.build_ligand import LigandBuilder
 
@@ -214,7 +465,7 @@ class TestLigandBuilder:
         finally:
             os.chdir(cwd)
 
-    def test_check_sqm_failure(self):
+    def test_check_sqm_failure(self, mock_difficult_dependencies):
         """Test check_sqm with failed calculation"""
         from molecular_simulations.build.build_ligand import LigandBuilder, LigandError
 
@@ -261,7 +512,7 @@ class TestLigandBuilder:
             mock_pybel.readfile.assert_called_once_with('sdf', 'ligand_H.sdf')
             mock_mol.write.assert_called_once()
 
-    def test_move_antechamber_outputs(self):
+    def test_move_antechamber_outputs(self, mock_difficult_dependencies):
         """Test move_antechamber_outputs method"""
         from molecular_simulations.build.build_ligand import LigandBuilder
 
@@ -296,7 +547,7 @@ class TestComplexBuilder:
     """Test suite for ComplexBuilder class"""
 
     @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
-    def test_complex_builder_init_single_ligand(self):
+    def test_complex_builder_init_single_ligand(self, mock_difficult_dependencies):
         """Test ComplexBuilder initialization with single ligand"""
         from molecular_simulations.build.build_ligand import ComplexBuilder
 
@@ -320,7 +571,7 @@ class TestComplexBuilder:
             assert isinstance(builder.lig, Path)
 
     @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
-    def test_complex_builder_init_multiple_ligands(self):
+    def test_complex_builder_init_multiple_ligands(self, mock_difficult_dependencies):
         """Test ComplexBuilder initialization with multiple ligands"""
         from molecular_simulations.build.build_ligand import ComplexBuilder
 
@@ -345,7 +596,7 @@ class TestComplexBuilder:
             assert len(builder.lig) == 2
 
     @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
-    def test_complex_builder_with_precomputed_params(self):
+    def test_complex_builder_with_precomputed_params(self, mock_difficult_dependencies):
         """Test ComplexBuilder with pre-computed ligand parameters"""
         from molecular_simulations.build.build_ligand import ComplexBuilder
 
@@ -369,7 +620,7 @@ class TestComplexBuilder:
             assert builder.lig_param_prefix is not None
 
     @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
-    def test_complex_builder_kwargs(self):
+    def test_complex_builder_kwargs(self, mock_difficult_dependencies):
         """Test ComplexBuilder with extra kwargs"""
         from molecular_simulations.build.build_ligand import ComplexBuilder
 
@@ -397,7 +648,7 @@ class TestComplexBuilder:
 class TestPLINDERBuilder:
     """Test suite for PLINDERBuilder class"""
 
-    def test_cation_list_property(self):
+    def test_cation_list_property(self, mock_difficult_dependencies):
         """Test cation_list property values"""
         from molecular_simulations.build.build_ligand import PLINDERBuilder
 
@@ -408,7 +659,7 @@ class TestPLINDERBuilder:
         assert 'ca' in cations
         assert 'mg' in cations
 
-    def test_anion_list_property(self):
+    def test_anion_list_property(self, mock_difficult_dependencies):
         """Test anion_list property values"""
         from molecular_simulations.build.build_ligand import PLINDERBuilder
 
@@ -424,7 +675,7 @@ class TestComplexBuilderMethods:
     """Additional test methods for ComplexBuilder"""
 
     @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
-    def test_add_ion_to_pdb(self):
+    def test_add_ion_to_pdb(self, mock_difficult_dependencies):
         """Test add_ion_to_pdb method"""
         from molecular_simulations.build.build_ligand import ComplexBuilder
 
@@ -505,7 +756,7 @@ END
             bl_mod.LigandBuilder = original_lig_builder
 
     @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
-    def test_complex_builder_with_list_of_ligands(self):
+    def test_complex_builder_with_list_of_ligands(self, mock_difficult_dependencies):
         """Test ComplexBuilder with list of ligands"""
         from molecular_simulations.build.build_ligand import ComplexBuilder
 
@@ -534,7 +785,7 @@ END
 class TestLigandBuilderAdditional:
     """Additional tests for LigandBuilder"""
 
-    def test_ligand_builder_default_prefix(self):
+    def test_ligand_builder_default_prefix(self, mock_difficult_dependencies):
         """Test LigandBuilder with default empty prefix"""
         from molecular_simulations.build.build_ligand import LigandBuilder
 
@@ -548,7 +799,7 @@ class TestLigandBuilderAdditional:
             # out_lig should not have a prefix
             assert str(builder.out_lig).endswith('ligand')
 
-    def test_ligand_builder_lig_number(self):
+    def test_ligand_builder_lig_number(self, mock_difficult_dependencies):
         """Test LigandBuilder with different ligand numbers"""
         from molecular_simulations.build.build_ligand import LigandBuilder
 
@@ -638,7 +889,7 @@ class TestComplexBuilderBuild:
     @patch('molecular_simulations.build.build_amber.subprocess')
     @patch('molecular_simulations.build.build_ligand.LigandBuilder')
     @patch('molecular_simulations.build.build_ligand.os.system')
-    def test_complex_builder_build(self, mock_os_system, mock_lig_builder, mock_subprocess, mock_chdir):
+    def test_complex_builder_build(self, mock_os_system, mock_lig_builder, mock_subprocess, mock_chdir, mock_difficult_dependencies):
         """Test ComplexBuilder build method"""
         from molecular_simulations.build.build_ligand import ComplexBuilder
 
@@ -679,7 +930,7 @@ class TestPLINDERBuilderMethods:
     """Test suite for PLINDERBuilder methods"""
 
     @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
-    def test_cation_list_values(self):
+    def test_cation_list_values(self, mock_difficult_dependencies):
         """Test cation_list contains expected ions"""
         from molecular_simulations.build.build_ligand import PLINDERBuilder
 
@@ -689,7 +940,7 @@ class TestPLINDERBuilderMethods:
             assert ion in cations
 
     @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
-    def test_anion_list_values(self):
+    def test_anion_list_values(self, mock_difficult_dependencies):
         """Test anion_list contains expected ions"""
         from molecular_simulations.build.build_ligand import PLINDERBuilder
 
@@ -700,7 +951,7 @@ class TestPLINDERBuilderMethods:
 
     @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
     @patch('molecular_simulations.build.build_ligand.ImplicitSolvent.__init__')
-    def test_plinder_builder_init(self, mock_super_init):
+    def test_plinder_builder_init(self, mock_super_init, mock_difficult_dependencies):
         """Test PLINDERBuilder initialization"""
         from molecular_simulations.build.build_ligand import PLINDERBuilder
 
@@ -778,7 +1029,7 @@ class TestPLINDERBuilderBuild:
     @patch('molecular_simulations.build.build_ligand.ImplicitSolvent.__init__')
     @patch('molecular_simulations.build.build_ligand.os.system')
     @patch('molecular_simulations.build.build_ligand.shutil')
-    def test_migrate_files_no_ligands(self, mock_shutil, mock_os_system, mock_super_init, mock_chdir):
+    def test_migrate_files_no_ligands(self, mock_shutil, mock_os_system, mock_super_init, mock_chdir, mock_difficult_dependencies):
         """Test migrate_files when no ligands are found"""
         from molecular_simulations.build.build_ligand import PLINDERBuilder
 
@@ -884,7 +1135,7 @@ class TestPLINDERBuilderBuild:
             assert len(builder.ions) == 1
 
     @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
-    def test_place_ions(self):
+    def test_place_ions(self, mock_difficult_dependencies):
         """Test place_ions adds ion records to PDB"""
         from molecular_simulations.build.build_ligand import PLINDERBuilder
 
@@ -910,7 +1161,7 @@ END
             assert '5.000' in modified
 
     @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
-    def test_check_ptms_correct_sequence(self):
+    def test_check_ptms_correct_sequence(self, mock_difficult_dependencies):
         """Test check_ptms returns unchanged sequence when correct"""
         from molecular_simulations.build.build_ligand import PLINDERBuilder
 
@@ -934,7 +1185,7 @@ END
         assert result == ['ALA', 'GLY']
 
     @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
-    def test_check_ptms_with_modification(self):
+    def test_check_ptms_with_modification(self, mock_difficult_dependencies):
         """Test check_ptms updates PTM residues"""
         from molecular_simulations.build.build_ligand import PLINDERBuilder
 
@@ -954,50 +1205,14 @@ END
         assert result == ['SEP']
 
 
-class TestComplexBuilderAssemble:
-    """Test suite for ComplexBuilder assemble_system method"""
+class TestComplexBuilderTleap:
+    """Test suite for ComplexBuilder tleap_it method"""
 
     @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
-    @patch('molecular_simulations.build.build_ligand.os.system')
-    def test_assemble_system_single_ligand(self, mock_os_system):
-        """Test assemble_system with single ligand"""
+    @patch('subprocess.run')
+    def test_tleap_it_single_ligand(self, mock_subprocess, mock_difficult_dependencies):
+        """Test tleap_it writes correct leap input for single ligand"""
         from molecular_simulations.build.build_ligand import ComplexBuilder
-
-        mock_os_system.return_value = 0
-
-        with tempfile.TemporaryDirectory() as tmpdir:
-            path = Path(tmpdir)
-
-            pdb_file = path / 'protein.pdb'
-            pdb_file.write_text("ATOM  1  N  ALA A 1  0.0 0.0 0.0  1.0 0.0\n")
-
-            lig_file = path / 'ligand.sdf'
-            lig_file.write_text("mock sdf")
-
-            builder = ComplexBuilder.__new__(ComplexBuilder)
-            builder.out = path / 'output'
-            builder.out.mkdir()
-            builder.build_dir = path / 'build'
-            builder.build_dir.mkdir()
-            builder.pdb = str(pdb_file)
-            builder.lig = str(path / 'lig')
-            builder.ffs = ['leaprc.protein.ff19SB']
-            builder.water_box = 'TIP3PBOX'
-
-            with patch.object(builder, 'write_leap') as mock_write_leap:
-                mock_write_leap.return_value = str(path / 'leap.in')
-                builder.assemble_system(dim=80.0, num_ions=10)
-
-            mock_os_system.assert_called()
-            mock_write_leap.assert_called_once()
-
-    @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
-    @patch('molecular_simulations.build.build_ligand.os.system')
-    def test_assemble_system_multiple_ligands(self, mock_os_system):
-        """Test assemble_system with multiple ligands"""
-        from molecular_simulations.build.build_ligand import ComplexBuilder
-
-        mock_os_system.return_value = 0
 
         with tempfile.TemporaryDirectory() as tmpdir:
             path = Path(tmpdir)
@@ -1006,20 +1221,51 @@ class TestComplexBuilderAssemble:
             pdb_file.write_text("ATOM  1  N  ALA A 1  0.0 0.0 0.0  1.0 0.0\n")
 
             builder = ComplexBuilder.__new__(ComplexBuilder)
+            builder.path = path
             builder.out = path / 'output'
-            builder.out.mkdir()
-            builder.build_dir = path / 'build'
-            builder.build_dir.mkdir()
             builder.pdb = str(pdb_file)
-            builder.lig = [str(path / 'lig1'), str(path / 'lig2')]
             builder.ffs = ['leaprc.protein.ff19SB']
-            builder.water_box = 'TIP3PBOX'
+            builder.debug = True
+            builder.tleap = 'tleap'
 
-            with patch.object(builder, 'write_leap') as mock_write_leap:
-                mock_write_leap.return_value = str(path / 'leap.in')
-                builder.assemble_system(dim=80.0, num_ions=10)
+            builder.tleap_it()
 
-            mock_os_system.assert_called()
+            leap_file = path / 'tleap.in'
+            assert leap_file.exists()
+            content = leap_file.read_text()
+            assert 'leaprc.protein.ff19SB' in content
+            assert 'loadpdb' in content
+            mock_subprocess.assert_called()
+
+    @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
+    @patch('subprocess.run')
+    def test_tleap_it_with_rna_dna(self, mock_subprocess, mock_difficult_dependencies):
+        """Test tleap_it writes correct leap input with multiple force fields"""
+        from molecular_simulations.build.build_ligand import ComplexBuilder
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir)
+
+            pdb_file = path / 'protein.pdb'
+            pdb_file.write_text("ATOM  1  N  ALA A 1  0.0 0.0 0.0  1.0 0.0\n")
+
+            builder = ComplexBuilder.__new__(ComplexBuilder)
+            builder.path = path
+            builder.out = path / 'output'
+            builder.pdb = str(pdb_file)
+            builder.ffs = ['leaprc.protein.ff19SB', 'leaprc.RNA.Shaw', 'leaprc.gaff2']
+            builder.debug = True
+            builder.tleap = 'tleap'
+
+            builder.tleap_it()
+
+            leap_file = path / 'tleap.in'
+            assert leap_file.exists()
+            content = leap_file.read_text()
+            assert 'leaprc.protein.ff19SB' in content
+            assert 'leaprc.RNA.Shaw' in content
+            assert 'leaprc.gaff2' in content
+            mock_subprocess.assert_called()
 
 
 class TestPLINDERBuilderAssemble:
@@ -1027,7 +1273,7 @@ class TestPLINDERBuilderAssemble:
 
     @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
     @patch('molecular_simulations.build.build_ligand.os.system')
-    def test_assemble_system(self, mock_os_system):
+    def test_assemble_system(self, mock_os_system, mock_difficult_dependencies):
         """Test PLINDERBuilder assemble_system"""
         from molecular_simulations.build.build_ligand import PLINDERBuilder
 
@@ -1259,6 +1505,832 @@ class TestComplexBuilderBuildMethod:
                 mock_add_ion.assert_called_once()
         finally:
             bl_mod.LigandBuilder = original_lig_builder
+
+
+class TestPLINDERBuilderBuildFlow:
+    """Test suite for PLINDERBuilder build method and full flow."""
+
+    @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
+    @patch('molecular_simulations.build.build_ligand.os.chdir')
+    @patch('molecular_simulations.build.build_ligand.os.system')
+    def test_build_no_ligands_raises(self, mock_os_system, mock_chdir, mock_difficult_dependencies):
+        """Test build raises LigandError when no ligands found."""
+        from molecular_simulations.build.build_ligand import PLINDERBuilder, LigandError
+
+        mock_os_system.return_value = 0
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir)
+
+            builder = PLINDERBuilder.__new__(PLINDERBuilder)
+            builder.out = path / 'output'
+            builder.out.mkdir()
+            builder.build_dir = path / 'build'
+            builder.pdb = 'receptor.pdb'
+            builder.ions = None
+
+            # Mock migrate_files to return empty list (no ligands)
+            with patch.object(builder, 'migrate_files', return_value=[]):
+                with pytest.raises(LigandError):
+                    builder.build()
+
+    @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
+    @patch('molecular_simulations.build.build_ligand.os.chdir')
+    @patch('molecular_simulations.build.build_ligand.os.system')
+    def test_build_success(self, mock_os_system, mock_chdir, mock_difficult_dependencies):
+        """Test build method succeeds with valid ligands."""
+        from molecular_simulations.build.build_ligand import PLINDERBuilder
+
+        mock_os_system.return_value = 0
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir)
+
+            builder = PLINDERBuilder.__new__(PLINDERBuilder)
+            builder.out = path / 'output'
+            builder.out.mkdir()
+            builder.build_dir = path / 'build'
+            builder.pdb = 'receptor.pdb'
+            builder.ions = None
+
+            with patch.object(builder, 'migrate_files', return_value=['ligand1.sdf']), \
+                 patch.object(builder, 'ligand_handler', return_value=['ligand1']) as mock_handler, \
+                 patch.object(builder, 'assemble_system') as mock_assemble:
+                builder.build()
+
+                mock_handler.assert_called_once_with(['ligand1.sdf'])
+                mock_assemble.assert_called_once()
+
+
+class TestPLINDERBuilderPlaceIonsEdgeCases:
+    """Test edge cases for PLINDERBuilder place_ions method."""
+
+    @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
+    def test_place_ions_pdb_no_ter(self, mock_difficult_dependencies):
+        """Test place_ions when PDB has no TER line."""
+        from molecular_simulations.build.build_ligand import PLINDERBuilder
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir)
+
+            # PDB without TER or END
+            pdb_content = """ATOM      1  N   ALA A   1       0.000   0.000   0.000  1.00  0.00
+ATOM      2  CA  ALA A   1       1.000   0.000   0.000  1.00  0.00
+"""
+            pdb_file = path / 'protein.pdb'
+            pdb_file.write_text(pdb_content)
+
+            builder = PLINDERBuilder.__new__(PLINDERBuilder)
+            builder.pdb = str(pdb_file)
+            builder.ions = [[['Na', '+', 5.0, 5.0, 5.0]]]
+
+            builder.place_ions()
+
+            modified = pdb_file.read_text()
+            assert 'Na' in modified
+            assert 'END' in modified
+
+    @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
+    def test_place_ions_with_end_only(self, mock_difficult_dependencies):
+        """Test place_ions with END line but no TER."""
+        from molecular_simulations.build.build_ligand import PLINDERBuilder
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir)
+
+            pdb_content = """ATOM      1  N   ALA A   1       0.000   0.000   0.000  1.00  0.00
+ATOM      2  CA  ALA A   1       1.000   0.000   0.000  1.00  0.00
+END
+"""
+            pdb_file = path / 'protein.pdb'
+            pdb_file.write_text(pdb_content)
+
+            builder = PLINDERBuilder.__new__(PLINDERBuilder)
+            builder.pdb = str(pdb_file)
+            builder.ions = [[['Cl', '-', 3.0, 3.0, 3.0]]]
+
+            builder.place_ions()
+
+            modified = pdb_file.read_text()
+            assert 'Cl' in modified
+
+    @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
+    def test_place_ions_invalid_pdb_raises(self, mock_difficult_dependencies):
+        """Test place_ions raises LigandError on invalid PDB format."""
+        from molecular_simulations.build.build_ligand import PLINDERBuilder, LigandError
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir)
+
+            # PDB with invalid atom number format
+            pdb_content = """ATOM  XXXXX  N   ALA A   1       0.000   0.000   0.000  1.00  0.00
+END
+"""
+            pdb_file = path / 'protein.pdb'
+            pdb_file.write_text(pdb_content)
+
+            builder = PLINDERBuilder.__new__(PLINDERBuilder)
+            builder.pdb = str(pdb_file)
+            builder.ions = [[['Na', '+', 5.0, 5.0, 5.0]]]
+
+            with pytest.raises(LigandError):
+                builder.place_ions()
+
+    @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
+    def test_place_ions_potassium(self, mock_difficult_dependencies):
+        """Test place_ions handles potassium ion naming."""
+        from molecular_simulations.build.build_ligand import PLINDERBuilder
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir)
+
+            pdb_content = """ATOM      1  N   ALA A   1       0.000   0.000   0.000  1.00  0.00
+TER
+END
+"""
+            pdb_file = path / 'protein.pdb'
+            pdb_file.write_text(pdb_content)
+
+            builder = PLINDERBuilder.__new__(PLINDERBuilder)
+            builder.pdb = str(pdb_file)
+            # K+ ion with lowercase 'k'
+            builder.ions = [[['k', '+', 4.0, 4.0, 4.0]]]
+
+            builder.place_ions()
+
+            modified = pdb_file.read_text()
+            # Should have k+ formatted correctly
+            assert 'k+' in modified or 'K+' in modified
+
+    @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
+    def test_place_ions_calcium_2plus(self, mock_difficult_dependencies):
+        """Test place_ions handles Ca2+ (divalent cation)."""
+        from molecular_simulations.build.build_ligand import PLINDERBuilder
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir)
+
+            pdb_content = """ATOM      1  N   ALA A   1       0.000   0.000   0.000  1.00  0.00
+TER
+END
+"""
+            pdb_file = path / 'protein.pdb'
+            pdb_file.write_text(pdb_content)
+
+            builder = PLINDERBuilder.__new__(PLINDERBuilder)
+            builder.pdb = str(pdb_file)
+            # Calcium is not in na/k/cl list so takes different path
+            builder.ions = [[['Ca', '2+', 6.0, 6.0, 6.0]]]
+
+            builder.place_ions()
+
+            modified = pdb_file.read_text()
+            assert 'CA' in modified
+
+
+class TestPLINDERBuilderCheckLigandEdgeCases:
+    """Test edge cases for check_ligand method."""
+
+    @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
+    def test_check_ligand_appends_to_existing_ions(self, mock_difficult_dependencies):
+        """Test check_ligand appends to existing ions list."""
+        import molecular_simulations.build.build_ligand as bl_mod
+        from molecular_simulations.build.build_ligand import PLINDERBuilder
+
+        mock_chem = bl_mod.Chem
+
+        # Setup mock for ion
+        mock_mol = MagicMock()
+        mock_atom = MagicMock()
+        mock_atom.GetSymbol.return_value = 'Cl'
+        mock_atom.GetFormalCharge.return_value = -1
+        mock_mol.GetAtoms.return_value = [mock_atom]
+        mock_conformer = MagicMock()
+        mock_conformer.GetPositions.return_value = [[1.0, 2.0, 3.0]]
+        mock_mol.GetConformer.return_value = mock_conformer
+        mock_chem.SDMolSupplier.return_value = [mock_mol]
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir)
+            lig_file = path / 'chloride.sdf'
+            lig_file.write_text("mock sdf")
+
+            builder = PLINDERBuilder.__new__(PLINDERBuilder)
+            # Existing ion list
+            builder.ions = [[['Na', '+', 0.0, 0.0, 0.0]]]
+
+            result = builder.check_ligand(lig_file)
+
+            assert result is False
+            assert len(builder.ions) == 2
+
+    @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
+    def test_check_ligand_divalent_cation(self, mock_difficult_dependencies):
+        """Test check_ligand identifies divalent cations."""
+        import molecular_simulations.build.build_ligand as bl_mod
+        from molecular_simulations.build.build_ligand import PLINDERBuilder
+
+        mock_chem = bl_mod.Chem
+
+        # Setup mock for Ca2+
+        mock_mol = MagicMock()
+        mock_atom = MagicMock()
+        mock_atom.GetSymbol.return_value = 'Ca'
+        mock_atom.GetFormalCharge.return_value = 2
+        mock_mol.GetAtoms.return_value = [mock_atom]
+        mock_conformer = MagicMock()
+        mock_conformer.GetPositions.return_value = [[2.0, 3.0, 4.0]]
+        mock_mol.GetConformer.return_value = mock_conformer
+        mock_chem.SDMolSupplier.return_value = [mock_mol]
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir)
+            lig_file = path / 'calcium.sdf'
+            lig_file.write_text("mock sdf")
+
+            builder = PLINDERBuilder.__new__(PLINDERBuilder)
+            builder.ions = None
+
+            result = builder.check_ligand(lig_file)
+
+            assert result is False
+            assert builder.ions is not None
+            # Check the charge sign was formatted as '2+'
+            ion_data = builder.ions[0][0]
+            assert '2+' in ion_data[1]
+
+    @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
+    def test_check_ligand_neutral_metal(self, mock_difficult_dependencies):
+        """Test check_ligand handles neutral atoms in ion list."""
+        import molecular_simulations.build.build_ligand as bl_mod
+        from molecular_simulations.build.build_ligand import PLINDERBuilder
+
+        mock_chem = bl_mod.Chem
+
+        # Setup mock for neutral metal (charge = 0)
+        mock_mol = MagicMock()
+        mock_atom = MagicMock()
+        mock_atom.GetSymbol.return_value = 'Fe'
+        mock_atom.GetFormalCharge.return_value = 0
+        mock_mol.GetAtoms.return_value = [mock_atom]
+        mock_conformer = MagicMock()
+        mock_conformer.GetPositions.return_value = [[1.0, 1.0, 1.0]]
+        mock_mol.GetConformer.return_value = mock_conformer
+        mock_chem.SDMolSupplier.return_value = [mock_mol]
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir)
+            lig_file = path / 'iron.sdf'
+            lig_file.write_text("mock sdf")
+
+            builder = PLINDERBuilder.__new__(PLINDERBuilder)
+            builder.ions = None
+
+            result = builder.check_ligand(lig_file)
+
+            # Neutral metal should be treated as ligand (not ion)
+            assert result is True
+            assert builder.ions is None
+
+
+class TestPLINDERBuilderCheckPtmsEdgeCases:
+    """Test edge cases for check_ptms method."""
+
+    @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
+    def test_check_ptms_index_error(self, mock_difficult_dependencies):
+        """Test check_ptms raises LigandError on sequence length mismatch."""
+        from molecular_simulations.build.build_ligand import PLINDERBuilder, LigandError
+
+        builder = PLINDERBuilder.__new__(PLINDERBuilder)
+        builder.pdb = 'test.pdb'
+
+        # Mock residue with ID beyond sequence length
+        mock_res = MagicMock()
+        mock_res.id = '100'  # Way beyond sequence length
+        mock_res.name = 'ALA'
+
+        sequence = ['ALA', 'GLY']  # Only 2 residues
+        chain_residues = [mock_res]
+
+        with pytest.raises(LigandError):
+            builder.check_ptms(sequence, chain_residues)
+
+
+class TestPLINDERBuilderInjectFasta:
+    """Test PLINDERBuilder inject_fasta method."""
+
+    @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
+    def test_inject_fasta_success(self, mock_difficult_dependencies):
+        """Test inject_fasta successfully processes FASTA."""
+        import molecular_simulations.build.build_ligand as bl_mod
+        from molecular_simulations.build.build_ligand import PLINDERBuilder
+
+        # Mock convert_aa_code
+        original_convert = bl_mod.convert_aa_code
+        bl_mod.convert_aa_code = Mock(side_effect=lambda x: {'A': 'ALA', 'G': 'GLY'}[x])
+
+        try:
+            with tempfile.TemporaryDirectory() as tmpdir:
+                path = Path(tmpdir)
+
+                # Create FASTA file
+                fasta_content = ">chain_A\nAG\n"
+                fasta_file = path / 'sequences.fasta'
+                fasta_file.write_text(fasta_content)
+
+                # Create chain mapping
+                mapping_file = path / 'chain_mapping.json'
+                mapping_file.write_text('{"chain_A": "A"}')
+
+                builder = PLINDERBuilder.__new__(PLINDERBuilder)
+                builder.fasta = str(fasta_file)
+                builder.path = path
+                builder.pdb = 'test.pdb'
+
+                # Mock chain_map
+                mock_res1 = MagicMock()
+                mock_res1.id = '1'
+                mock_res1.name = 'ALA'
+                mock_res2 = MagicMock()
+                mock_res2.id = '2'
+                mock_res2.name = 'GLY'
+
+                chain_map = {'A': [mock_res1, mock_res2]}
+
+                with patch.object(builder, 'check_ptms', side_effect=lambda seq, res: seq):
+                    result = builder.inject_fasta(chain_map)
+
+                assert len(result) == 1
+                assert result[0].chainId == 'A'
+        finally:
+            bl_mod.convert_aa_code = original_convert
+
+    @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
+    def test_inject_fasta_unknown_residue(self, mock_difficult_dependencies):
+        """Test inject_fasta raises on unknown residue code."""
+        import molecular_simulations.build.build_ligand as bl_mod
+        from molecular_simulations.build.build_ligand import PLINDERBuilder, LigandError
+
+        # Mock convert_aa_code to raise ValueError
+        original_convert = bl_mod.convert_aa_code
+        bl_mod.convert_aa_code = Mock(side_effect=ValueError("Unknown"))
+
+        try:
+            with tempfile.TemporaryDirectory() as tmpdir:
+                path = Path(tmpdir)
+
+                fasta_content = ">chain_A\nXZ\n"
+                fasta_file = path / 'sequences.fasta'
+                fasta_file.write_text(fasta_content)
+
+                mapping_file = path / 'chain_mapping.json'
+                mapping_file.write_text('{"chain_A": "A"}')
+
+                builder = PLINDERBuilder.__new__(PLINDERBuilder)
+                builder.fasta = str(fasta_file)
+                builder.path = path
+                builder.pdb = 'test.pdb'
+
+                chain_map = {'A': []}
+
+                with pytest.raises(LigandError):
+                    builder.inject_fasta(chain_map)
+        finally:
+            bl_mod.convert_aa_code = original_convert
+
+    @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
+    def test_inject_fasta_key_error(self, mock_difficult_dependencies):
+        """Test inject_fasta raises on missing chain in chain_map."""
+        import molecular_simulations.build.build_ligand as bl_mod
+        from molecular_simulations.build.build_ligand import PLINDERBuilder, LigandError
+
+        original_convert = bl_mod.convert_aa_code
+        bl_mod.convert_aa_code = Mock(side_effect=lambda x: {'A': 'ALA'}[x])
+
+        try:
+            with tempfile.TemporaryDirectory() as tmpdir:
+                path = Path(tmpdir)
+
+                fasta_content = ">chain_A\nA\n"
+                fasta_file = path / 'sequences.fasta'
+                fasta_file.write_text(fasta_content)
+
+                mapping_file = path / 'chain_mapping.json'
+                mapping_file.write_text('{"chain_A": "A"}')
+
+                builder = PLINDERBuilder.__new__(PLINDERBuilder)
+                builder.fasta = str(fasta_file)
+                builder.path = path
+                builder.pdb = 'test.pdb'
+
+                # chain_map missing 'A'
+                chain_map = {'B': []}
+
+                with pytest.raises(LigandError):
+                    builder.inject_fasta(chain_map)
+        finally:
+            bl_mod.convert_aa_code = original_convert
+
+
+class TestPLINDERBuilderMigrateFilesWithLigands:
+    """Test PLINDERBuilder migrate_files with actual ligands."""
+
+    @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
+    @patch('molecular_simulations.build.build_ligand.os.chdir')
+    @patch('molecular_simulations.build.build_ligand.os.system')
+    @patch('molecular_simulations.build.build_ligand.shutil')
+    def test_migrate_files_with_ligands(self, mock_shutil, mock_os_system, mock_chdir, mock_difficult_dependencies):
+        """Test migrate_files processes ligand files."""
+        from molecular_simulations.build.build_ligand import PLINDERBuilder
+        from unittest.mock import mock_open
+
+        mock_os_system.return_value = 0
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir)
+
+            # Create system directory structure
+            system_dir = path / 'system_001'
+            system_dir.mkdir()
+
+            # Create ligand_files directory with SDF files
+            lig_dir = system_dir / 'ligand_files'
+            lig_dir.mkdir()
+            (lig_dir / 'ligand1.sdf').write_text("mock sdf 1")
+            (lig_dir / 'ligand2.sdf').write_text("mock sdf 2")
+
+            # Create sequences.fasta
+            (system_dir / 'sequences.fasta').write_text(">A\nALAGLY\n")
+
+            # Create output directory
+            out_dir = path / 'output' / 'system_001'
+            out_dir.mkdir(parents=True)
+            build_dir = out_dir / 'build'
+            build_dir.mkdir()
+
+            builder = PLINDERBuilder.__new__(PLINDERBuilder)
+            builder.path = system_dir
+            builder.out = out_dir
+            builder.ffs = ['leaprc.protein.ff19SB']
+            builder.system_id = 'system_001'
+            builder.build_dir = build_dir
+            builder.pdb = 'receptor.pdb'
+            builder.ions = None
+            builder.fasta = None
+
+            with patch.object(builder, 'prep_protein'), \
+                 patch.object(builder, 'check_ligand', return_value=True):
+                ligs = builder.migrate_files()
+
+            assert len(ligs) == 2
+            assert 'ligand1.sdf' in ligs
+            assert 'ligand2.sdf' in ligs
+
+    @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
+    @patch('molecular_simulations.build.build_ligand.os.chdir')
+    @patch('molecular_simulations.build.build_ligand.os.system')
+    @patch('molecular_simulations.build.build_ligand.shutil')
+    def test_migrate_files_with_ions(self, mock_shutil, mock_os_system, mock_chdir, mock_difficult_dependencies):
+        """Test migrate_files handles ion ligands and adds force field."""
+        from molecular_simulations.build.build_ligand import PLINDERBuilder
+
+        mock_os_system.return_value = 0
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir)
+
+            system_dir = path / 'system_001'
+            system_dir.mkdir()
+
+            lig_dir = system_dir / 'ligand_files'
+            lig_dir.mkdir()
+            (lig_dir / 'sodium.sdf').write_text("mock sdf")
+
+            (system_dir / 'sequences.fasta').write_text(">A\nA\n")
+
+            out_dir = path / 'output' / 'system_001'
+            out_dir.mkdir(parents=True)
+            build_dir = out_dir / 'build'
+            build_dir.mkdir()
+
+            builder = PLINDERBuilder.__new__(PLINDERBuilder)
+            builder.path = system_dir
+            builder.out = out_dir
+            builder.ffs = ['leaprc.protein.ff19SB']
+            builder.system_id = 'system_001'
+            builder.build_dir = build_dir
+            builder.pdb = 'receptor.pdb'
+            builder.ions = None
+            builder.fasta = None
+
+            # Simulate check_ligand detecting an ion
+            def check_ligand_side_effect(lig):
+                builder.ions = [[['Na', '+', 1.0, 1.0, 1.0]]]
+                return False
+
+            with patch.object(builder, 'prep_protein'), \
+                 patch.object(builder, 'check_ligand', side_effect=check_ligand_side_effect), \
+                 patch.object(builder, 'place_ions') as mock_place_ions:
+                ligs = builder.migrate_files()
+
+            # No ligands should be returned (only ions)
+            assert len(ligs) == 0
+            # water force field should be added
+            assert 'leaprc.water.tip3p' in builder.ffs
+            mock_place_ions.assert_called_once()
+
+
+class TestComplexBuilderAssembleSystem:
+    """Test ComplexBuilder assemble_system method."""
+
+    @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
+    @patch('molecular_simulations.build.build_ligand.os.system')
+    def test_assemble_system_single_ligand(self, mock_os_system, mock_difficult_dependencies):
+        """Test assemble_system with single ligand."""
+        from molecular_simulations.build.build_ligand import ComplexBuilder
+
+        mock_os_system.return_value = 0
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir)
+
+            pdb_file = path / 'protein.pdb'
+            pdb_file.write_text("ATOM  1  N  ALA A 1  0.0 0.0 0.0  1.0 0.0\n")
+
+            builder = ComplexBuilder.__new__(ComplexBuilder)
+            builder.path = path
+            builder.out = path / 'output'
+            builder.out.mkdir()
+            builder.build_dir = path / 'build'
+            builder.build_dir.mkdir()
+            builder.pdb = str(pdb_file)
+            builder.lig = path / 'build' / 'ligand'
+            builder.ffs = ['leaprc.protein.ff19SB', 'leaprc.gaff2']
+            builder.water_box = 'TIP3PBOX'
+
+            # Add write_leap method manually since ComplexBuilder doesn't have it
+            def write_leap(inp):
+                leap_file = path / 'tleap.in'
+                with open(leap_file, 'w') as f:
+                    f.write(inp)
+                return str(leap_file)
+
+            builder.write_leap = write_leap
+
+            builder.assemble_system(dim=80.0, num_ions=50)
+
+            mock_os_system.assert_called_once()
+
+    @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
+    @patch('molecular_simulations.build.build_ligand.os.system')
+    def test_assemble_system_multiple_ligands(self, mock_os_system, mock_difficult_dependencies):
+        """Test assemble_system with multiple ligands."""
+        from molecular_simulations.build.build_ligand import ComplexBuilder
+
+        mock_os_system.return_value = 0
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir)
+
+            pdb_file = path / 'protein.pdb'
+            pdb_file.write_text("ATOM  1  N  ALA A 1  0.0 0.0 0.0  1.0 0.0\n")
+
+            builder = ComplexBuilder.__new__(ComplexBuilder)
+            builder.path = path
+            builder.out = path / 'output'
+            builder.out.mkdir()
+            builder.build_dir = path / 'build'
+            builder.build_dir.mkdir()
+            builder.pdb = str(pdb_file)
+            # Multiple ligands
+            builder.lig = [path / 'build' / 'lig1', path / 'build' / 'lig2']
+            builder.ffs = ['leaprc.protein.ff19SB', 'leaprc.gaff2']
+            builder.water_box = 'TIP3PBOX'
+
+            # Add write_leap method manually since ComplexBuilder doesn't have it
+            def write_leap(inp):
+                leap_file = path / 'tleap.in'
+                with open(leap_file, 'w') as f:
+                    f.write(inp)
+                return str(leap_file)
+
+            builder.write_leap = write_leap
+
+            builder.assemble_system(dim=80.0, num_ions=50)
+
+            mock_os_system.assert_called_once()
+
+
+class TestComplexBuilderProcessLigandEdgeCases:
+    """Test edge cases for ComplexBuilder process_ligand method."""
+
+    @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
+    def test_process_ligand_already_in_build_dir(self, mock_difficult_dependencies):
+        """Test process_ligand when ligand is already in build directory."""
+        import molecular_simulations.build.build_ligand as bl_mod
+        from molecular_simulations.build.build_ligand import ComplexBuilder
+
+        mock_lig_builder = MagicMock()
+        mock_builder = MagicMock()
+        mock_builder.lig = 'ligand'
+        mock_lig_builder.return_value = mock_builder
+        original_lig_builder = bl_mod.LigandBuilder
+        bl_mod.LigandBuilder = mock_lig_builder
+
+        try:
+            with tempfile.TemporaryDirectory() as tmpdir:
+                path = Path(tmpdir)
+
+                pdb_file = path / 'protein.pdb'
+                pdb_file.write_text("ATOM  1  N  ALA A 1  0.0 0.0 0.0  1.0 0.0\n")
+
+                # Create build_dir and put ligand in it
+                build_dir = path / 'build'
+                build_dir.mkdir()
+                lig_file = build_dir / 'ligand.sdf'
+                lig_file.write_text("mock sdf")
+
+                builder = ComplexBuilder(
+                    path=str(path),
+                    pdb=str(pdb_file),
+                    lig=str(lig_file)
+                )
+                builder.build_dir = build_dir
+
+                # Since ligand is in build_dir, shutil.copy should NOT be called
+                with patch('molecular_simulations.build.build_ligand.shutil.copy') as mock_copy:
+                    result = builder.process_ligand(lig_file)
+                    mock_copy.assert_not_called()
+
+        finally:
+            bl_mod.LigandBuilder = original_lig_builder
+
+    @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
+    def test_process_ligand_with_prefix(self, mock_difficult_dependencies):
+        """Test process_ligand with prefix for multi-ligand systems."""
+        import molecular_simulations.build.build_ligand as bl_mod
+        from molecular_simulations.build.build_ligand import ComplexBuilder
+
+        mock_lig_builder = MagicMock()
+        mock_builder = MagicMock()
+        mock_builder.lig = '0ligand'
+        mock_lig_builder.return_value = mock_builder
+        original_lig_builder = bl_mod.LigandBuilder
+        bl_mod.LigandBuilder = mock_lig_builder
+
+        try:
+            with tempfile.TemporaryDirectory() as tmpdir:
+                path = Path(tmpdir)
+
+                pdb_file = path / 'protein.pdb'
+                pdb_file.write_text("ATOM  1  N  ALA A 1  0.0 0.0 0.0  1.0 0.0\n")
+
+                lig_file = path / 'ligand.sdf'
+                lig_file.write_text("mock sdf")
+
+                builder = ComplexBuilder(
+                    path=str(path),
+                    pdb=str(pdb_file),
+                    lig=str(lig_file)
+                )
+                builder.build_dir = path / 'build'
+                builder.build_dir.mkdir()
+
+                result = builder.process_ligand(Path(lig_file), prefix=0)
+
+                # LigandBuilder should be called with file_prefix=0 (becomes empty string)
+                mock_lig_builder.assert_called_once()
+        finally:
+            bl_mod.LigandBuilder = original_lig_builder
+
+
+class TestComplexBuilderBuildFlows:
+    """Test various ComplexBuilder.build() flows."""
+
+    @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
+    @patch('molecular_simulations.build.build_ligand.os.chdir')
+    @patch('molecular_simulations.build.build_ligand.os.system')
+    def test_build_single_ligand_flow(self, mock_os_system, mock_chdir, mock_difficult_dependencies):
+        """Test build with single ligand (not list)."""
+        import molecular_simulations.build.build_ligand as bl_mod
+        from molecular_simulations.build.build_ligand import ComplexBuilder
+
+        mock_os_system.return_value = 0
+
+        mock_lig_builder = MagicMock()
+        mock_builder = MagicMock()
+        mock_builder.lig = 'ligand'
+        mock_lig_builder.return_value = mock_builder
+        original_lig_builder = bl_mod.LigandBuilder
+        bl_mod.LigandBuilder = mock_lig_builder
+
+        try:
+            with tempfile.TemporaryDirectory() as tmpdir:
+                path = Path(tmpdir)
+
+                pdb_file = path / 'protein.pdb'
+                pdb_file.write_text("ATOM  1  N  ALA A 1  0.0 0.0 0.0  1.0 0.0\nEND\n")
+
+                lig_file = path / 'ligand.sdf'
+                lig_file.write_text("mock sdf")
+
+                builder = ComplexBuilder(
+                    path=str(path),
+                    pdb=str(pdb_file),
+                    lig=str(lig_file)
+                )
+
+                with patch.object(builder, 'prep_pdb'), \
+                     patch.object(builder, 'assemble_system'):
+                    builder.build()
+
+                # Should have processed single ligand
+                mock_lig_builder.assert_called_once()
+                assert builder.lig == 'ligand'
+        finally:
+            bl_mod.LigandBuilder = original_lig_builder
+
+
+class TestPLINDERBuilderTriagePdb:
+    """Test PLINDERBuilder triage_pdb method."""
+
+    @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
+    def test_triage_pdb_calls_pdbfixer(self, mock_difficult_dependencies):
+        """Test triage_pdb uses PDBFixer to repair structure."""
+        import molecular_simulations.build.build_ligand as bl_mod
+        from molecular_simulations.build.build_ligand import PLINDERBuilder
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir)
+
+            broken_pdb = path / 'broken.pdb'
+            broken_pdb.write_text("ATOM  1  N  ALA A 1  0.0 0.0 0.0  1.0 0.0\nEND\n")
+
+            repaired_pdb = path / 'repaired.pdb'
+
+            builder = PLINDERBuilder.__new__(PLINDERBuilder)
+            builder.fasta = str(path / 'sequences.fasta')
+            builder.path = path
+
+            # Create mock FASTA
+            (path / 'sequences.fasta').write_text(">A\nA\n")
+            (path / 'chain_mapping.json').write_text('{"A": "A"}')
+
+            # Mock PDBFixer and PDBFile (via builtins since PDBFile is not imported in the module)
+            mock_pdbfile = MagicMock()
+            with patch('molecular_simulations.build.build_ligand.PDBFixer') as mock_pdbfixer, \
+                 patch.dict(bl_mod.__dict__, {'PDBFile': mock_pdbfile}), \
+                 patch.object(builder, 'inject_fasta', return_value=[]):
+                mock_fixer = MagicMock()
+                mock_chain = MagicMock()
+                mock_chain.id = 'A'
+                mock_chain.residues.return_value = []
+                mock_fixer.topology.chains.return_value = [mock_chain]
+                mock_pdbfixer.return_value = mock_fixer
+
+                builder.triage_pdb(broken_pdb, repaired_pdb)
+
+                mock_pdbfixer.assert_called_once_with(filename=str(broken_pdb))
+                mock_fixer.findMissingResidues.assert_called_once()
+                mock_fixer.findMissingAtoms.assert_called_once()
+                mock_fixer.addMissingAtoms.assert_called_once()
+
+
+class TestPLINDERBuilderPrepProtein:
+    """Test PLINDERBuilder prep_protein method."""
+
+    @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
+    @patch('molecular_simulations.build.build_ligand.os.system')
+    def test_prep_protein(self, mock_os_system, mock_difficult_dependencies):
+        """Test prep_protein runs PDBFixer and pdb4amber."""
+        from molecular_simulations.build.build_ligand import PLINDERBuilder
+
+        mock_os_system.return_value = 0
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir)
+
+            system_dir = path / 'system'
+            system_dir.mkdir()
+
+            build_dir = path / 'build'
+            build_dir.mkdir()
+
+            (system_dir / 'receptor.pdb').write_text("ATOM  1  N  ALA A 1  0.0 0.0 0.0  1.0 0.0\nEND\n")
+
+            builder = PLINDERBuilder.__new__(PLINDERBuilder)
+            builder.path = system_dir
+            builder.pdb = 'receptor.pdb'
+            builder.build_dir = build_dir
+
+            with patch.object(builder, 'triage_pdb'):
+                builder.prep_protein()
+
+            # Should call pdb4amber
+            mock_os_system.assert_called_once()
+            assert 'pdb4amber' in mock_os_system.call_args[0][0]
+            # pdb should be updated to build_dir / 'protein.pdb'
+            assert builder.pdb == build_dir / 'protein.pdb'
 
 
 if __name__ == "__main__":

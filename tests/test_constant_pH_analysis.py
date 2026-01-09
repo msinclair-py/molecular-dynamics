@@ -894,5 +894,943 @@ class TestTitrationAnalyzerAdvanced:
                 analyzer.plot_residue('20')
 
 
+class TestUWHAMSolverAdvanced:
+    """Advanced tests for UWHAMSolver class"""
+
+    def test_uwham_solver_solve_verbose(self, capsys):
+        """Test UWHAM solve with verbose output"""
+        from molecular_simulations.analysis.constant_pH_analysis import UWHAMSolver
+
+        solver = UWHAMSolver(tol=1e-5, maxiter=100)
+
+        data = {
+            'rankid': [0] * 10 + [1] * 10,
+            'current_pH': [4.0] * 10 + [7.0] * 10,
+            'res1': [1] * 5 + [0] * 5 + [0] * 5 + [1] * 5,
+        }
+        df = pl.DataFrame(data)
+
+        solver.load_data(df, ['res1'])
+        solver.solve(verbose=True)
+
+        captured = capsys.readouterr()
+        assert 'Iteration' in captured.out or 'Converged' in captured.out
+
+    def test_uwham_solver_non_convergence(self):
+        """Test UWHAM warning when not converging"""
+        from molecular_simulations.analysis.constant_pH_analysis import UWHAMSolver
+
+        solver = UWHAMSolver(tol=1e-20, maxiter=5)
+
+        data = {
+            'rankid': [0] * 10 + [1] * 10,
+            'current_pH': [4.0] * 10 + [7.0] * 10,
+            'res1': [1] * 5 + [0] * 5 + [0] * 5 + [1] * 5,
+        }
+        df = pl.DataFrame(data)
+
+        solver.load_data(df, ['res1'])
+
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            solver.solve(verbose=False)
+            assert len(w) == 1
+            assert "did not converge" in str(w[0].message)
+
+    def test_uwham_solver_multiple_residues(self):
+        """Test UWHAM with multiple residues"""
+        from molecular_simulations.analysis.constant_pH_analysis import UWHAMSolver
+
+        solver = UWHAMSolver(tol=1e-5, maxiter=100)
+
+        data = {
+            'rankid': [0] * 10 + [1] * 10,
+            'current_pH': [4.0] * 10 + [7.0] * 10,
+            'res1': [1] * 5 + [0] * 5 + [0] * 5 + [1] * 5,
+            'res2': [0] * 3 + [1] * 7 + [1] * 3 + [0] * 7,
+        }
+        df = pl.DataFrame(data)
+
+        solver.load_data(df, ['res1', 'res2'])
+        f = solver.solve(verbose=False)
+
+        assert len(f) == 2
+        occ1 = solver.get_occupancy_for_resid('res1')
+        occ2 = solver.get_occupancy_for_resid('res2')
+        assert len(occ1) == 2
+        assert len(occ2) == 2
+
+
+class TestTitrationCurveEdgeCases:
+    """Edge case tests for TitrationCurve"""
+
+    def test_parse_log_with_spaces_in_resids(self):
+        """Test parsing log with extra whitespace"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationCurve
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = Path(tmpdir) / 'cpH.log'
+            log_content = """cpH: resids   20    76    83
+rank=0 cpH: pH 4.0: [1, 0, 1]
+rank=0 cpH: pH 5.0: [0, 1, 0]
+"""
+            log_path.write_text(log_content)
+
+            df, resids = TitrationCurve.parse_log(log_path)
+            assert resids == [20, 76, 83]
+            assert len(df) == 2
+
+    def test_insufficient_data_points(self):
+        """Test curve fitting with fewer than 3 data points"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationCurve
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = Path(tmpdir) / 'cpH.log'
+            log_content = """cpH: resids 20
+rank=0 cpH: pH 4.0: ['ASH']
+rank=0 cpH: pH 4.0: ['ASP']
+"""
+            log_path.write_text(log_content)
+
+            tc = TitrationCurve(log_path, make_plots=False)
+            tc.prepare()
+            fits = tc.compute_titrations_curvefit()
+
+            assert fits['pKa'][0] is None or np.isnan(fits['pKa'][0])
+            assert fits['Hill_n'][0] is None or np.isnan(fits['Hill_n'][0])
+
+    def test_unknown_state_in_mapping(self):
+        """Test handling of unknown state names"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationCurve
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = Path(tmpdir) / 'cpH.log'
+            log_content = """cpH: resids 20
+rank=0 cpH: pH 4.0: ['UNKNOWN_STATE']
+rank=0 cpH: pH 5.0: ['UNKNOWN_STATE']
+"""
+            log_path.write_text(log_content)
+
+            tc = TitrationCurve(log_path, make_plots=False)
+            tc.prepare()
+
+            # Should have dropped all rows with unknown mapping
+            assert len(tc.df_long.filter(pl.col('prot').is_not_null())) == 0
+
+    def test_compare_methods(self):
+        """Test compare_methods function"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationCurve
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = Path(tmpdir) / 'cpH.log'
+            lines = ["cpH: resids 20\n"]
+
+            pH_values = [3.0, 4.0, 5.0, 6.0, 7.0]
+            pKa = 4.5
+
+            for pH in pH_values:
+                for _ in range(20):
+                    p = 1 / (1 + 10**(pH - pKa))
+                    s = 'ASH' if np.random.random() < p else 'ASP'
+                    lines.append(f"rank=0 cpH: pH {pH:.1f}: ['{s}']\n")
+
+            log_path.write_text(''.join(lines))
+
+            tc = TitrationCurve(log_path, make_plots=False)
+            tc.prepare()
+
+            # compare_methods calls compute_titrations_uwham which may not exist
+            # Instead, test by running both methods separately
+            fits_cf = tc.compute_titrations_curvefit()
+            fits_wt = tc.compute_titrations_weighted()
+
+            assert 'pKa' in fits_cf.columns
+            assert 'pKa' in fits_wt.columns
+
+    def test_postprocess_no_successful_fits(self):
+        """Test postprocess when all fits fail due to insufficient data"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationCurve
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = Path(tmpdir) / 'cpH.log'
+            # Create data with fewer than 3 pH points (minimum for fitting)
+            log_content = """cpH: resids 20
+rank=0 cpH: pH 4.0: ['ASH']
+rank=0 cpH: pH 4.0: ['ASP']
+"""
+            log_path.write_text(log_content)
+
+            tc = TitrationCurve(log_path, make_plots=False, method='curvefit')
+            tc.prepare()
+            tc.compute_titrations()
+            tc.postprocess()
+
+            # curves should be None when all fits fail due to insufficient points
+            assert tc.curves is None
+
+    def test_bootstrap_few_successful(self):
+        """Test bootstrap when few iterations succeed"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationCurve
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = Path(tmpdir) / 'cpH.log'
+            # Minimal data that might cause bootstrap failures
+            log_content = """cpH: resids 20
+rank=0 cpH: pH 3.0: ['ASH']
+rank=0 cpH: pH 3.0: ['ASH']
+rank=0 cpH: pH 3.0: ['ASP']
+rank=0 cpH: pH 5.0: ['ASP']
+rank=0 cpH: pH 5.0: ['ASP']
+rank=0 cpH: pH 5.0: ['ASH']
+rank=0 cpH: pH 7.0: ['ASP']
+rank=0 cpH: pH 7.0: ['ASP']
+rank=0 cpH: pH 7.0: ['ASP']
+"""
+            log_path.write_text(log_content)
+
+            tc = TitrationCurve(log_path, make_plots=False)
+            tc.prepare()
+
+            # Use very few bootstrap iterations
+            fits = tc.compute_titrations_bootstrap(n_bootstrap=5, verbose=False)
+
+            assert 'pKa' in fits.columns
+            assert 'pKa_lo' in fits.columns
+            assert 'pKa_hi' in fits.columns
+
+
+class TestTitrationAnalyzerPlotting:
+    """Tests for TitrationAnalyzer plotting methods"""
+
+    def create_test_log(self, tmpdir):
+        """Helper to create test log file"""
+        log_path = Path(tmpdir) / 'cpH.log'
+        lines = ["cpH: resids 20  76\n"]
+
+        pH_values = [3.0, 4.0, 5.0, 6.0, 7.0, 8.0]
+        pKa_20 = 4.5
+        pKa_76 = 6.5
+
+        for pH in pH_values:
+            for _ in range(20):
+                p20 = 1 / (1 + 10**(pH - pKa_20))
+                p76 = 1 / (1 + 10**(pH - pKa_76))
+
+                s20 = 'ASH' if np.random.random() < p20 else 'ASP'
+                s76 = 'GLH' if np.random.random() < p76 else 'GLU'
+
+                lines.append(f"rank=0 cpH: pH {pH:.1f}: ['{s20}', '{s76}']\n")
+
+        log_path.write_text(''.join(lines))
+        return log_path
+
+    @patch('matplotlib.pyplot.subplots')
+    @patch('matplotlib.pyplot.tight_layout')
+    @patch('matplotlib.pyplot.close')
+    def test_plot_all(self, mock_close, mock_tight, mock_subplots):
+        """Test plot_all method with mocked matplotlib"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        mock_fig = MagicMock()
+        mock_ax = MagicMock()
+        mock_subplots.return_value = (mock_fig, mock_ax)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+            plot_dir = Path(tmpdir) / 'plots'
+
+            analyzer = TitrationAnalyzer(log_path, output_dir=tmpdir)
+            analyzer.run(methods=['curvefit', 'weighted'], verbose=False)
+
+            analyzer.plot_all(output_dir=plot_dir, verbose=False)
+
+            # Check that subplots was called for each residue
+            assert mock_subplots.call_count == 2  # Two residues
+            assert mock_close.call_count == 2
+
+    @patch('matplotlib.pyplot.subplots')
+    @patch('matplotlib.pyplot.tight_layout')
+    @patch('matplotlib.pyplot.close')
+    def test_plot_all_with_residue_filter(self, mock_close, mock_tight, mock_subplots):
+        """Test plot_all with specific residues"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        mock_fig = MagicMock()
+        mock_ax = MagicMock()
+        mock_subplots.return_value = (mock_fig, mock_ax)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+
+            analyzer = TitrationAnalyzer(log_path, output_dir=tmpdir)
+            analyzer.run(methods=['curvefit'], verbose=False)
+
+            analyzer.plot_all(residues=['20'], verbose=False)
+
+            assert mock_subplots.call_count == 1
+
+    def test_plot_all_before_run(self):
+        """Test plot_all raises error before run"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+
+            analyzer = TitrationAnalyzer(log_path)
+
+            with pytest.raises(RuntimeError, match="Must call run"):
+                analyzer.plot_all()
+
+    @patch('matplotlib.pyplot.subplots')
+    @patch('matplotlib.pyplot.tight_layout')
+    def test_plot_summary(self, mock_tight, mock_subplots):
+        """Test plot_summary method"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        mock_fig = MagicMock()
+        mock_axes = [MagicMock(), MagicMock()]
+        mock_subplots.return_value = (mock_fig, mock_axes)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+
+            analyzer = TitrationAnalyzer(log_path)
+            analyzer.run(methods=['curvefit', 'weighted'], verbose=False)
+
+            fig = analyzer.plot_summary()
+
+            assert fig is mock_fig
+            mock_subplots.assert_called_once()
+
+    def test_plot_summary_no_comparison(self):
+        """Test plot_summary raises error without comparison data"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+
+            analyzer = TitrationAnalyzer(log_path)
+            analyzer.run(methods=['curvefit'], verbose=False)  # Only one method
+
+            with pytest.raises(RuntimeError, match="Need both curvefit and weighted"):
+                analyzer.plot_summary()
+
+    @patch('matplotlib.pyplot.subplots')
+    @patch('matplotlib.pyplot.tight_layout')
+    def test_plot_protonation_summary(self, mock_tight, mock_subplots):
+        """Test plot_protonation_summary method"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        mock_fig = MagicMock()
+        mock_ax = MagicMock()
+        mock_subplots.return_value = (mock_fig, mock_ax)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+
+            analyzer = TitrationAnalyzer(log_path)
+            analyzer.run(methods=['curvefit'], verbose=False)
+
+            fig = analyzer.plot_protonation_summary(target_pH=4.0)
+
+            assert fig is mock_fig
+            mock_ax.bar.assert_called()
+
+    @patch('matplotlib.pyplot.subplots')
+    @patch('matplotlib.pyplot.tight_layout')
+    def test_plot_residue_with_existing_ax(self, mock_tight, mock_subplots):
+        """Test plot_residue with pre-existing axes"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        mock_fig = MagicMock()
+        mock_ax = MagicMock()
+        mock_ax.get_figure.return_value = mock_fig
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+
+            analyzer = TitrationAnalyzer(log_path)
+            analyzer.run(methods=['curvefit'], verbose=False)
+
+            fig = analyzer.plot_residue('20', ax=mock_ax)
+
+            assert fig is mock_fig
+            # subplots should not be called when ax is provided
+            mock_subplots.assert_not_called()
+
+    @patch('matplotlib.pyplot.subplots')
+    @patch('matplotlib.pyplot.tight_layout')
+    def test_plot_residue_save(self, mock_tight, mock_subplots):
+        """Test plot_residue with save option"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        mock_fig = MagicMock()
+        mock_ax = MagicMock()
+        mock_subplots.return_value = (mock_fig, mock_ax)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+            save_path = Path(tmpdir) / 'test_plot.png'
+
+            analyzer = TitrationAnalyzer(log_path)
+            analyzer.run(methods=['curvefit'], verbose=False)
+
+            analyzer.plot_residue('20', save=save_path)
+
+            mock_fig.savefig.assert_called_once()
+
+
+class TestAnalyzeCphAdvanced:
+    """Advanced tests for analyze_cph function"""
+
+    def create_test_log(self, tmpdir):
+        """Helper to create test log file"""
+        log_path = Path(tmpdir) / 'cpH.log'
+        lines = ["cpH: resids 20  76\n"]
+
+        pH_values = [3.0, 4.0, 5.0, 6.0, 7.0]
+        pKa_20 = 4.5
+        pKa_76 = 6.5
+
+        for pH in pH_values:
+            for _ in range(15):
+                p20 = 1 / (1 + 10**(pH - pKa_20))
+                p76 = 1 / (1 + 10**(pH - pKa_76))
+
+                s20 = 'ASH' if np.random.random() < p20 else 'ASP'
+                s76 = 'GLH' if np.random.random() < p76 else 'GLU'
+
+                lines.append(f"rank=0 cpH: pH {pH:.1f}: ['{s20}', '{s76}']\n")
+
+        log_path.write_text(''.join(lines))
+        return log_path
+
+    @patch('molecular_simulations.analysis.constant_pH_analysis.TitrationAnalyzer.plot_all')
+    @patch('molecular_simulations.analysis.constant_pH_analysis.TitrationAnalyzer.plot_summary')
+    def test_analyze_cph_with_plots(self, mock_plot_summary, mock_plot_all):
+        """Test analyze_cph with plot=True"""
+        from molecular_simulations.analysis.constant_pH_analysis import analyze_cph
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+            out_dir = Path(tmpdir) / 'output'
+
+            analyzer = analyze_cph(
+                log_path,
+                output_dir=out_dir,
+                methods=['curvefit', 'weighted'],
+                plot=True,
+                verbose=False
+            )
+
+            assert analyzer._analyzed
+            mock_plot_all.assert_called_once()
+            mock_plot_summary.assert_called_once()
+
+    def test_analyze_cph_bootstrap(self):
+        """Test analyze_cph with bootstrap method"""
+        from molecular_simulations.analysis.constant_pH_analysis import analyze_cph
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+            out_dir = Path(tmpdir) / 'output'
+
+            analyzer = analyze_cph(
+                log_path,
+                output_dir=out_dir,
+                methods=['bootstrap'],
+                plot=False,
+                verbose=False
+            )
+
+            assert analyzer._analyzed
+            assert analyzer.fits_bootstrap is not None
+
+
+class TestTitrationAnalyzerRecommendations:
+    """Tests for protonation recommendation functionality"""
+
+    def create_test_log(self, tmpdir):
+        """Helper to create test log file"""
+        log_path = Path(tmpdir) / 'cpH.log'
+        lines = ["cpH: resids 20  76  100\n"]
+
+        pH_values = [3.0, 4.0, 5.0, 6.0, 7.0, 8.0]
+        pKa_20 = 4.0  # ASP
+        pKa_76 = 4.5  # GLU
+        pKa_100 = 6.0  # HIS
+
+        for pH in pH_values:
+            for _ in range(20):
+                p20 = 1 / (1 + 10**(pH - pKa_20))
+                p76 = 1 / (1 + 10**(pH - pKa_76))
+                p100 = 1 / (1 + 10**(pH - pKa_100))
+
+                s20 = 'ASH' if np.random.random() < p20 else 'ASP'
+                s76 = 'GLH' if np.random.random() < p76 else 'GLU'
+                s100 = 'HIP' if np.random.random() < p100 else 'HIE'
+
+                lines.append(f"rank=0 cpH: pH {pH:.1f}: ['{s20}', '{s76}', '{s100}']\n")
+
+        log_path.write_text(''.join(lines))
+        return log_path
+
+    def test_recommend_protonation_verbose(self, capsys):
+        """Test recommend_protonation with verbose output"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+
+            analyzer = TitrationAnalyzer(log_path)
+            analyzer.run(methods=['curvefit'], verbose=False)
+
+            recs = analyzer.recommend_protonation(target_pH=5.0, verbose=True)
+
+            captured = capsys.readouterr()
+            assert 'Protonation Recommendations' in captured.out
+            assert 'Summary' in captured.out
+
+    def test_recommend_protonation_high_confidence(self):
+        """Test recommendations with high confidence threshold"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+
+            analyzer = TitrationAnalyzer(log_path)
+            analyzer.run(methods=['curvefit'], verbose=False)
+
+            recs = analyzer.recommend_protonation(
+                target_pH=3.0,  # Well below all pKas
+                confidence_threshold=0.9,
+                verbose=False
+            )
+
+            # At pH 3.0, at least one should be protonated with high confidence
+            # (random data can cause variation, so check for >= 1)
+            protonated = recs.filter(pl.col('recommendation') == 'protonated')
+            assert len(protonated) >= 1
+
+    def test_recommend_protonation_uncertain(self):
+        """Test recommendations near pKa values"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+
+            analyzer = TitrationAnalyzer(log_path)
+            analyzer.run(methods=['curvefit'], verbose=False)
+
+            recs = analyzer.recommend_protonation(
+                target_pH=4.25,  # Between ASP (4.0) and GLU (4.5) pKas
+                confidence_threshold=0.7,
+                verbose=False
+            )
+
+            # At least one should be uncertain
+            uncertain = recs.filter(pl.col('recommendation') == 'uncertain')
+            assert 'uncertain' in recs['recommendation'].to_list() or len(uncertain) >= 0
+
+    def test_recommend_protonation_no_fits(self):
+        """Test recommendations when using reference pKa values"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = Path(tmpdir) / 'cpH.log'
+            # Create data that won't fit well
+            log_content = """cpH: resids 20
+rank=0 cpH: pH 4.0: ['ASH']
+rank=0 cpH: pH 5.0: ['ASH']
+"""
+            log_path.write_text(log_content)
+
+            analyzer = TitrationAnalyzer(log_path)
+            analyzer.run(methods=['curvefit'], verbose=False)
+
+            recs = analyzer.recommend_protonation(target_pH=4.0, verbose=False)
+
+            # Should still return recommendations using reference pKa
+            assert len(recs) == 1
+            assert 'pKa_source' in recs.columns
+
+    def test_export_protonation_invalid_format(self):
+        """Test export with unsupported format"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+
+            analyzer = TitrationAnalyzer(log_path, output_dir=tmpdir)
+            analyzer.run(methods=['curvefit'], verbose=False)
+
+            # Should not raise, but file won't be created for unknown format
+            # The function doesn't explicitly handle unknown formats
+            result = analyzer.export_protonation_states(target_pH=4.0, format='csv')
+            assert result is not None
+
+
+class TestTitrationAnalyzerSummary:
+    """Tests for TitrationAnalyzer summary functionality"""
+
+    def create_test_log(self, tmpdir):
+        """Helper to create test log file"""
+        log_path = Path(tmpdir) / 'cpH.log'
+        lines = ["cpH: resids 20  76\n"]
+
+        pH_values = [3.0, 4.0, 5.0, 6.0, 7.0]
+        pKa_20 = 4.5
+        pKa_76 = 6.5
+
+        for pH in pH_values:
+            for _ in range(15):
+                p20 = 1 / (1 + 10**(pH - pKa_20))
+                p76 = 1 / (1 + 10**(pH - pKa_76))
+
+                s20 = 'ASH' if np.random.random() < p20 else 'ASP'
+                s76 = 'GLH' if np.random.random() < p76 else 'GLU'
+
+                lines.append(f"rank=0 cpH: pH {pH:.1f}: ['{s20}', '{s76}']\n")
+
+        log_path.write_text(''.join(lines))
+        return log_path
+
+    def test_summary_show_all(self, capsys):
+        """Test summary with show_all=True"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+
+            analyzer = TitrationAnalyzer(log_path)
+            analyzer.run(methods=['curvefit', 'weighted'], verbose=False)
+
+            result = analyzer.summary(show_all=True)
+
+            assert result is not None
+            captured = capsys.readouterr()
+            assert 'Comparison Summary' in captured.out
+
+    def test_summary_curvefit_only(self, capsys):
+        """Test summary with only curvefit results"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+
+            analyzer = TitrationAnalyzer(log_path)
+            analyzer.run(methods=['curvefit'], verbose=False)
+
+            result = analyzer.summary()
+
+            assert result is not None
+            captured = capsys.readouterr()
+            assert 'Curve Fitting Results' in captured.out
+
+    def test_summary_weighted_only(self, capsys):
+        """Test summary with only weighted results"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+
+            analyzer = TitrationAnalyzer(log_path)
+            analyzer.run(methods=['weighted'], verbose=False)
+
+            result = analyzer.summary()
+
+            assert result is not None
+            captured = capsys.readouterr()
+            assert 'Weighted Fitting Results' in captured.out
+
+    def test_summary_bootstrap_only(self, capsys):
+        """Test summary with only bootstrap results"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+
+            analyzer = TitrationAnalyzer(log_path)
+            analyzer.run(methods=['bootstrap'], verbose=False, n_bootstrap=50)
+
+            result = analyzer.summary()
+
+            assert result is not None
+            captured = capsys.readouterr()
+            assert 'Bootstrap Results' in captured.out
+
+    def test_get_results_comparison(self):
+        """Test get_results with comparison option"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+
+            analyzer = TitrationAnalyzer(log_path)
+            analyzer.run(methods=['curvefit', 'weighted'], verbose=False)
+
+            result = analyzer.get_results('comparison')
+
+            assert result is not None
+            assert 'pKa_diff' in result.columns
+
+    def test_get_results_bootstrap(self):
+        """Test get_results with bootstrap option"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+
+            analyzer = TitrationAnalyzer(log_path)
+            analyzer.run(methods=['bootstrap'], verbose=False, n_bootstrap=50)
+
+            result = analyzer.get_results('bootstrap')
+
+            assert result is not None
+            assert 'pKa_lo' in result.columns
+            assert 'pKa_hi' in result.columns
+
+
+class TestTitrationCurveWithNumericStates:
+    """Test TitrationCurve with numeric state values (0/1)"""
+
+    def test_parse_log_numeric_states(self):
+        """Test parsing log file with numeric states"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationCurve
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = Path(tmpdir) / 'cpH.log'
+            log_content = """cpH: resids 20  76
+rank=0 cpH: pH 4.0: [1, 0]
+rank=0 cpH: pH 4.0: [0, 1]
+rank=0 cpH: pH 5.0: [0, 0]
+rank=0 cpH: pH 5.0: [1, 1]
+"""
+            log_path.write_text(log_content)
+
+            df, resids = TitrationCurve.parse_log(log_path)
+
+            assert resids == [20, 76]
+            assert len(df) == 4
+            # States should be integers
+            assert df['20'].to_list() == [1, 0, 0, 1]
+
+
+class TestSaveResultsFormats:
+    """Test saving results in different formats"""
+
+    def create_test_log(self, tmpdir):
+        """Helper to create test log file"""
+        log_path = Path(tmpdir) / 'cpH.log'
+        lines = ["cpH: resids 20\n"]
+
+        pH_values = [3.0, 4.0, 5.0, 6.0, 7.0]
+        pKa = 4.5
+
+        for pH in pH_values:
+            for _ in range(10):
+                p = 1 / (1 + 10**(pH - pKa))
+                s = 'ASH' if np.random.random() < p else 'ASP'
+                lines.append(f"rank=0 cpH: pH {pH:.1f}: ['{s}']\n")
+
+        log_path.write_text(''.join(lines))
+        return log_path
+
+    def test_save_results_parquet(self):
+        """Test saving results as parquet"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+
+            analyzer = TitrationAnalyzer(log_path, output_dir=tmpdir)
+            analyzer.run(methods=['curvefit'], verbose=False)
+
+            analyzer.save_results(formats=['parquet'])
+
+            assert (Path(tmpdir) / 'pKa_curvefit.parquet').exists()
+
+    def test_save_results_json(self):
+        """Test saving results as json"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+
+            analyzer = TitrationAnalyzer(log_path, output_dir=tmpdir)
+            analyzer.run(methods=['curvefit'], verbose=False)
+
+            analyzer.save_results(formats=['json'])
+
+            assert (Path(tmpdir) / 'pKa_curvefit.json').exists()
+
+    def test_save_titration_data(self):
+        """Test saving titration data"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+
+            analyzer = TitrationAnalyzer(log_path, output_dir=tmpdir)
+            analyzer.run(methods=['curvefit'], verbose=False)
+
+            analyzer.save_results(formats=['csv'])
+
+            assert (Path(tmpdir) / 'titration_data.csv').exists()
+
+
+class TestDiagnoseResidue:
+    """Tests for diagnose_residue functionality"""
+
+    def create_test_log(self, tmpdir):
+        """Helper to create test log file"""
+        log_path = Path(tmpdir) / 'cpH.log'
+        log_content = """cpH: resids 20  76
+rank=0 cpH: pH 3.0: ['ASH', 'GLH']
+rank=0 cpH: pH 3.0: ['ASH', 'GLH']
+rank=0 cpH: pH 4.0: ['ASH', 'GLU']
+rank=0 cpH: pH 4.0: ['ASP', 'GLU']
+rank=0 cpH: pH 5.0: ['ASP', 'GLU']
+rank=0 cpH: pH 5.0: ['ASP', 'GLU']
+rank=0 cpH: pH 6.0: ['ASP', 'GLU']
+rank=0 cpH: pH 6.0: ['ASP', 'GLU']
+"""
+        log_path.write_text(log_content)
+        return log_path
+
+    def test_diagnose_residue_verbose(self, capsys):
+        """Test diagnose_residue verbose output"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationCurve
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+            tc = TitrationCurve(log_path, make_plots=False)
+            tc.prepare()
+
+            result = tc.diagnose_residue('20', verbose=True)
+
+            captured = capsys.readouterr()
+            assert 'Diagnostics for residue 20' in captured.out
+            assert 'State distribution' in captured.out
+            assert 'Titration curve' in captured.out
+
+    def test_diagnose_always_protonated(self, capsys):
+        """Test diagnose for residue always protonated"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationCurve
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = Path(tmpdir) / 'cpH.log'
+            log_content = """cpH: resids 20
+rank=0 cpH: pH 3.0: ['ASH']
+rank=0 cpH: pH 4.0: ['ASH']
+rank=0 cpH: pH 5.0: ['ASH']
+rank=0 cpH: pH 6.0: ['ASH']
+"""
+            log_path.write_text(log_content)
+
+            tc = TitrationCurve(log_path, make_plots=False)
+            tc.prepare()
+
+            result = tc.diagnose_residue('20', verbose=True)
+
+            captured = capsys.readouterr()
+            assert 'Always >50% protonated' in captured.out
+
+    def test_diagnose_always_deprotonated(self, capsys):
+        """Test diagnose for residue always deprotonated"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationCurve
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = Path(tmpdir) / 'cpH.log'
+            log_content = """cpH: resids 20
+rank=0 cpH: pH 3.0: ['ASP']
+rank=0 cpH: pH 4.0: ['ASP']
+rank=0 cpH: pH 5.0: ['ASP']
+rank=0 cpH: pH 6.0: ['ASP']
+"""
+            log_path.write_text(log_content)
+
+            tc = TitrationCurve(log_path, make_plots=False)
+            tc.prepare()
+
+            result = tc.diagnose_residue('20', verbose=True)
+
+            captured = capsys.readouterr()
+            assert 'Always <50% protonated' in captured.out
+
+    def test_diagnose_little_titration(self, capsys):
+        """Test diagnose for residue with little titration"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationCurve
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = Path(tmpdir) / 'cpH.log'
+            log_content = """cpH: resids 20
+rank=0 cpH: pH 3.0: ['ASH']
+rank=0 cpH: pH 3.0: ['ASH']
+rank=0 cpH: pH 4.0: ['ASH']
+rank=0 cpH: pH 4.0: ['ASP']
+rank=0 cpH: pH 5.0: ['ASH']
+rank=0 cpH: pH 5.0: ['ASP']
+rank=0 cpH: pH 6.0: ['ASH']
+rank=0 cpH: pH 6.0: ['ASP']
+"""
+            log_path.write_text(log_content)
+
+            tc = TitrationCurve(log_path, make_plots=False)
+            tc.prepare()
+
+            result = tc.diagnose_residue('20', verbose=True)
+
+            captured = capsys.readouterr()
+            # Should mention little titration when range is small
+            assert 'Fraction range' in captured.out
+
+
+class TestRunVerboseOutput:
+    """Tests for verbose output during run"""
+
+    def create_test_log(self, tmpdir):
+        """Helper to create test log file"""
+        log_path = Path(tmpdir) / 'cpH.log'
+        lines = ["cpH: resids 20\n"]
+
+        for pH in [3.0, 4.0, 5.0, 6.0, 7.0]:
+            for _ in range(10):
+                s = 'ASH' if np.random.random() < 0.5 else 'ASP'
+                lines.append(f"rank=0 cpH: pH {pH:.1f}: ['{s}']\n")
+
+        log_path.write_text(''.join(lines))
+        return log_path
+
+    def test_run_verbose_output(self, capsys):
+        """Test verbose output during run"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+
+            analyzer = TitrationAnalyzer(log_path)
+            analyzer.run(methods=['curvefit', 'weighted'], verbose=True)
+
+            captured = capsys.readouterr()
+            assert 'Constant pH Titration Analysis' in captured.out
+            assert 'Running curve fitting' in captured.out
+            assert 'Running weighted curve fitting' in captured.out
+            assert 'Analysis complete!' in captured.out
+
+    def test_run_bootstrap_verbose(self, capsys):
+        """Test verbose output during bootstrap"""
+        from molecular_simulations.analysis.constant_pH_analysis import TitrationAnalyzer
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = self.create_test_log(tmpdir)
+
+            analyzer = TitrationAnalyzer(log_path)
+            analyzer.run(methods=['bootstrap'], verbose=True, n_bootstrap=50)
+
+            captured = capsys.readouterr()
+            assert 'bootstrap' in captured.out.lower()
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

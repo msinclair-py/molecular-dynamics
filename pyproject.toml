@@ -73,4 +73,7 @@ markers = [
     'slow: potentially long-running test',
     'requires_openmm: needs OpenMM runtime',
     'requires_amber: needs AmberTools/tleap',
+    'requires_rdkit: needs RDKit installation',
+    'integration: end-to-end integration test',
+    'unit: isolated unit test',
 ]

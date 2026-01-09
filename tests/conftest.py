@@ -1,8 +1,362 @@
 """
 Test configuration and fixtures.
+
+This module provides shared fixtures for the molecular-simulations test suite.
+Fixtures are designed to reduce mocking by providing real test data where possible.
 """
 import os
+from pathlib import Path
+import tempfile
+
+import pytest
 
 # Disable numba JIT compilation to avoid path resolution issues during testing.
 # This must be set before numba is imported.
 os.environ['NUMBA_DISABLE_JIT'] = '1'
+
+
+# ---------------------------------------------------------------------------
+# Path Helpers
+# ---------------------------------------------------------------------------
+
+def get_test_data_dir() -> Path:
+    """Return the path to the test data directory."""
+    return Path(__file__).parent / "data"
+
+
+# ---------------------------------------------------------------------------
+# Environment Detection Fixtures
+# ---------------------------------------------------------------------------
+
+@pytest.fixture(scope="session")
+def real_openmm_available() -> bool:
+    """
+    Session-scoped check for OpenMM availability.
+
+    Returns True if OpenMM is properly installed and functional,
+    False otherwise. This allows tests to conditionally skip
+    when OpenMM is not available.
+
+    Usage:
+        def test_simulation(real_openmm_available):
+            if not real_openmm_available:
+                pytest.skip("OpenMM not available")
+            # ... test code ...
+    """
+    try:
+        import openmm
+        from openmm import Platform
+        # Verify we can access at least one platform
+        num_platforms = Platform.getNumPlatforms()
+        return num_platforms > 0
+    except ImportError:
+        return False
+    except Exception:
+        return False
+
+
+@pytest.fixture(scope="session")
+def real_amber_available() -> bool:
+    """
+    Session-scoped check for AmberTools availability.
+
+    Returns True if AmberTools (tleap) is properly installed,
+    False otherwise.
+    """
+    import shutil
+    amberhome = os.environ.get('AMBERHOME')
+    if amberhome:
+        tleap_path = Path(amberhome) / 'bin' / 'tleap'
+        if tleap_path.exists():
+            return True
+    # Also check if tleap is in PATH
+    return shutil.which('tleap') is not None
+
+
+@pytest.fixture(scope="session")
+def real_rdkit_available() -> bool:
+    """
+    Session-scoped check for RDKit availability.
+
+    Returns True if RDKit is properly installed and functional,
+    False otherwise.
+    """
+    try:
+        from rdkit import Chem
+        # Verify basic functionality
+        mol = Chem.MolFromSmiles('C')
+        return mol is not None
+    except ImportError:
+        return False
+    except Exception:
+        return False
+
+
+# ---------------------------------------------------------------------------
+# PDB Fixtures
+# ---------------------------------------------------------------------------
+
+@pytest.fixture
+def sample_pdb_path(tmp_path: Path) -> Path:
+    """
+    Creates a valid minimal PDB file for testing.
+
+    This provides a simple alanine-glycine dipeptide structure that is
+    valid for testing with AMBER forcefields and MDAnalysis.
+
+    Returns:
+        Path to the created PDB file in a temporary directory.
+    """
+    pdb_content = """\
+ATOM      1  N   ALA A   1       0.000   0.000   0.000  1.00  0.00           N
+ATOM      2  CA  ALA A   1       1.458   0.000   0.000  1.00  0.00           C
+ATOM      3  C   ALA A   1       2.009   1.420   0.000  1.00  0.00           C
+ATOM      4  O   ALA A   1       1.251   2.390   0.000  1.00  0.00           O
+ATOM      5  CB  ALA A   1       1.989  -0.744   1.232  1.00  0.00           C
+ATOM      6  N   GLY A   2       3.331   1.539   0.000  1.00  0.00           N
+ATOM      7  CA  GLY A   2       4.021   2.826   0.000  1.00  0.00           C
+ATOM      8  C   GLY A   2       5.528   2.661   0.000  1.00  0.00           C
+ATOM      9  O   GLY A   2       6.089   1.563   0.000  1.00  0.00           O
+TER
+END
+"""
+    pdb_file = tmp_path / "test_structure.pdb"
+    pdb_file.write_text(pdb_content)
+    return pdb_file
+
+
+@pytest.fixture
+def alanine_dipeptide_pdb() -> Path:
+    """
+    Returns the path to the alanine dipeptide PDB test file.
+
+    This is a standard test system (Ace-Ala-Nme) commonly used in
+    molecular dynamics simulations.
+
+    Returns:
+        Path to the static alanine dipeptide PDB file.
+    """
+    return get_test_data_dir() / "pdb" / "alanine_dipeptide.pdb"
+
+
+# ---------------------------------------------------------------------------
+# AMBER System File Fixtures
+# ---------------------------------------------------------------------------
+
+@pytest.fixture
+def amber_system_files(tmp_path: Path) -> dict:
+    """
+    Creates minimal prmtop and inpcrd files for testing.
+
+    These files contain the minimal valid structure needed for
+    testing AMBER-related functionality without running tleap.
+
+    Returns:
+        Dictionary with keys 'prmtop', 'inpcrd', and 'path' containing
+        the paths to the created files and the base directory.
+    """
+    # Minimal prmtop file structure - this is a simplified version
+    # that contains the essential sections for parsing
+    prmtop_content = """\
+%VERSION  VERSION_STAMP = V0001.000  DATE = 01/01/00  00:00:00
+%FLAG TITLE
+%FORMAT(20a4)
+Test system for unit testing
+%FLAG POINTERS
+%FORMAT(10I8)
+       9       2       6       2      12       1      18       0       0       0
+      33       1       2       1       0       1       1       1       2       0
+       0       0       0       0       0       0       0       0       9       0
+       0
+%FLAG ATOM_NAME
+%FORMAT(20a4)
+N   CA  C   O   CB  N   CA  C   O
+%FLAG CHARGE
+%FORMAT(5E16.8)
+ -0.41570000E+01  0.33760000E+00  0.59730000E+01 -0.56790000E+01 -0.18250000E+01
+ -0.41570000E+01  0.33760000E+00  0.59730000E+01 -0.56790000E+01
+%FLAG ATOMIC_NUMBER
+%FORMAT(10I8)
+       7       6       6       8       6       7       6       6       8
+%FLAG MASS
+%FORMAT(5E16.8)
+  0.14010000E+02  0.12010000E+02  0.12010000E+02  0.16000000E+02  0.12010000E+02
+  0.14010000E+02  0.12010000E+02  0.12010000E+02  0.16000000E+02
+%FLAG ATOM_TYPE_INDEX
+%FORMAT(10I8)
+       1       1       1       2       1       1       1       1       2
+%FLAG NUMBER_EXCLUDED_ATOMS
+%FORMAT(10I8)
+       6       5       4       3       2       3       2       1       1
+%FLAG NONBONDED_PARM_INDEX
+%FORMAT(10I8)
+       1       2       2       3
+%FLAG RESIDUE_LABEL
+%FORMAT(20a4)
+ALA GLY
+%FLAG RESIDUE_POINTER
+%FORMAT(10I8)
+       1       6
+%FLAG BOND_FORCE_CONSTANT
+%FORMAT(5E16.8)
+  0.31700000E+03  0.52600000E+03
+%FLAG BOND_EQUIL_VALUE
+%FORMAT(5E16.8)
+  0.15220000E+01  0.12290000E+01
+%FLAG ANGLE_FORCE_CONSTANT
+%FORMAT(5E16.8)
+  0.63000000E+02  0.80000000E+02
+%FLAG ANGLE_EQUIL_VALUE
+%FORMAT(5E16.8)
+  0.19480000E+01  0.21230000E+01
+%FLAG DIHEDRAL_FORCE_CONSTANT
+%FORMAT(5E16.8)
+  0.15000000E+02  0.00000000E+00
+%FLAG DIHEDRAL_PERIODICITY
+%FORMAT(5E16.8)
+  0.20000000E+01  0.00000000E+00
+%FLAG DIHEDRAL_PHASE
+%FORMAT(5E16.8)
+  0.31415927E+01  0.00000000E+00
+%FLAG SCEE_SCALE_FACTOR
+%FORMAT(5E16.8)
+  0.12000000E+01  0.00000000E+00
+%FLAG SCNB_SCALE_FACTOR
+%FORMAT(5E16.8)
+  0.20000000E+01  0.00000000E+00
+%FLAG LENNARD_JONES_ACOEF
+%FORMAT(5E16.8)
+  0.10610000E+07  0.51280000E+06  0.10000000E+01
+%FLAG LENNARD_JONES_BCOEF
+%FORMAT(5E16.8)
+  0.61400000E+03  0.49340000E+03  0.10000000E+01
+%FLAG BONDS_INC_HYDROGEN
+%FORMAT(10I8)
+
+%FLAG BONDS_WITHOUT_HYDROGEN
+%FORMAT(10I8)
+       0       3       1       6       9       2
+%FLAG ANGLES_INC_HYDROGEN
+%FORMAT(10I8)
+
+%FLAG ANGLES_WITHOUT_HYDROGEN
+%FORMAT(10I8)
+       0       3       6       1       3       6       9       2
+%FLAG DIHEDRALS_INC_HYDROGEN
+%FORMAT(10I8)
+
+%FLAG DIHEDRALS_WITHOUT_HYDROGEN
+%FORMAT(10I8)
+       0       3       6       9       1      12       1
+%FLAG EXCLUDED_ATOMS_LIST
+%FORMAT(10I8)
+       2       3       4       5       6       7       3       4       5       6
+       7       4       5       6       7       5       6       7       6       7
+       7       8       9       8       9       9       0
+%FLAG RADII
+%FORMAT(5E16.8)
+  0.17000000E+01  0.17000000E+01  0.17000000E+01  0.15000000E+01  0.17000000E+01
+  0.17000000E+01  0.17000000E+01  0.17000000E+01  0.15000000E+01
+%FLAG SCREEN
+%FORMAT(5E16.8)
+  0.79000000E+00  0.72000000E+00  0.72000000E+00  0.85000000E+00  0.72000000E+00
+  0.79000000E+00  0.72000000E+00  0.72000000E+00  0.85000000E+00
+"""
+
+    # Minimal inpcrd file structure
+    inpcrd_content = """\
+Test system coordinates
+    9
+   0.0000000   0.0000000   0.0000000   1.4580000   0.0000000   0.0000000
+   2.0090000   1.4200000   0.0000000   1.2510000   2.3900000   0.0000000
+   1.9890000  -0.7440000   1.2320000   3.3310000   1.5390000   0.0000000
+   4.0210000   2.8260000   0.0000000   5.5280000   2.6610000   0.0000000
+   6.0890000   1.5630000   0.0000000
+"""
+
+    prmtop_file = tmp_path / "system.prmtop"
+    inpcrd_file = tmp_path / "system.inpcrd"
+
+    prmtop_file.write_text(prmtop_content)
+    inpcrd_file.write_text(inpcrd_content)
+
+    return {
+        'prmtop': prmtop_file,
+        'inpcrd': inpcrd_file,
+        'path': tmp_path,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Ligand/SDF Fixtures
+# ---------------------------------------------------------------------------
+
+@pytest.fixture
+def sample_sdf_path(tmp_path: Path) -> Path:
+    """
+    Creates a valid minimal SDF ligand file (methane) for testing.
+
+    This provides the simplest valid SDF structure for testing
+    ligand-related functionality.
+
+    Returns:
+        Path to the created SDF file in a temporary directory.
+    """
+    sdf_content = """\
+methane
+     RDKit          3D
+
+  5  4  0  0  0  0  0  0  0  0999 V2000
+    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+    0.6276    0.6276    0.6276 H   0  0  0  0  0  0  0  0  0  0  0  0
+   -0.6276   -0.6276    0.6276 H   0  0  0  0  0  0  0  0  0  0  0  0
+   -0.6276    0.6276   -0.6276 H   0  0  0  0  0  0  0  0  0  0  0  0
+    0.6276   -0.6276   -0.6276 H   0  0  0  0  0  0  0  0  0  0  0  0
+  1  2  1  0
+  1  3  1  0
+  1  4  1  0
+  1  5  1  0
+M  END
+$$$$
+"""
+    sdf_file = tmp_path / "ligand.sdf"
+    sdf_file.write_text(sdf_content)
+    return sdf_file
+
+
+@pytest.fixture
+def benzene_sdf() -> Path:
+    """
+    Returns the path to the benzene SDF test file.
+
+    This is a simple aromatic ligand commonly used in testing.
+
+    Returns:
+        Path to the static benzene SDF file.
+    """
+    return get_test_data_dir() / "sdf" / "benzene.sdf"
+
+
+# ---------------------------------------------------------------------------
+# Skip Markers
+# ---------------------------------------------------------------------------
+
+@pytest.fixture
+def skip_without_openmm(real_openmm_available):
+    """Skip test if OpenMM is not available."""
+    if not real_openmm_available:
+        pytest.skip("OpenMM not available")
+
+
+@pytest.fixture
+def skip_without_amber(real_amber_available):
+    """Skip test if AmberTools is not available."""
+    if not real_amber_available:
+        pytest.skip("AmberTools not available")
+
+
+@pytest.fixture
+def skip_without_rdkit(real_rdkit_available):
+    """Skip test if RDKit is not available."""
+    if not real_rdkit_available:
+        pytest.skip("RDKit not available")

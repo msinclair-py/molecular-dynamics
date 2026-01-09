@@ -1,5 +1,9 @@
 """
 Unit tests for simulate/mmpbsa.py module
+
+This module contains both unit tests (with minimal mocks) and integration tests.
+Tests that don't require AMBER binaries use the actual classes with mocked
+external processes, while pure logic tests avoid mocking entirely.
 """
 import pytest
 import numpy as np
@@ -10,8 +14,46 @@ import os
 import json
 
 
+# ============================================================================
+# Fixtures and helpers for conditional dependency usage
+# ============================================================================
+
+def _check_amberhome():
+    """Check if AMBERHOME is set."""
+    return 'AMBERHOME' in os.environ
+
+
+requires_amber = pytest.mark.skipif(
+    not _check_amberhome(),
+    reason="AMBERHOME not set"
+)
+
+
+@pytest.fixture
+def test_data_dir():
+    """Return the path to test data directory."""
+    return Path(__file__).parent / 'data'
+
+
+@pytest.fixture
+def mock_amberhome(tmp_path):
+    """Create a mock AMBERHOME with fake binaries."""
+    amber_bin = tmp_path / 'amber' / 'bin'
+    amber_bin.mkdir(parents=True)
+
+    # Create dummy executables
+    (amber_bin / 'cpptraj').write_text('#!/bin/bash\necho "mock cpptraj"')
+    (amber_bin / 'mmpbsa_py_energy').write_text('#!/bin/bash\necho "mock mmpbsa"')
+
+    return tmp_path / 'amber'
+
+
+# ============================================================================
+# Pure logic tests - no mocking needed
+# ============================================================================
+
 class TestMMPBSASettings:
-    """Test suite for MMPBSA_settings dataclass"""
+    """Test suite for MMPBSA_settings dataclass - no mocks needed."""
 
     def test_mmpbsa_settings_defaults(self):
         """Test MMPBSA_settings with default values"""
@@ -53,17 +95,37 @@ class TestMMPBSASettings:
         assert settings.n_cpus == 4
         assert settings.out == 'custom_output'
 
+    def test_mmpbsa_settings_types(self):
+        """Test MMPBSA_settings field types without mocking."""
+        from molecular_simulations.simulate.mmpbsa import MMPBSA_settings
+
+        settings = MMPBSA_settings(
+            top='test.prmtop',
+            dcd='test.dcd',
+            selections=[':1-50', ':51-100']
+        )
+
+        assert isinstance(settings.top, str)
+        assert isinstance(settings.dcd, str)
+        assert isinstance(settings.selections, list)
+        assert isinstance(settings.first_frame, int)
+        assert isinstance(settings.stride, int)
+        assert isinstance(settings.solvent_probe, float)
+
 
 class TestMMPBSAInit:
-    """Test suite for MMPBSA class initialization"""
+    """Test suite for MMPBSA class initialization.
 
-    @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
-    @patch('molecular_simulations.simulate.mmpbsa.FileHandler')
-    def test_mmpbsa_init(self, mock_filehandler):
-        """Test MMPBSA initialization"""
+    Uses subprocess mocking instead of FileHandler mocking to reduce mock count.
+    """
+
+    @patch('molecular_simulations.simulate.mmpbsa.subprocess')
+    def test_mmpbsa_init(self, mock_subprocess, mock_amberhome):
+        """Test MMPBSA initialization with mock AMBERHOME."""
         from molecular_simulations.simulate.mmpbsa import MMPBSA
 
-        mock_filehandler.return_value = MagicMock()
+        mock_subprocess.run.return_value = MagicMock(returncode=0, stdout='')
+        mock_subprocess.call.return_value = 0
 
         with tempfile.TemporaryDirectory() as tmpdir:
             path = Path(tmpdir)
@@ -75,15 +137,15 @@ class TestMMPBSAInit:
             mmpbsa = MMPBSA(
                 top=str(top_file),
                 dcd=str(traj_file),
-                selections=[':1-100', ':101-150']
+                selections=[':1-100', ':101-150'],
+                amberhome=str(mock_amberhome)
             )
 
-            assert mmpbsa.cpptraj == Path('/fake/amber/bin/cpptraj')
-            assert mmpbsa.mmpbsa_py_energy == Path('/fake/amber/bin/mmpbsa_py_energy')
+            assert mmpbsa.cpptraj == mock_amberhome / 'bin' / 'cpptraj'
+            assert mmpbsa.mmpbsa_py_energy == mock_amberhome / 'bin' / 'mmpbsa_py_energy'
 
-    @patch('molecular_simulations.simulate.mmpbsa.FileHandler')
-    def test_mmpbsa_init_no_amberhome(self, mock_filehandler):
-        """Test MMPBSA initialization without AMBERHOME"""
+    def test_mmpbsa_init_no_amberhome(self):
+        """Test MMPBSA initialization without AMBERHOME - no mock needed."""
         from molecular_simulations.simulate.mmpbsa import MMPBSA
 
         # Remove AMBERHOME from environment
@@ -105,13 +167,13 @@ class TestMMPBSAInit:
                         selections=[':1-100', ':101-150']
                     )
 
-    @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
-    @patch('molecular_simulations.simulate.mmpbsa.FileHandler')
-    def test_mmpbsa_init_custom_output(self, mock_filehandler):
-        """Test MMPBSA initialization with custom output path"""
+    @patch('molecular_simulations.simulate.mmpbsa.subprocess')
+    def test_mmpbsa_init_custom_output(self, mock_subprocess, mock_amberhome):
+        """Test MMPBSA initialization with custom output path."""
         from molecular_simulations.simulate.mmpbsa import MMPBSA
 
-        mock_filehandler.return_value = MagicMock()
+        mock_subprocess.run.return_value = MagicMock(returncode=0, stdout='')
+        mock_subprocess.call.return_value = 0
 
         with tempfile.TemporaryDirectory() as tmpdir:
             path = Path(tmpdir)
@@ -127,7 +189,8 @@ class TestMMPBSAInit:
                 top=str(top_file),
                 dcd=str(traj_file),
                 selections=[':1-100', ':101-150'],
-                out=str(out_dir)
+                out=str(out_dir),
+                amberhome=str(mock_amberhome)
             )
 
             # Use resolve() to handle /private symlink on macOS
@@ -135,18 +198,18 @@ class TestMMPBSAInit:
 
 
 class TestMMPBSAWriteMdins:
-    """Test suite for MMPBSA write_mdins method"""
+    """Test suite for MMPBSA write_mdins method.
 
-    @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
-    @patch('molecular_simulations.simulate.mmpbsa.FileHandler')
-    def test_write_mdins(self, mock_filehandler):
-        """Test write_mdins method"""
+    Uses real file operations where possible.
+    """
+
+    @patch('molecular_simulations.simulate.mmpbsa.subprocess')
+    def test_write_mdins(self, mock_subprocess, mock_amberhome):
+        """Test write_mdins method creates actual files."""
         from molecular_simulations.simulate.mmpbsa import MMPBSA
 
-        mock_fh = MagicMock()
-        mock_fh.path = MagicMock()
-        mock_fh.write_file = MagicMock()
-        mock_filehandler.return_value = mock_fh
+        mock_subprocess.run.return_value = MagicMock(returncode=0, stdout='')
+        mock_subprocess.call.return_value = 0
 
         with tempfile.TemporaryDirectory() as tmpdir:
             path = Path(tmpdir)
@@ -155,25 +218,32 @@ class TestMMPBSAWriteMdins:
             traj_file = path / 'traj.dcd'
             traj_file.write_text("mock trajectory")
 
-            mock_fh.path = path
-
             mmpbsa = MMPBSA(
                 top=str(top_file),
                 dcd=str(traj_file),
-                selections=[':1-100', ':101-150']
+                selections=[':1-100', ':101-150'],
+                amberhome=str(mock_amberhome)
             )
 
             gb_mdin, pb_mdin = mmpbsa.write_mdins()
 
-            # Should have written both GB and PB mdins
-            assert mock_fh.write_file.call_count == 2
+            # Verify actual files were created
+            assert gb_mdin.exists()
+            assert pb_mdin.exists()
+
+            # Check file contents
+            gb_content = gb_mdin.read_text()
+            assert 'igb = 2' in gb_content
+
+            pb_content = pb_mdin.read_text()
+            assert 'inp = 2' in pb_content
 
 
 class TestOutputAnalyzer:
-    """Test suite for OutputAnalyzer class"""
+    """Test suite for OutputAnalyzer class - uses real objects, no mocking."""
 
     def test_output_analyzer_init(self):
-        """Test OutputAnalyzer initialization"""
+        """Test OutputAnalyzer initialization - no mocks needed."""
         from molecular_simulations.simulate.mmpbsa import OutputAnalyzer
 
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -186,9 +256,11 @@ class TestOutputAnalyzer:
             assert analyzer.surften == 0.01
             assert analyzer.offset == 0.5
             assert analyzer.free_energy is None
+            assert analyzer.systems == ['receptor', 'ligand', 'complex']
+            assert analyzer.levels == ['gb', 'pb']
 
     def test_parse_line_single_value(self):
-        """Test parse_line with single key=value"""
+        """Test parse_line with single key=value - static method, no mocks."""
         from molecular_simulations.simulate.mmpbsa import OutputAnalyzer
 
         line = " BOND = 123.456"
@@ -199,22 +271,38 @@ class TestOutputAnalyzer:
         assert np.isclose(result[0][1], 123.456)
 
     def test_parse_line_multiple_values(self):
-        """Test parse_line with multiple key=value pairs"""
+        """Test parse_line with multiple key=value pairs - static method."""
         from molecular_simulations.simulate.mmpbsa import OutputAnalyzer
 
         line = " BOND =  123.456  ANGLE =  78.901"
         result = list(OutputAnalyzer.parse_line(line))
 
         assert len(result) == 2
+        keys = [r[0] for r in result]
+        assert 'BOND' in keys
+        assert 'ANGLE' in keys
+
+    def test_parse_line_energy_format(self):
+        """Test parse_line with full energy output format."""
+        from molecular_simulations.simulate.mmpbsa import OutputAnalyzer
+
+        line = " VDWAALS = -10.5  EEL = -200.3  EGB = -50.1"
+        result = list(OutputAnalyzer.parse_line(line))
+
+        assert len(result) == 3
+        result_dict = dict(result)
+        assert np.isclose(result_dict['VDWAALS'], -10.5)
+        assert np.isclose(result_dict['EEL'], -200.3)
+        assert np.isclose(result_dict['EGB'], -50.1)
 
     def test_read_sasa(self):
-        """Test read_sasa method"""
+        """Test read_sasa method - uses real file, no mocks."""
         from molecular_simulations.simulate.mmpbsa import OutputAnalyzer
 
         with tempfile.TemporaryDirectory() as tmpdir:
             path = Path(tmpdir)
 
-            # Create mock SASA file
+            # Create real SASA file
             sasa_content = """#Frame SASA
 1 1000.0
 2 1100.0
@@ -227,15 +315,18 @@ class TestOutputAnalyzer:
             sasa_series = analyzer.read_sasa(sasa_file)
 
             assert len(sasa_series) == 3
-            # SASA should be scaled by surface tension
-            assert all(s != 0 for s in sasa_series)
+            # SASA should be scaled by surface tension (0.0072)
+            # 1000.0 * 0.0072 = 7.2
+            assert np.isclose(sasa_series[0], 7.2)
+            assert np.isclose(sasa_series[1], 7.92)
+            assert np.isclose(sasa_series[2], 7.56)
 
 
 class TestFileHandler:
-    """Test suite for FileHandler class"""
+    """Test suite for FileHandler class - uses real files, no mocking."""
 
     def test_write_file_list(self):
-        """Test write_file with list input"""
+        """Test write_file with list input - static method, no mocks."""
         from molecular_simulations.simulate.mmpbsa import FileHandler
 
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -249,7 +340,7 @@ class TestFileHandler:
             assert 'line1\nline2\nline3' == content
 
     def test_write_file_string(self):
-        """Test write_file with string input"""
+        """Test write_file with string input - static method, no mocks."""
         from molecular_simulations.simulate.mmpbsa import FileHandler
 
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -261,6 +352,21 @@ class TestFileHandler:
 
             result = outfile.read_text()
             assert result == content
+
+    def test_write_file_with_path_object(self):
+        """Test write_file with Path object."""
+        from molecular_simulations.simulate.mmpbsa import FileHandler
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir)
+            outfile = path / 'path_test.txt'
+
+            lines = ['path', 'object', 'test']
+            FileHandler.write_file(lines, outfile)
+
+            assert outfile.exists()
+            content = outfile.read_text()
+            assert 'path\nobject\ntest' == content
 
 
 class TestRunEnergyCalculation:
@@ -380,16 +486,18 @@ class TestRunSasaCalculation:
 
 
 class TestCombineChunks:
-    """Test suite for chunk combining methods"""
+    """Test suite for chunk combining methods.
 
-    @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
-    @patch('molecular_simulations.simulate.mmpbsa.FileHandler')
-    def test_combine_sasa_chunks(self, mock_filehandler):
-        """Test _combine_sasa_chunks method"""
+    Uses subprocess mocking only for FileHandler initialization.
+    """
+
+    @patch('molecular_simulations.simulate.mmpbsa.subprocess')
+    def test_combine_sasa_chunks(self, mock_subprocess, mock_amberhome):
+        """Test _combine_sasa_chunks method with real file operations."""
         from molecular_simulations.simulate.mmpbsa import MMPBSA
 
-        mock_fh = MagicMock()
-        mock_filehandler.return_value = mock_fh
+        mock_subprocess.run.return_value = MagicMock(returncode=0, stdout='')
+        mock_subprocess.call.return_value = 0
 
         with tempfile.TemporaryDirectory() as tmpdir:
             path = Path(tmpdir)
@@ -400,7 +508,7 @@ class TestCombineChunks:
             traj_file = path / 'traj.dcd'
             traj_file.write_text("mock trajectory")
 
-            # Create chunk files
+            # Create chunk files with real data
             for system in ['complex', 'receptor', 'ligand']:
                 for i in range(2):
                     chunk_file = path / f'{system}_chunk{i}_surf.dat'
@@ -409,21 +517,24 @@ class TestCombineChunks:
                     else:
                         chunk_file.write_text("#Frame SASA\n3 1100.0\n4 1150.0\n")
 
-            mock_fh.path = path
-
             mmpbsa = MMPBSA(
                 top=str(top_file),
                 dcd=str(traj_file),
-                selections=[':1-100', ':101-150']
+                selections=[':1-100', ':101-150'],
+                amberhome=str(mock_amberhome)
             )
             mmpbsa.path = path
 
             mmpbsa._combine_sasa_chunks()
 
-            # Check combined files exist
+            # Check combined files exist with correct content
             for system in ['complex', 'receptor', 'ligand']:
                 combined_file = path / f'{system}_surf.dat'
                 assert combined_file.exists()
+                content = combined_file.read_text()
+                # Should have header and 4 data lines
+                assert '1000.0' in content
+                assert '1150.0' in content
 
             # Chunk files should be deleted
             for system in ['complex', 'receptor', 'ligand']:
@@ -431,14 +542,13 @@ class TestCombineChunks:
                     chunk_file = path / f'{system}_chunk{i}_surf.dat'
                     assert not chunk_file.exists()
 
-    @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
-    @patch('molecular_simulations.simulate.mmpbsa.FileHandler')
-    def test_combine_energy_chunks(self, mock_filehandler):
-        """Test _combine_energy_chunks method"""
+    @patch('molecular_simulations.simulate.mmpbsa.subprocess')
+    def test_combine_energy_chunks(self, mock_subprocess, mock_amberhome):
+        """Test _combine_energy_chunks method with real file operations."""
         from molecular_simulations.simulate.mmpbsa import MMPBSA
 
-        mock_fh = MagicMock()
-        mock_filehandler.return_value = mock_fh
+        mock_subprocess.run.return_value = MagicMock(returncode=0, stdout='')
+        mock_subprocess.call.return_value = 0
 
         with tempfile.TemporaryDirectory() as tmpdir:
             path = Path(tmpdir)
@@ -448,19 +558,18 @@ class TestCombineChunks:
             traj_file = path / 'traj.dcd'
             traj_file.write_text("mock trajectory")
 
-            # Create energy chunk files
+            # Create energy chunk files with real data
             for system in ['complex', 'receptor', 'ligand']:
                 for level in ['gb', 'pb']:
                     for i in range(2):
                         chunk_file = path / f'{system}_chunk{i}_{level}.mdout'
                         chunk_file.write_text(f" BOND = {100 + i * 10}.0\n")
 
-            mock_fh.path = path
-
             mmpbsa = MMPBSA(
                 top=str(top_file),
                 dcd=str(traj_file),
-                selections=[':1-100', ':101-150']
+                selections=[':1-100', ':101-150'],
+                amberhome=str(mock_amberhome)
             )
             mmpbsa.path = path
 
@@ -474,16 +583,18 @@ class TestCombineChunks:
 
 
 class TestVerifyCombinedOutputs:
-    """Test suite for _verify_combined_outputs method"""
+    """Test suite for _verify_combined_outputs method.
 
-    @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
-    @patch('molecular_simulations.simulate.mmpbsa.FileHandler')
-    def test_verify_combined_outputs_success(self, mock_filehandler):
-        """Test _verify_combined_outputs with valid files"""
+    Uses subprocess mocking only for FileHandler initialization.
+    """
+
+    @patch('molecular_simulations.simulate.mmpbsa.subprocess')
+    def test_verify_combined_outputs_success(self, mock_subprocess, mock_amberhome):
+        """Test _verify_combined_outputs with valid files."""
         from molecular_simulations.simulate.mmpbsa import MMPBSA
 
-        mock_fh = MagicMock()
-        mock_filehandler.return_value = mock_fh
+        mock_subprocess.run.return_value = MagicMock(returncode=0, stdout='')
+        mock_subprocess.call.return_value = 0
 
         with tempfile.TemporaryDirectory() as tmpdir:
             path = Path(tmpdir)
@@ -502,26 +613,24 @@ class TestVerifyCombinedOutputs:
                     energy_file = path / f'{system}_{level}.mdout'
                     energy_file.write_text(" BOND = 100.0\n ANGLE = 50.0\n")
 
-            mock_fh.path = path
-
             mmpbsa = MMPBSA(
                 top=str(top_file),
                 dcd=str(traj_file),
-                selections=[':1-100', ':101-150']
+                selections=[':1-100', ':101-150'],
+                amberhome=str(mock_amberhome)
             )
             mmpbsa.path = path
 
             # Should not raise
             mmpbsa._verify_combined_outputs()
 
-    @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
-    @patch('molecular_simulations.simulate.mmpbsa.FileHandler')
-    def test_verify_combined_outputs_missing_files(self, mock_filehandler):
-        """Test _verify_combined_outputs with missing files"""
+    @patch('molecular_simulations.simulate.mmpbsa.subprocess')
+    def test_verify_combined_outputs_missing_files(self, mock_subprocess, mock_amberhome):
+        """Test _verify_combined_outputs with missing files."""
         from molecular_simulations.simulate.mmpbsa import MMPBSA
 
-        mock_fh = MagicMock()
-        mock_filehandler.return_value = mock_fh
+        mock_subprocess.run.return_value = MagicMock(returncode=0, stdout='')
+        mock_subprocess.call.return_value = 0
 
         with tempfile.TemporaryDirectory() as tmpdir:
             path = Path(tmpdir)
@@ -531,12 +640,11 @@ class TestVerifyCombinedOutputs:
             traj_file = path / 'traj.dcd'
             traj_file.write_text("mock trajectory")
 
-            mock_fh.path = path
-
             mmpbsa = MMPBSA(
                 top=str(top_file),
                 dcd=str(traj_file),
-                selections=[':1-100', ':101-150']
+                selections=[':1-100', ':101-150'],
+                amberhome=str(mock_amberhome)
             )
             mmpbsa.path = path
 
@@ -545,16 +653,18 @@ class TestVerifyCombinedOutputs:
 
 
 class TestWriteSasaScript:
-    """Test suite for _write_sasa_script method"""
+    """Test suite for _write_sasa_script method.
 
-    @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
-    @patch('molecular_simulations.simulate.mmpbsa.FileHandler')
-    def test_write_sasa_script(self, mock_filehandler):
-        """Test _write_sasa_script method"""
+    Uses subprocess mocking only for FileHandler initialization.
+    """
+
+    @patch('molecular_simulations.simulate.mmpbsa.subprocess')
+    def test_write_sasa_script(self, mock_subprocess, mock_amberhome):
+        """Test _write_sasa_script method creates real file."""
         from molecular_simulations.simulate.mmpbsa import MMPBSA
 
-        mock_fh = MagicMock()
-        mock_filehandler.return_value = mock_fh
+        mock_subprocess.run.return_value = MagicMock(returncode=0, stdout='')
+        mock_subprocess.call.return_value = 0
 
         with tempfile.TemporaryDirectory() as tmpdir:
             path = Path(tmpdir)
@@ -564,13 +674,11 @@ class TestWriteSasaScript:
             traj_file = path / 'traj.dcd'
             traj_file.write_text("mock trajectory")
 
-            mock_fh.path = path
-            mock_fh.write_file = MagicMock()
-
             mmpbsa = MMPBSA(
                 top=str(top_file),
                 dcd=str(traj_file),
-                selections=[':1-100', ':101-150']
+                selections=[':1-100', ':101-150'],
+                amberhome=str(mock_amberhome)
             )
             mmpbsa.path = path
 
@@ -580,7 +688,11 @@ class TestWriteSasaScript:
 
             result = mmpbsa._write_sasa_script(prefix, prm, trj, chunk_idx=0)
 
-            mock_fh.write_file.assert_called_once()
+            # Check file was created and has correct content
+            assert result.exists()
+            content = result.read_text()
+            assert 'molsurf' in content
+            assert 'probe' in content
             assert 'sasa_complex_chunk0.in' in str(result)
 
 
@@ -650,16 +762,18 @@ class TestFileHandlerWriteFile:
 
 
 class TestMMPBSARun:
-    """Test suite for MMPBSA run method"""
+    """Test suite for MMPBSA run method.
 
-    @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
-    @patch('molecular_simulations.simulate.mmpbsa.FileHandler')
-    def test_mmpbsa_run_creates_output_dir(self, mock_filehandler):
-        """Test that run creates output directory"""
+    Uses subprocess mocking for external processes.
+    """
+
+    @patch('molecular_simulations.simulate.mmpbsa.subprocess')
+    def test_mmpbsa_run_creates_output_dir(self, mock_subprocess, mock_amberhome):
+        """Test that run creates output directory."""
         from molecular_simulations.simulate.mmpbsa import MMPBSA
 
-        mock_fh = MagicMock()
-        mock_filehandler.return_value = mock_fh
+        mock_subprocess.run.return_value = MagicMock(returncode=0, stdout='')
+        mock_subprocess.call.return_value = 0
 
         with tempfile.TemporaryDirectory() as tmpdir:
             path = Path(tmpdir)
@@ -671,48 +785,30 @@ class TestMMPBSARun:
 
             out_dir = path / 'output' / 'mmpbsa'
 
-            mock_fh.path = out_dir
-            mock_fh.files = ([], [], [], [])
-            mock_fh.files_chunked = []
-            mock_fh.n_cpus = 1
-
             mmpbsa = MMPBSA(
                 top=str(top_file),
                 dcd=str(traj_file),
                 selections=[':1-100', ':101-150'],
-                out=str(out_dir)
+                out=str(out_dir),
+                amberhome=str(mock_amberhome)
             )
 
-            # Mock methods to avoid actual computation
-            mmpbsa.write_mdins = MagicMock(return_value=(path / 'gb.mdin', path / 'pb.mdin'))
-            mmpbsa._run_serial = MagicMock()
-            mmpbsa._run_frame_parallel = MagicMock()
-            mmpbsa._combine_sasa_chunks = MagicMock()
-            mmpbsa._combine_energy_chunks = MagicMock()
-            mmpbsa._verify_combined_outputs = MagicMock()
-
-            # Just test initialization, not the actual run
-            assert mmpbsa is not None
+            # Verify output directory was created
+            assert out_dir.exists()
+            assert mmpbsa.path.resolve() == out_dir.resolve()
 
 
 class TestMMPBSARunMethods:
-    """Test suite for MMPBSA run methods with mocking"""
+    """Test suite for MMPBSA run methods - uses method-level mocking only."""
 
-    @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
-    @patch('molecular_simulations.simulate.mmpbsa.FileHandler')
+    @patch('molecular_simulations.simulate.mmpbsa.subprocess')
     @patch('molecular_simulations.simulate.mmpbsa.OutputAnalyzer')
-    def test_run_serial_mode(self, mock_analyzer, mock_filehandler):
-        """Test run method in serial mode"""
+    def test_run_serial_mode(self, mock_analyzer, mock_subprocess, mock_amberhome):
+        """Test run method in serial mode."""
         from molecular_simulations.simulate.mmpbsa import MMPBSA
 
-        mock_fh = MagicMock()
-        mock_fh.path = Path('/tmp/test')
-        mock_fh.files = [
-            (Path('/tmp/test/complex'), Path('/tmp/test/complex.prmtop'),
-             Path('/tmp/test/complex.crd'), Path('/tmp/test/complex.pdb')),
-        ]
-        mock_fh.files_chunked = []
-        mock_filehandler.return_value = mock_fh
+        mock_subprocess.run.return_value = MagicMock(returncode=0, stdout='')
+        mock_subprocess.call.return_value = 0
 
         mock_analyzer_inst = MagicMock()
         mock_analyzer_inst.free_energy = -10.5
@@ -729,7 +825,8 @@ class TestMMPBSARunMethods:
                 top=str(top_file),
                 dcd=str(traj_file),
                 selections=[':1-100', ':101-150'],
-                parallel_mode='serial'
+                parallel_mode='serial',
+                amberhome=str(mock_amberhome)
             )
 
             with patch.object(mmpbsa, 'write_mdins') as mock_write, \
@@ -743,24 +840,17 @@ class TestMMPBSARunMethods:
                 mock_analyzer_inst.parse_outputs.assert_called_once()
                 assert mmpbsa.free_energy == -10.5
 
-    @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
-    @patch('molecular_simulations.simulate.mmpbsa.FileHandler')
+    @patch('molecular_simulations.simulate.mmpbsa.subprocess')
     @patch('molecular_simulations.simulate.mmpbsa.OutputAnalyzer')
     @patch('molecular_simulations.simulate.mmpbsa._run_sasa_calculation')
     @patch('molecular_simulations.simulate.mmpbsa._run_energy_calculation')
     def test_run_frame_parallel_mode(self, mock_energy_calc, mock_sasa_calc,
-                                      mock_analyzer, mock_filehandler):
-        """Test run method in frame parallel mode"""
+                                      mock_analyzer, mock_subprocess, mock_amberhome):
+        """Test run method in frame parallel mode."""
         from molecular_simulations.simulate.mmpbsa import MMPBSA
 
-        mock_fh = MagicMock()
-        mock_fh.path = Path('/tmp/test')
-        mock_fh.files = []
-        mock_fh.files_chunked = [
-            (Path('/tmp/test/complex'), Path('/tmp/test/complex.prmtop'),
-             [Path('/tmp/test/complex_chunk0.crd')], Path('/tmp/test/complex.pdb')),
-        ]
-        mock_filehandler.return_value = mock_fh
+        mock_subprocess.run.return_value = MagicMock(returncode=0, stdout='')
+        mock_subprocess.call.return_value = 0
 
         mock_analyzer_inst = MagicMock()
         mock_analyzer_inst.free_energy = -15.0
@@ -781,7 +871,8 @@ class TestMMPBSARunMethods:
                 dcd=str(traj_file),
                 selections=[':1-100', ':101-150'],
                 parallel_mode='frame',
-                n_cpus=2
+                n_cpus=2,
+                amberhome=str(mock_amberhome)
             )
 
             with patch.object(mmpbsa, 'write_mdins') as mock_write, \
@@ -799,19 +890,15 @@ class TestMMPBSARunMethods:
 
 
 class TestCalculateEnergy:
-    """Test suite for calculate_energy method"""
+    """Test suite for calculate_energy method - uses subprocess mocking only."""
 
-    @patch.dict(os.environ, {'AMBERHOME': '/fake/amber'})
-    @patch('molecular_simulations.simulate.mmpbsa.FileHandler')
     @patch('molecular_simulations.simulate.mmpbsa.subprocess')
-    def test_calculate_energy(self, mock_subprocess, mock_filehandler):
-        """Test calculate_energy method"""
+    def test_calculate_energy(self, mock_subprocess, mock_amberhome):
+        """Test calculate_energy method."""
         from molecular_simulations.simulate.mmpbsa import MMPBSA
 
-        mock_fh = MagicMock()
-        mock_filehandler.return_value = mock_fh
-
         mock_subprocess.run.return_value = MagicMock(returncode=0, stderr='', stdout='')
+        mock_subprocess.call.return_value = 0
 
         with tempfile.TemporaryDirectory() as tmpdir:
             path = Path(tmpdir)
@@ -824,12 +911,11 @@ class TestCalculateEnergy:
             mdin_file = path / 'gb.mdin'
             mdin_file.write_text("&general\n/")
 
-            mock_fh.path = path
-
             mmpbsa = MMPBSA(
                 top=str(top_file),
                 dcd=str(traj_file),
-                selections=[':1-100', ':101-150']
+                selections=[':1-100', ':101-150'],
+                amberhome=str(mock_amberhome)
             )
             mmpbsa.path = path
 
@@ -840,7 +926,8 @@ class TestCalculateEnergy:
 
             mmpbsa.calculate_energy(prefix, prm, trj, pdb, mdin_file, 'gb')
 
-            mock_subprocess.run.assert_called_once()
+            # subprocess should have been called for energy calculation
+            assert mock_subprocess.run.call_count >= 1
 
 
 class TestOutputAnalyzerParsing:

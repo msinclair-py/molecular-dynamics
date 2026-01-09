@@ -18,7 +18,6 @@ from openmm.unit import (amu,
 import parsl
 from parsl import Config, python_app
 from pathlib import Path
-from pdbfixer import PDBFixer
 from typing import Any, Optional
 import uuid
 from .constantph.constantph import ConstantPH
@@ -37,6 +36,7 @@ def run_cph_sim(params: dict[str, Any],
     
     cph = ConstantPH(**params)
     cph.simulation.minimizeEnergy()
+    cph.simulation.context.setVelocitiesToTemperature(temperature)
 
     resids = list(variants.keys())
     
@@ -100,15 +100,10 @@ class ConstantPHEnsemble:
 
     def load_files(self,
                    path: Path) -> tuple[Topology, np.ndarray]:
-        fixer = PDBFixer(filename=str(path))
-        fixer.findMissingResidues()
-        fixer.findNonstandardResidues()
-        fixer.replaceNonstandardResidues()
-        fixer.findMissingAtoms()
-        fixer.addMissingAtoms()
-        fixer.addMissingHydrogens(7.0)
-        
-        return fixer.topology, fixer.positions
+        prmtop = AmberPrmtopFile(str(path / 'system.prmtop'))
+        inpcrd = AmberInpcrdFile(str(path / 'system.inpcrd'))
+
+        return prmtop.topology, inpcrd.positions
 
     def build_dicts(self,
                     path: Path,
@@ -159,8 +154,6 @@ class ConstantPHEnsemble:
             cph_params = self.params
 
             cph_params.update({
-                'topology': top,
-                'positions': pos,
                 'residueVariants': variants, 
                 'referenceEnergies': reference_energies,
             })
@@ -180,8 +173,6 @@ class ConstantPHEnsemble:
     
     @property
     def params(self) -> dict[str, Any]: 
-        expl_ff = ForceField('amber14-all.xml', 'amber14/opc.xml')
-        impl_ff = ForceField('amber14-all.xml', 'implicit/gbn2.xml')
         expl_params = dict(nonbondedMethod=PME, 
                            nonbondedCutoff=0.9*nanometers, 
                            constraints=HBonds, 
@@ -199,9 +190,9 @@ class ConstantPHEnsemble:
                                                    0.002*picosecond)
     
         params = {
+            'prmtop_file': self.path / 'system.prmtop',
+            'inpcrd_file': self.path / 'system.inpcrd',
             'pH': self.pHs,
-            'explicitForceField': expl_ff, 
-            'implicitForceField': impl_ff, 
             'relaxationSteps': 1000,
             'explicitArgs': expl_params, 
             'implicitArgs': impl_params, 

@@ -1,13 +1,194 @@
 """
 Unit tests for sasa.py module
+
+This module contains both unit tests (with mocks) and integration tests that use
+real MDAnalysis Universe objects when available. Integration tests use actual
+spatial calculations to verify SASA behavior.
 """
 import pytest
 import numpy as np
 from unittest.mock import Mock, patch, MagicMock
-import MDAnalysis as mda
-from MDAnalysis.core import groups
+from pathlib import Path
+import os
 
-from molecular_simulations.analysis import SASA, RelativeSASA
+# ============================================================================
+# Fixtures for conditional real MDAnalysis usage
+# ============================================================================
+
+def _check_mdanalysis_available():
+    """Check if MDAnalysis is available."""
+    try:
+        import MDAnalysis as mda
+        return True
+    except ImportError:
+        return False
+
+
+# Custom marker for tests requiring MDAnalysis
+requires_mdanalysis = pytest.mark.skipif(
+    not _check_mdanalysis_available(),
+    reason="MDAnalysis not available"
+)
+
+
+@pytest.fixture
+def mda_universe():
+    """Return a real MDAnalysis Universe from a test PDB file, or skip."""
+    try:
+        import MDAnalysis as mda
+        # Use the test data PDB file
+        test_pdb = Path(__file__).parent / "data" / "pdb" / "alanine_dipeptide.pdb"
+        if test_pdb.exists():
+            return mda.Universe(str(test_pdb))
+        else:
+            pytest.skip(f"Test PDB file not found: {test_pdb}")
+    except ImportError:
+        pytest.skip("MDAnalysis not available")
+
+
+@pytest.fixture
+def simple_atomgroup(mda_universe):
+    """Return an AtomGroup from the test universe."""
+    return mda_universe.select_atoms("all")
+
+
+# ============================================================================
+# Integration tests using real MDAnalysis (when available)
+# ============================================================================
+
+class TestSASAIntegration:
+    """Integration tests using real MDAnalysis objects.
+
+    These tests verify actual SASA calculations rather than mocked interactions.
+    """
+
+    @requires_mdanalysis
+    def test_real_universe_loading(self, mda_universe):
+        """Test that we can load a real MDAnalysis Universe."""
+        assert mda_universe is not None
+        assert mda_universe.atoms.n_atoms > 0
+
+    @requires_mdanalysis
+    def test_real_atomgroup_has_elements(self, mda_universe):
+        """Test that the atomgroup has elements assigned."""
+        ag = mda_universe.select_atoms("all")
+        # Elements should be available for SASA calculation
+        assert hasattr(ag, 'elements')
+
+    @requires_mdanalysis
+    def test_real_kdtree_spatial_query(self):
+        """Test real KDTree spatial queries work correctly."""
+        from scipy.spatial import KDTree
+
+        # Create test coordinates
+        positions = np.array([
+            [0.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [10.0, 10.0, 10.0],  # Far away point
+        ])
+
+        kdt = KDTree(positions)
+
+        # Query ball point - should find 3 atoms within radius 2.0 of origin
+        neighbors = kdt.query_ball_point([0.0, 0.0, 0.0], r=2.0)
+        assert len(neighbors) == 3  # indices 0, 1, 2
+        assert 3 not in neighbors  # far away point should not be included
+
+    @requires_mdanalysis
+    def test_fibonacci_sphere_generation(self, mda_universe):
+        """Test that Fibonacci sphere points are correctly distributed on unit sphere."""
+        from molecular_simulations.analysis import SASA
+
+        ag = mda_universe.select_atoms("all")
+        sasa = SASA(ag, n_points=100)
+        sphere = sasa.get_sphere()
+
+        # Check shape
+        assert sphere.shape == (100, 3)
+
+        # Check all points lie on unit sphere (norm should be ~1)
+        norms = np.linalg.norm(sphere, axis=1)
+        assert np.allclose(norms, 1.0, rtol=1e-5)
+
+    @requires_mdanalysis
+    def test_sasa_radii_assignment(self, mda_universe):
+        """Test that atomic radii are correctly assigned from elements."""
+        from molecular_simulations.analysis import SASA
+
+        ag = mda_universe.select_atoms("all")
+        sasa = SASA(ag, probe_radius=1.4)
+
+        # Radii should be VDW radii + probe radius
+        assert len(sasa.radii) == ag.n_atoms
+
+        # All radii should be positive
+        assert all(r > 0 for r in sasa.radii)
+
+        # Radii should be larger than probe radius (VDW > 0)
+        assert all(r > 1.4 for r in sasa.radii)
+
+    @requires_mdanalysis
+    def test_sasa_prepare_initializes_results(self, mda_universe):
+        """Test that _prepare correctly initializes results arrays."""
+        from molecular_simulations.analysis import SASA
+
+        ag = mda_universe.select_atoms("all")
+        sasa = SASA(ag)
+        sasa._prepare()
+
+        assert hasattr(sasa.results, 'sasa')
+        assert sasa.results.sasa.shape == (ag.n_residues,)
+        assert all(s == 0 for s in sasa.results.sasa)
+
+    @requires_mdanalysis
+    def test_sasa_values_are_positive(self, mda_universe):
+        """Test that SASA calculations produce positive values."""
+        from molecular_simulations.analysis import SASA
+
+        ag = mda_universe.select_atoms("all")
+        sasa = SASA(ag, n_points=64)  # Use fewer points for speed
+
+        # Measure SASA for the atomgroup
+        sasa._prepare()
+        area = sasa.measure_sasa(ag)
+
+        # All SASA values should be non-negative
+        assert all(a >= 0 for a in area)
+
+        # Total SASA should be positive for any molecule
+        assert np.sum(area) > 0
+
+    @requires_mdanalysis
+    def test_relative_sasa_requires_bonds(self, mda_universe):
+        """Test that RelativeSASA raises error without bonds."""
+        from molecular_simulations.analysis import RelativeSASA
+
+        ag = mda_universe.select_atoms("all")
+
+        # This test verifies the error handling for missing bonds
+        if not hasattr(ag, 'bonds') or ag.bonds is None:
+            with pytest.raises(ValueError):
+                RelativeSASA(ag)
+
+
+# ============================================================================
+# Original unit tests with mocks
+# ============================================================================
+
+# Conditional import with mock fallback
+try:
+    import MDAnalysis as mda
+    from MDAnalysis.core import groups
+    from molecular_simulations.analysis import SASA, RelativeSASA
+    _MDA_AVAILABLE = True
+except ImportError:
+    _MDA_AVAILABLE = False
+    # Create dummy classes for mocking
+    mda = MagicMock()
+    groups = MagicMock()
+    SASA = MagicMock
+    RelativeSASA = MagicMock
 
 
 class TestSASA:

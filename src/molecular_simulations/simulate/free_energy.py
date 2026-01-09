@@ -1,7 +1,7 @@
 """
 """
 from copy import deepcopy
-from openmm import CustomBondForce, CustomCompoundBondForce
+from openmm import CustomBondForce, CustomCompoundBondForce, HarmonicBondForce
 from openmm.unit import angstrom
 import numpy as np
 import parsl
@@ -11,9 +11,10 @@ try:
     import tomllib  # Python 3.11+
 except ModuleNotFoundError:
     import tomli as tomllib  # Python 3.10
-from typing import Optional, Type, TypeVar
-from .omm_simulator import ImplicitSimulator, Simulator
-from .reporters import RCReporter
+import traceback
+from typing import Any, Optional, Type, TypeVar
+from omm_simulator import ImplicitSimulator, Simulator
+from reporters import RCReporter
 
 _T = TypeVar('_T')
     
@@ -30,8 +31,6 @@ def run_evb_window(topology: Path,
                    platform: str,
                    restraint_sel: str | None) -> None:
     """Parsl python app. Separate module due to need for serialization.
-
-    Args:
     """
     evb = EVBCalculation(
         topology=topology,
@@ -50,57 +49,52 @@ def run_evb_window(topology: Path,
     evb.run()
 
 class EVB:
-    """EVB orchestrator. Sets up full EVB run for a set of reactants and products,
+    """EVB orchestrator. Sets up full EVB run for a set of reactants or products,
     and distributes calculations using Parsl."""
     def __init__(self,
-                 reactant_topology: Path,
-                 reactant_coordinates: Path,
-                 reactant_umbrella: list[int],
-                 reactant_morse: list[int],
-                 product_topology: Path,
-                 product_coordinates: Path,
-                 product_umbrella: list[int],
-                 product_morse: list[int],
+                 topology: Path,
+                 coordinates: Path,
+                 umbrella_atoms: list[int],
+                 morse_atoms: list[int],
                  reaction_coordinate:  list[float],
-                 log_path: Path,
                  parsl_config: Config,
+                 log_path: Path,
+                 log_prefix: str='reactant',
                  rc_write_freq: int=5,
                  steps: int=500000,
                  dt: float=0.002,
-                 k: float=160000.0,
+                 k: float=160000.0,        # Umbrella force constant (kJ/mol/nm^2)
+                 k_path: float=100.0,      # Path restraint force constant (kJ/mol)
+                 D_e: float=392.46,        # Morse well depth (kJ/mol) - from BDE
+                 alpha: float=13.275,      # Morse width parameter (nm^-1) - computed from sqrt(k_bond/(2*D_e))
+                 r0: float=0.1,            # Equilibrium bond distance (nm)
                  platform: str='CUDA',
-                 restraint_sel: Optional[str]=None,
-                 D_e: Optional[float]=None,
-                 alpha: Optional[float]=None,
-                 r0: Optional[float]=None):
-        # Reactant system
-        self.reactant_topology = Path(reactant_topology)
-        self.reactant_coordinates = Path(reactant_coordinates)
-        self.r_umb = reactant_umbrella
-        self.r_mor = reactant_morse
-        self.r_path = self.reactant_topology.parent / 'evb'
-        
-        # Product system
-        self.product_topology = Path(product_topology)
-        self.product_coordinates = Path(product_coordinates)
-        self.p_umb = product_umbrella
-        self.p_mor = product_morse
-        self.p_path = self.product_topology.parent / 'evb'
+                 restraint_sel: Optional[str]=None):
+        self.topology = Path(topology)
+        self.coordinates = Path(coordinates)
+        self.umbrella_atoms = umbrella_atoms
+        self.morse_atoms = morse_atoms
+        self.path = self.topology.parent / 'evb'
+
+        self.parsl_config = parsl_config
+        self.dfk = None
 
         self.log_path = Path(log_path)
-
+        self.log_prefix = log_prefix
         self.rc_freq = rc_write_freq
+
         self.steps = steps
         self.dt = dt
-
+        self.k = k
+        self.k_path = k_path
+        self.D_e = D_e
+        self.alpha = alpha
+        self.r0 = r0
+        
         self.platform = platform
         self.restraint_sel = restraint_sel
 
         self.reaction_coordinate = self.construct_rc(reaction_coordinate)
-        self.set_umbrella_settings(k)
-        self.set_morse_bond_settings(D_e, alpha, r0)
-        self.parsl_config = parsl_config
-        self.dfk = None
 
         self.inspect_inputs()
 
@@ -113,17 +107,14 @@ class EVB:
                 is set correctly, having more than 1 window.
         """
         paths = [
-            self.reactant_topology, self.reactant_coordinates,
-            self.product_topology, self.product_coordinates,
+            self.topology, self.coordinates,
         ]
 
         for path in paths:
             assert path.exists(), f'File {path} not found!'
 
-        assert len(self.r_umb) == 3, f'Reactant umbrella indices must be length 3!'
-        assert len(self.p_umb) == 3, f'Product umbrella indices must be length 3!'
-        assert len(self.r_mor) == 2, f'Reactant Morse indices must be length 2!'
-        assert len(self.p_mor) == 2, f'Product Morse indices must be length 2!'
+        assert len(self.umbrella_atoms) == 3, f'Need 3 umbrella atoms!'
+        assert len(self.morse_atoms) == 2, f'Need 2 morse bond atoms!'
         assert self.reaction_coordinate.shape[0] > 1, f'RC needs at least 1 window!'
 
         self.log_path.mkdir(exist_ok=True, parents=True)
@@ -140,78 +131,6 @@ class EVB:
         """
         return np.arange(rc[0], rc[1] + rc[2], rc[2])
 
-    def set_umbrella_settings(self,
-                              k:  float) -> None:
-        """Sets up Umbrella force settings for force calculation. Because the
-        windows are decided at run time we leave rc0 as None for now.
-
-        Args:
-            k (float): pass
-
-        Returns:
-            None
-        """
-        self.r_umbrella = {
-            'atom_i': self.r_umb[0],
-            'atom_j': self.r_umb[1],
-            'atom_k': self.r_umb[2],
-            'k': k,
-            'rc0': None
-        }
-
-        self.p_umbrella = {
-            'atom_i': self.p_umb[0],
-            'atom_j': self.p_umb[1],
-            'atom_k': self.p_umb[2],
-            'k': k,
-            'rc0': None
-        }
-
-    def set_morse_bond_settings(self,
-                                D_e: Optional[float],
-                                alpha: Optional[float],
-                                r0: Optional[float]) -> None:
-        """Sets up Morse bond settings for potential creation. D_e is the 
-        potential well depth and can be computed using QM or scraped from
-        ML predictions such as ALFABET (https://bde.ml.nrel.gov). alpha is 
-        the potential well width and is computed from the Taylor expansion of
-        the second derivative of the potential. This takes the form:
-        .. math::
-            \alpha = \sqrt(\frac{k_e}{2*D_e})
-
-        Finally, r0 is the equilibrium bond distance coming from literature,
-        forcefield, QM or ML predictions.
-
-        Args:
-            D_e (Optional[float]): Potential well depth.
-            alpha (Optional[float]): Potential width. 
-            r0 (Optional[float]): Equilibrium bond distance.
-            r_idx (list[int]): List of atom indices from reactant system that
-                participate in Morse bond
-            p_idx (list[int]): List of atom indices from product system that
-                participate in Morse bond
-
-        Returns:
-            None
-        """
-        keys = ['D_e', 'alpha', 'r0']
-        settings = {}
-        for key, val in zip(keys, [D_e, alpha, r0]):
-            if val is not None:
-                settings[key] = val
-        
-        self.r_morse = {
-            'atom_i': self.r_mor[0],
-            'atom_j': self.r_mor[1],
-        }
-
-        self.p_morse = {
-            'atom_i': self.p_mor[0],
-            'atom_j': self.p_mor[1],
-        }
-
-        for morse_dict in [self.r_morse, self.p_morse]:
-            morse_dict.update(settings)
 
     def initialize(self) -> None:
         """Initialize Parsl for runs"""
@@ -228,47 +147,96 @@ class EVB:
 
     def run_evb(self) -> None:
         """Collect futures for each EVB window and distribute."""
-        futures = []
-        for i, rc0 in enumerate(self.reaction_coordinate):
-            r_umbrella = deepcopy(self.r_umbrella)
-            r_umbrella.update({'rc0': rc0})
-            
-            futures.append(
-                run_evb_window(
-                    topology=self.reactant_topology,
-                    coord_file=self.reactant_coordinates,
-                    out_path=self.r_path / f'window{i}',
-                    rc_file=self.log_path / f'forward_{i}.log',
-                    umbrella_force=r_umbrella,
-                    morse_bond=self.r_morse,
-                    rc_freq=self.rc_freq,
-                    steps=self.steps,
-                    dt=self.dt,
-                    platform=self.platform,
-                    restraint_sel=self.restraint_sel,
-                )
-            )
-            
-            p_umbrella = deepcopy(self.p_umbrella)
-            p_umbrella.update({'rc0': rc0})
+        # Spin up Parsl
+        self.initialize()
 
-            futures.append(
-                run_evb_window(
-                    topology=self.product_topology,
-                    coord_file=self.product_coordinates,
-                    out_path=self.p_path / f'window{i}',
-                    rc_file=self.log_path / f'reverse_{i}.log',
-                    umbrella_force=p_umbrella,
-                    morse_bond=self.p_morse,
-                    rc_freq=self.rc_freq,
-                    steps=self.steps,
-                    dt=self.dt,
-                    platform=self.platform,
-                    restraint_sel=self.restraint_sel,
+        try:
+            futures = []
+            for i, rc0 in enumerate(self.reaction_coordinate):
+                umbrella = {**self.umbrella, 'rc0': rc0}
+                
+                futures.append(
+                    run_evb_window(
+                        topology=self.topology,
+                        coord_file=self.coordinates,
+                        out_path=self.path / f'window{i}',
+                        rc_file=self.log_path / f'{self.log_prefix}_{i}.log',
+                        umbrella_force=umbrella,
+                        morse_bond=self.morse_bond,
+                        rc_freq=self.rc_freq,
+                        steps=self.steps,
+                        dt=self.dt,
+                        platform=self.platform,
+                        restraint_sel=self.restraint_sel,
+                    )
                 )
+
+            _ = [x.result() for x in futures]
+
+        except Exception as e:
+            tb = traceback.format_exc()
+            print(
+                'EVB failed for 1 or more windows!'
+                f'{e}'
+                f'{tb}'
             )
 
-        _ = [x.result() for x in futures]
+        finally:
+            # Stop Parsl to avoid zombie processes
+            self.shutdown()
+    
+    @property
+    def umbrella(self) -> dict[str, Any]:
+        """Sets up Umbrella force settings for force calculation.
+
+        Because the windows are decided at run time we leave rc0 as None for now.
+        The dict includes both k (umbrella force constant) and k_path (path
+        restraint force constant) since both are passed to the EVBCalculation.
+
+        Returns:
+            dict: Umbrella and path restraint parameters.
+        """
+        return {
+            'atom_i': self.umbrella_atoms[0],
+            'atom_j': self.umbrella_atoms[1],
+            'atom_k': self.umbrella_atoms[2],
+            'k': self.k,
+            'k_path': self.k_path,
+            'rc0': None
+        }
+
+    @property
+    def morse_bond(self) -> dict[str, Any]:
+        """Sets up Morse bond settings for potential creation.
+
+        D_e is the potential well depth (bond dissociation energy) and can be
+        computed using QM or obtained from ML predictions such as ALFABET
+        (https://bde.ml.nrel.gov). Must be in kJ/mol for OpenMM.
+
+        alpha is the potential well width computed from the harmonic force
+        constant via the Taylor expansion of the second derivative:
+            alpha = sqrt(k_bond / (2 * D_e))
+
+        Unit conversions from AMBER frcmod (kcal/mol/A^2) to OpenMM (kJ/mol/nm^2):
+            k_openmm = k_amber * 4.184 * 100
+
+        Example calculation for C-H bond:
+            D_e = 93.8 kcal/mol = 392.46 kJ/mol
+            k_bond = 330.6 kcal/(mol*A^2) = 138323 kJ/(mol*nm^2)
+            alpha = sqrt(138323 / (2 * 392.46)) = 13.275 nm^-1
+
+        r0 is the equilibrium bond distance in nm.
+
+        Returns:
+            dict: Morse bond parameters with keys atom_i, atom_j, D_e, alpha, r0.
+        """
+        return {
+            'atom_i': self.morse_atoms[0],
+            'atom_j': self.morse_atoms[1],
+            'D_e': self.D_e,
+            'alpha': self.alpha,
+            'r0': self.r0,
+        }
 
     
 class EVBCalculation:
@@ -294,9 +262,13 @@ class EVBCalculation:
             platform=platform,
         )
 
-        self.sim_engine.properties = {
-            'Precision': 'mixed',
-        }
+        # Only set Precision for platforms that support it (CUDA, OpenCL)
+        if platform.upper() in ('CUDA', 'OPENCL'):
+            self.sim_engine.properties = {
+                'Precision': 'mixed',
+            }
+        else:
+            self.sim_engine.properties = {}
 
         self.rc_file = rc_file
         self.rc_freq = rc_freq
@@ -308,12 +280,20 @@ class EVBCalculation:
         
     def prepare(self):
         """Generates simulation object containing all custom forces to compute
-        free energy. Leverages standard Simulator as backend, adding in Morse 
+        free energy. Leverages standard Simulator as backend, adding in Morse
         potential and Umbrella forces.
         """
         # load files into system object
         system = self.sim_engine.load_system()
-        
+
+        # Remove the original harmonic bond before adding Morse potential
+        # to avoid double-counting the bonded interaction
+        self.remove_harmonic_bond(
+            system,
+            self.morse_bond['atom_i'],
+            self.morse_bond['atom_j']
+        )
+
         # add various custom forces to system
         morse_bond = self.morse_bond_force(**self.morse_bond)
         system.addForce(morse_bond)
@@ -360,11 +340,12 @@ class EVBCalculation:
         simulation.step(self.steps)
     
     @staticmethod
-    def umbrella_force(atom_i: int, 
-                       atom_j: int, 
+    def umbrella_force(atom_i: int,
+                       atom_j: int,
                        atom_k: int,
-                       k: float, 
-                       rc0: float) -> CustomCompoundBondForce:
+                       k: float,
+                       rc0: float,
+                       **kwargs) -> CustomCompoundBondForce:
         """Difference of distances umbrella force. Think pulling an oxygen off
 
         Args:
@@ -388,29 +369,42 @@ class EVBCalculation:
     def path_restraint(atom_i: int,
                        atom_j: int,
                        atom_k: int,
-                       k: float,
+                       k_path: float,
                        **kwargs) -> CustomCompoundBondForce:
         """Enforce collinearity of moving atom with respect to the initial
         and final positions. By avoiding a custom angle force we avoid instability
         related to the asymptote at 180 degrees, which is what we are attempting to
         enforce. The cosine of the dot product of the vectors from i -> k and i -> j
-        allows the penalty to scale quadratically with deviation, thus keeping the 
-        mobile atom snapped along the progress coordinate vector."""
+        allows the penalty to scale quadratically with deviation, thus keeping the
+        mobile atom snapped along the progress coordinate vector.
+
+        Note: k_path has units of kJ/mol (not kJ/mol/nm^2 like the umbrella k)
+        since (1 - costheta)^2 is dimensionless. Typical values are 50-200 kJ/mol.
+
+        Args:
+            atom_i (int): Index of donor atom.
+            atom_j (int): Index of acceptor atom.
+            atom_k (int): Index of transferring atom (e.g., hydride).
+            k_path (float): Force constant in kJ/mol for collinearity restraint.
+
+        Returns:
+            CustomCompoundBondForce: Force enforcing D-H-A collinearity.
+        """
         force = CustomCompoundBondForce(3,  (
-                'k * (1 - costheta)^2; '
+                'k_path * (1 - costheta)^2; '
                 'costheta = dot_ij_ik / (r_ij * r_ik); '
                 'dot_ij_ik = dx_ij*dx_ik + dy_ij*dy_ik + dz_ij*dz_ik; '
                 'r_ij = sqrt(dx_ij^2 + dy_ij^2 + dz_ij^2); '
                 'r_ik = sqrt(dx_ik^2 + dy_ik^2 + dz_ik^2); '
                 'dx_ij = x2 - x1; '
-                'dy_ij = y2 - y1; ' 
+                'dy_ij = y2 - y1; '
                 'dz_ij = z2 - z1; '
                 'dx_ik = x3 - x1; '
                 'dy_ik = y3 - y1; '
                 'dz_ik = z3 - z1'
             )
         )
-        force.addGlobalParameter('k', k)
+        force.addGlobalParameter('k_path', k_path)
         force.addBond([atom_i, atom_k, atom_j])
 
         return force
@@ -418,17 +412,29 @@ class EVBCalculation:
     @staticmethod
     def morse_bond_force(atom_i: int,
                          atom_j: int,
-                         D_e: float=419.6, # from NREL server for my O-H
-                         alpha: float=2.5977, # a = sqrt(k_OH / (2 * De))
-                         r0: float=0.096) -> CustomBondForce:
+                         D_e: float,
+                         alpha: float,
+                         r0: float) -> CustomBondForce:
         """Generates a custom Morse potential between two atom indices.
 
+        The Morse potential has the form:
+            V(r) = D_e * (1 - exp(-alpha * (r - r0)))^2
+
+        The alpha parameter can be computed from harmonic force constant k_bond:
+            alpha = sqrt(k_bond / (2 * D_e))
+
+        All parameters must be in OpenMM's native unit system:
+            - Distances in nanometers (nm)
+            - Energies in kJ/mol
+            - Force constants in kJ/(mol*nm^2)
+            - Alpha in nm^-1
+
         Args:
-            atom_i (int): Index of first atom
-            atom_j (int): Index of second atom
-            D_e (float, optional): Depth of the Morse potential.
-            alpha (float, optional): Stiffness of the Morse potential.
-            r0 (float, optional): Equilibrium distance of the bond represented.
+            atom_i (int): Index of first atom.
+            atom_j (int): Index of second atom.
+            D_e (float): Well depth in kJ/mol (from bond dissociation energy).
+            alpha (float): Width parameter in nm^-1.
+            r0 (float): Equilibrium distance in nm.
 
         Returns:
             CustomBondForce: Force corresponding to a Morse potential.
@@ -438,6 +444,58 @@ class EVBCalculation:
         force.addGlobalParameter('alpha', alpha)
         force.addGlobalParameter('r0', r0)
         force.addBond(atom_i, atom_j)
-        
+
         return force
+
+    @staticmethod
+    def remove_harmonic_bond(system, atom_i: int, atom_j: int) -> None:
+        """Remove the bond/constraint between two atoms.
+
+        This is necessary when replacing a harmonic bond with a Morse potential
+        to avoid double-counting the bonded interaction. The method handles both:
+        1. Harmonic bonds (sets force constant to zero)
+        2. SHAKE/RATTLE constraints (removes the constraint entirely)
+
+        Args:
+            system: OpenMM System object containing forces.
+            atom_i (int): Index of first atom in the bond.
+            atom_j (int): Index of second atom in the bond.
+
+        Returns:
+            None. Modifies system in place.
+        """
+        target_pair = {atom_i, atom_j}
+        found_bond = False
+        found_constraint = False
+
+        # First, check for harmonic bond and zero it out
+        for force_idx in range(system.getNumForces()):
+            force = system.getForce(force_idx)
+            if isinstance(force, HarmonicBondForce):
+                for bond_idx in range(force.getNumBonds()):
+                    p1, p2, length, k = force.getBondParameters(bond_idx)
+                    if {p1, p2} == target_pair:
+                        # Zero out the force constant, keeping equilibrium length
+                        force.setBondParameters(bond_idx, p1, p2, length, 0.0)
+                        print(f"Zeroed harmonic bond between atoms {atom_i} and {atom_j}")
+                        found_bond = True
+                        break
+                break
+
+        # Second, check for constraints (SHAKE) and remove them
+        # Need to iterate in reverse since we're removing
+        constraints_to_remove = []
+        for i in range(system.getNumConstraints()):
+            p1, p2, distance = system.getConstraintParameters(i)
+            if {p1, p2} == target_pair:
+                constraints_to_remove.append(i)
+
+        # Remove constraints in reverse order to maintain indices
+        for idx in reversed(constraints_to_remove):
+            system.removeConstraint(idx)
+            print(f"Removed SHAKE constraint between atoms {atom_i} and {atom_j}")
+            found_constraint = True
+
+        if not found_bond and not found_constraint:
+            print(f"Warning: No harmonic bond or constraint found between atoms {atom_i} and {atom_j}")
 

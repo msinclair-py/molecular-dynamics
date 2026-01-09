@@ -1,5 +1,9 @@
 """
 Unit tests for analysis/interaction_energy.py module
+
+This module contains both unit tests (with minimal mocks) and integration tests.
+Tests use real OpenMM when available, with conditional skips for environments
+without OpenMM installed.
 """
 import pytest
 import numpy as np
@@ -8,16 +12,213 @@ from pathlib import Path
 from unittest.mock import Mock, MagicMock, patch
 
 
+# ============================================================================
+# Fixtures and helpers for conditional dependency usage
+# ============================================================================
+
+def _check_openmm():
+    """Check if OpenMM is available."""
+    try:
+        import openmm
+        return True
+    except ImportError:
+        return False
+
+
+def _check_openmm_cpu():
+    """Check if OpenMM CPU platform is available."""
+    try:
+        from openmm import Platform
+        Platform.getPlatformByName('CPU')
+        return True
+    except Exception:
+        return False
+
+
+requires_openmm = pytest.mark.skipif(
+    not _check_openmm(),
+    reason="OpenMM not installed"
+)
+
+
+requires_openmm_cpu = pytest.mark.skipif(
+    not _check_openmm_cpu(),
+    reason="OpenMM CPU platform not available"
+)
+
+
+@pytest.fixture
+def test_data_dir():
+    """Return the path to test data directory."""
+    return Path(__file__).parent / 'data'
+
+
+@pytest.fixture
+def alanine_pdb(test_data_dir):
+    """Return the path to the alanine dipeptide PDB."""
+    return test_data_dir / 'pdb' / 'alanine_dipeptide.pdb'
+
+
+# ============================================================================
+# Pure logic tests - no mocking needed
+# ============================================================================
+
+class TestInteractionEnergyPureLogic:
+    """Test pure logic that doesn't need OpenMM."""
+
+    def test_get_selection_logic_full_chain(self):
+        """Test selection logic for full chain - no mocks."""
+        # Test the selection logic without instantiating the class
+        chain = 'A'
+        first = None
+        last = None
+
+        # Simulate atoms
+        atoms = [
+            {'index': 0, 'chain_id': 'A', 'resid': '1'},
+            {'index': 1, 'chain_id': 'A', 'resid': '2'},
+            {'index': 2, 'chain_id': 'B', 'resid': '1'},
+        ]
+
+        selection = [
+            a['index']
+            for a in atoms
+            if a['chain_id'] == chain
+        ]
+
+        assert selection == [0, 1]
+
+    def test_get_selection_logic_with_first_residue(self):
+        """Test selection logic with first_residue - no mocks."""
+        chain = 'A'
+        first = 3
+        last = None
+
+        atoms = [
+            {'index': i, 'chain_id': 'A', 'resid': str(i + 1)}
+            for i in range(5)
+        ]
+
+        selection = [
+            a['index']
+            for a in atoms
+            if a['chain_id'] == chain and int(first) <= int(a['resid'])
+        ]
+
+        assert selection == [2, 3, 4]
+
+    def test_get_selection_logic_with_last_residue(self):
+        """Test selection logic with last_residue - no mocks."""
+        chain = 'A'
+        first = None
+        last = 3
+
+        atoms = [
+            {'index': i, 'chain_id': 'A', 'resid': str(i + 1)}
+            for i in range(5)
+        ]
+
+        selection = [
+            a['index']
+            for a in atoms
+            if a['chain_id'] == chain and int(last) >= int(a['resid'])
+        ]
+
+        assert selection == [0, 1, 2]
+
+    def test_get_selection_logic_with_range(self):
+        """Test selection logic with residue range - no mocks."""
+        chain = 'A'
+        first = 2
+        last = 4
+
+        atoms = [
+            {'index': i, 'chain_id': 'A', 'resid': str(i + 1)}
+            for i in range(5)
+        ]
+
+        selection = [
+            a['index']
+            for a in atoms
+            if a['chain_id'] == chain and int(first) <= int(a['resid']) <= int(last)
+        ]
+
+        assert selection == [1, 2, 3]
+
+    def test_interactions_property_logic(self):
+        """Test interactions property returns correct shape - no mocks."""
+        lj = -5.0
+        coulomb = -10.0
+        result = np.vstack([lj, coulomb])
+        assert result.shape == (2, 1)
+        assert result[0, 0] == -5.0
+        assert result[1, 0] == -10.0
+
+    def test_energy_array_shape(self):
+        """Test energy array computation - no mocks."""
+        n_frames = 10
+        stride = 2
+        n_computed = n_frames // stride
+        energies = np.zeros((n_computed, 2))
+
+        for i in range(n_computed):
+            energies[i, 0] = -10.0  # LJ
+            energies[i, 1] = -20.0  # Coulomb
+
+        assert energies.shape == (5, 2)
+        assert np.all(energies[:, 0] == -10.0)
+        assert np.all(energies[:, 1] == -20.0)
+
+
+# ============================================================================
+# Integration tests using real OpenMM
+# ============================================================================
+
+@requires_openmm_cpu
+class TestStaticInteractionEnergyIntegration:
+    """Integration tests using real OpenMM."""
+
+    def test_static_interaction_energy_real_init(self, alanine_pdb):
+        """Test StaticInteractionEnergy with real PDB and CPU platform."""
+        from molecular_simulations.analysis.interaction_energy import StaticInteractionEnergy
+
+        sie = StaticInteractionEnergy(
+            pdb=str(alanine_pdb),
+            chain='A',
+            platform='CPU'
+        )
+
+        assert sie.pdb == str(alanine_pdb)
+        assert sie.chain == 'A'
+        assert sie.platform is not None
+
+
+@requires_openmm
+class TestInteractionEnergyAbstractIntegration:
+    """Integration test for abstract base class."""
+
+    def test_abstract_class_cannot_instantiate(self):
+        """Test that InteractionEnergy cannot be instantiated."""
+        from molecular_simulations.analysis.interaction_energy import InteractionEnergy
+
+        with pytest.raises(TypeError):
+            InteractionEnergy()
+
+
+# ============================================================================
+# Unit tests with minimal mocking
+# ============================================================================
+
 class TestStaticInteractionEnergy:
-    """Test suite for StaticInteractionEnergy class"""
-    
+    """Test suite for StaticInteractionEnergy class - uses mocks for unavailable deps."""
+
     @patch('molecular_simulations.analysis.interaction_energy.Platform')
     def test_static_interaction_energy_init(self, mock_platform):
-        """Test StaticInteractionEnergy initialization"""
+        """Test StaticInteractionEnergy initialization."""
         from molecular_simulations.analysis.interaction_energy import StaticInteractionEnergy
-        
+
         mock_platform.getPlatformByName.return_value = MagicMock()
-        
+
         sie = StaticInteractionEnergy(
             pdb='test.pdb',
             chain='B',
@@ -25,22 +226,22 @@ class TestStaticInteractionEnergy:
             first_residue=10,
             last_residue=50
         )
-        
+
         assert sie.pdb == 'test.pdb'
         assert sie.chain == 'B'
         assert sie.first == 10
         assert sie.last == 50
         mock_platform.getPlatformByName.assert_called_with('CPU')
-    
+
     @patch('molecular_simulations.analysis.interaction_energy.Platform')
     def test_static_interaction_energy_init_defaults(self, mock_platform):
-        """Test StaticInteractionEnergy default values"""
+        """Test StaticInteractionEnergy default values."""
         from molecular_simulations.analysis.interaction_energy import StaticInteractionEnergy
-        
+
         mock_platform.getPlatformByName.return_value = MagicMock()
-        
+
         sie = StaticInteractionEnergy(pdb='test.pdb')
-        
+
         assert sie.chain == 'A'
         assert sie.first is None
         assert sie.last is None
