@@ -22,9 +22,21 @@ PathLike = Union[Path, str]
 
 @dataclass
 class sander_min_defaults:
-    """
-    Dataclass with default values for sander minimization.
-    Creates the contents of a sander input file during init
+    """Dataclass with default values for sander minimization.
+
+    Creates the contents of a sander input file during initialization.
+
+    Attributes:
+        imin: Minimization flag. Set to 1 to perform energy minimization.
+        maxcyc: Maximum number of minimization cycles.
+        ncyc: Number of steepest descent steps before switching to
+            conjugate gradient.
+        ntb: Periodic boundary conditions flag. 0 for no periodicity.
+        ntr: Restraint flag. 0 for no restraints.
+        cut: Nonbonded cutoff distance in Angstroms.
+        ntpr: Frequency of energy printing in steps.
+        ntwr: Frequency of restart file writing in steps.
+        ntxo: Output restart file format. 1 for ASCII format.
     """
     imin=1       # Perform energy minimization
     maxcyc=5000  # Maximum number of minimization cycles
@@ -58,7 +70,7 @@ def sander_minimize(path: Path,
     """
     Minimize MD system with sander and output new inpcrd file.
     
-    Arguments:
+    Args:
         path (Path): Path to directory containing inpcrd and prmtop. New inpcrd will be
             written here as well.
         inpcrd_file (str): Name of inpcrd file in path
@@ -89,7 +101,7 @@ class MultiResolutionSimulator:
     representations. Utilizes CALVADOS for CG simulations and omm_simulator.py for AA
     simulations. 
     
-    Arguments:
+    Args:
         path (PathLike): Path to simulation input files, also serves as output path.
         input_pdb (str): Input pdb for simulations, must exist in path.
         n_rounds (int): Number of rounds of CG/AA simulation to perform.
@@ -126,9 +138,17 @@ class MultiResolutionSimulator:
 
     @classmethod
     def from_toml(cls: Type[_T], config: PathLike) -> _T:
-        """
-        Constructs MultiResolutionSimulator from .toml configuration file.
-        Recommended method for instantiating MultiResolutionSimulator.
+        """Construct MultiResolutionSimulator from a TOML configuration file.
+
+        This is the recommended method for instantiating MultiResolutionSimulator
+        as it allows all parameters to be specified in a single configuration file.
+
+        Args:
+            config: Path to the TOML configuration file containing settings,
+                cg_params, and aa_params sections.
+
+        Returns:
+            Configured MultiResolutionSimulator instance.
         """
         with open(config, 'rb') as f:
             cfg = tomllib.load(f)
@@ -167,8 +187,14 @@ class MultiResolutionSimulator:
     def strip_solvent(simulation: Simulation,
                       output_pdb: PathLike = 'protein.pdb'
                       ) -> None:
-        """
-        Use parmed to strip solvent from an openmm simulation and write out pdb
+        """Strip solvent and ions from an OpenMM simulation and write PDB.
+
+        Uses ParmEd to remove water molecules and common ions from the
+        simulation, then saves the remaining structure to a PDB file.
+
+        Args:
+            simulation: OpenMM Simulation object containing the solvated system.
+            output_pdb: Path for the output PDB file. Defaults to 'protein.pdb'.
         """
         struc = pmd.openmm.load_topology(
             simulation.topology,
@@ -186,11 +212,20 @@ class MultiResolutionSimulator:
         struc.save(output_pdb)
 
     def run_rounds(self) -> None:
-        """
-        Main logic for running MultiResolutionSimulator.
-        Does not currently handle restart runs (TODO).
-        """
+        """Execute the multi-resolution simulation workflow.
 
+        Runs alternating cycles of all-atom (AA) and coarse-grained (CG)
+        simulations for the specified number of rounds. Each round consists of:
+        1. Building the AA system from input or previous CG structure
+        2. Minimizing with sander to resolve clashes
+        3. Running AA equilibration and production
+        4. Stripping solvent and converting to CG representation
+        5. Running CG simulation with CALVADOS
+        6. Back-mapping CG to AA using cg2all for the next round
+
+        Note:
+            Does not currently handle restart runs.
+        """
         for r in range(self.n_rounds):
             aa_path = self.path / f'aa_round{r}'
             aa_path.mkdir()

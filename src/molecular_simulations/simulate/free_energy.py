@@ -1,5 +1,5 @@
-"""
-"""
+"""Free energy calculations using Empirical Valence Bond (EVB) methods."""
+
 from copy import deepcopy
 from openmm import CustomBondForce, CustomCompoundBondForce, HarmonicBondForce
 from openmm.unit import angstrom
@@ -51,6 +51,7 @@ def run_evb_window(topology: Path,
 class EVB:
     """EVB orchestrator. Sets up full EVB run for a set of reactants or products,
     and distributes calculations using Parsl."""
+
     def __init__(self,
                  topology: Path,
                  coordinates: Path,
@@ -70,6 +71,31 @@ class EVB:
                  r0: float=0.1,            # Equilibrium bond distance (nm)
                  platform: str='CUDA',
                  restraint_sel: Optional[str]=None):
+        """Initialize the EVB orchestrator.
+
+        Args:
+            topology: Path to the system topology file (prmtop).
+            coordinates: Path to the system coordinate file (inpcrd).
+            umbrella_atoms: List of three atom indices [i, j, k] for umbrella
+                sampling where the reaction coordinate is dist(i,k) - dist(j,k).
+            morse_atoms: List of two atom indices [i, j] for the Morse bond.
+            reaction_coordinate: List of [min, max, increment] defining the
+                reaction coordinate windows.
+            parsl_config: Parsl configuration for distributed execution.
+            log_path: Directory path for writing reaction coordinate logs.
+            log_prefix: Prefix for log file names. Defaults to 'reactant'.
+            rc_write_freq: Steps between reaction coordinate writes. Defaults to 5.
+            steps: Number of simulation steps per window. Defaults to 500000.
+            dt: Integration timestep in picoseconds. Defaults to 0.002.
+            k: Umbrella force constant in kJ/mol/nm^2. Defaults to 160000.0.
+            k_path: Path restraint force constant in kJ/mol. Defaults to 100.0.
+            D_e: Morse well depth in kJ/mol. Defaults to 392.46.
+            alpha: Morse width parameter in nm^-1. Defaults to 13.275.
+            r0: Equilibrium bond distance in nm. Defaults to 0.1.
+            platform: OpenMM platform name. Defaults to 'CUDA'.
+            restraint_sel: Optional MDAnalysis selection string for backbone
+                restraints. Defaults to None.
+        """
         self.topology = Path(topology)
         self.coordinates = Path(coordinates)
         self.umbrella_atoms = umbrella_atoms
@@ -241,6 +267,7 @@ class EVB:
     
 class EVBCalculation:
     """Runs a single EVB window."""
+
     def __init__(self,
                  topology: Path,
                  coord_file: Path,
@@ -248,11 +275,29 @@ class EVBCalculation:
                  rc_file: Path,
                  umbrella: dict,
                  morse_bond: dict,
-                 rc_freq: int=5, # 0.01 ps @ 2 fs timestep 
+                 rc_freq: int=5, # 0.01 ps @ 2 fs timestep
                  steps: int=500_000, # 1 ns @ 2 fs timestep
                  dt: float=0.002,
                  platform: str='CUDA',
                  restraint_sel: Optional[str]=None):
+        """Initialize a single EVB window calculation.
+
+        Args:
+            topology: Path to the system topology file (prmtop).
+            coord_file: Path to the system coordinate file (inpcrd).
+            out_path: Directory path for simulation output files.
+            rc_file: Path to the reaction coordinate log file.
+            umbrella: Dictionary containing umbrella sampling parameters
+                including atom_i, atom_j, atom_k, k, k_path, and rc0.
+            morse_bond: Dictionary containing Morse bond parameters
+                including atom_i, atom_j, D_e, alpha, and r0.
+            rc_freq: Steps between reaction coordinate writes. Defaults to 5.
+            steps: Number of simulation steps. Defaults to 500000.
+            dt: Integration timestep in picoseconds. Defaults to 0.002.
+            platform: OpenMM platform name. Defaults to 'CUDA'.
+            restraint_sel: Optional MDAnalysis selection string for backbone
+                restraints. Defaults to None.
+        """
         self.sim_engine = Simulator(
             path = topology.parent,
             top_name = topology.name,
